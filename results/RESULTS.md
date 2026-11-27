@@ -1,6 +1,6 @@
 # Sentinel – evaluation results
 
-30 seeded runs × 60 days. Ground truth = the plant simulator. Reproduce: `python -m evaluation.run_eval --seeds 30` (runtime 4.2 s).
+30 seeded runs × 60 days. Ground truth = the plant simulator. Reproduce: `python -m evaluation.run_eval --seeds 30` (runtime 4.1 s).
 
 Orders scored: **6455**, of which **420** really missed their CRD (6.51%) under the company's existing reorder-point planner.
 

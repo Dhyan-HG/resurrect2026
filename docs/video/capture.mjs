@@ -33,7 +33,7 @@ async function shot(name, selector) {
 await send("Page.enable");
 await send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 860, deviceScaleFactor: 1.5, mobile: false });
 
-await send("Page.navigate", { url: base + "/" }); await sleep(2500);
+await send("Page.navigate", { url: base + "/?noauto" }); await sleep(2500);
 await post("/api/reset", { seed: 7 });
 await ev("refresh()"); await sleep(1500);
 await shot("calm");

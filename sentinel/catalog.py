@@ -28,8 +28,8 @@ PRODUCT_NAMES = [
     "Exhaust fan", "Air cooler", "Ceiling light", "Geyser",
 ]
 SUPPLIER_NAMES = [
-    "Apex Metals", "Bharat Components", "Coastal Plastics", "Deccan Electricals",
-    "Everest Packaging", "Fortune Fasteners",
+    "Apex Industrial", "Bharat Components", "Coastal Supply Co", "Deccan Electricals",
+    "Everest Traders", "Fortune Fasteners",
 ]
 
 

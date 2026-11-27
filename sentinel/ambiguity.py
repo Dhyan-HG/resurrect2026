@@ -606,6 +606,12 @@ def interpret(text: str, sent: float, due: float, po: str = "this order") -> dic
         status, typ, lo, hi, readings, cues, hedged, no_change = _interpret(str(text), S, D)
     except (ValueError, OverflowError, KeyError, IndexError):   # never let one message break the rebuild
         status, typ, lo, hi, readings, cues, hedged, no_change = ("none", None, None, None, None, (), False, False)
+    if status == "ambiguous" and lo is not None and hi is not None and hi >= S and lo < S:
+        lo = S                       # readings already in the past are not delivery dates
+        readings = tuple(x for x in readings if x >= S) if readings else readings
+        if readings and len(readings) == 1:
+            status, typ, hi = "clear", None, readings[0]
+            lo = hi
     r = {"status": status, "type": typ, "lo": lo, "hi": hi, "day": lo if status == "clear" else None,
          "plan_day": hi, "readings": list(readings) if readings else None, "cues": list(cues),
          "hedged": hedged, "no_change": no_change}

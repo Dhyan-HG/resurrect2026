@@ -431,7 +431,7 @@ def alerts(state: BookState, proj: dict, store: EventStore, cat: Catalog) -> lis
     recent_q = [q for q in store.quarantine if q.get("arrival") is not None and now - q["arrival"] <= 1]
     if recent_q:
         add(f"quarantine:{math.floor(now)}", "data_quality", "low",
-            f"{len(recent_q)} malformed event(s) quarantined in the last 24 h "
+            f"{len(recent_q)} malformed {'event' if len(recent_q) == 1 else 'events'} set aside in the last 24 h "
             f"(e.g. '{recent_q[-1]['reason']}').", count=len(recent_q))
     sev = {"high": 0, "medium": 1, "low": 2}
     out.sort(key=lambda a: sev[a["severity"]])

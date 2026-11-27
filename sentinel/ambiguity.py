@@ -619,13 +619,13 @@ def _explain(r: dict) -> str:
         return "No delivery date in this message. Nothing changed."
     if r["status"] == "clear":
         if r["no_change"]:
-            return f"Supplier confirms the plan: {fmt(r['day'])} (day {r['day']})."
-        return f"Clear: {fmt(r['day'])} (day {r['day']})."
+            return f"Supplier confirms the plan: {fmt(r['day'])}."
+        return f"Clear: {fmt(r['day'])}."
     if r["readings"] and len(r["readings"]) <= 4:
-        opts = " or ".join(f"{fmt(x)} (day {x})" for x in r["readings"])
-        return f"Unclear: could be {opts}. Planning for the latest, day {r['hi']}, until the supplier confirms."
-    return (f"Unclear: could be any day from {fmt(r['lo'])} to {fmt(r['hi'])} (day {r['lo']}-{r['hi']}). "
-            f"Planning for the latest, day {r['hi']}, until the supplier confirms.")
+        opts = " or ".join(fmt(x) for x in r["readings"])
+        return f"Unclear: could be {opts}. Planning for the latest, {fmt(r['hi'])}, until the supplier confirms."
+    return (f"Unclear: could be any day from {fmt(r['lo'])} to {fmt(r['hi'])}. "
+            f"Planning for the latest, {fmt(r['hi'])}, until the supplier confirms.")
 
 
 def _question(r: dict, po: str, text: str) -> str:

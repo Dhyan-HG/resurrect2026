@@ -111,7 +111,7 @@ class Session:
                     "id": qid, "po": p["id"], "event_id": u["event_id"], "status": "pending",
                     "created": round(self.clock, 3), "supplier": cat.suppliers[p["supplier"]].name,
                     "material": p["material"], "material_name": cat.materials[p["material"]].name,
-                    "message": u["text"], "sent_ts": u["ts"], "question": u["question"],
+                    "message": u["text"], "sent_ts": u["ts"], "question": u["question"], "due": p["orig_expected"],
                     "read": {k: u[k] for k in ("type", "lo", "hi", "readings", "explanation", "cues")},
                     "lo_label": ambiguity.fmt(u["lo"]), "hi_label": ambiguity.fmt(u["hi"])}
         for q in self.questions.values():
@@ -249,7 +249,7 @@ class Session:
             heapq.heapify(keep)
             w._pending = keep
             info["detail"] = (f"The warehouse feed went quiet at {ambiguity.fmt(start)} {int(24 * (start % 1)):02d}:00. "
-                              f"Sentinel waits 18 hours of silence, then raises the alert")
+                              f"Skipped ahead 19 hours to the moment Sentinel raises the alert.")
             info["skip"] = 0.8      # jump to the moment the alert fires, so the demo shows it
         elif kind == "shrink":
             m = max(w.cat.materials, key=lambda m: w.physical[m] * w.cat.materials[m].unit_cost)
@@ -416,6 +416,11 @@ async def _run(req: Request, response: Response, fn, write: bool = True):
 @app.get("/")
 def index():
     return FileResponse(WEB / "index.html")
+
+
+@app.get("/og.png")
+def og_image():
+    return FileResponse(WEB / "og.png", media_type="image/png")
 
 
 @app.get("/api/state")

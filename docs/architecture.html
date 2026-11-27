@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sentinel – Data and System Architecture</title>
+<style>
+@page{size:A4;margin:16mm 15mm}
+body{font:10.5pt/1.5 "IBM Plex Sans",Segoe UI,Arial,sans-serif;color:#1c1d1b;margin:0}
+h1{font:600 26pt/1.1 Georgia,serif;margin:0 0 6px;letter-spacing:-.01em}
+h2{font:600 15pt/1.2 Georgia,serif;margin:22px 0 8px;padding-top:6px;border-top:2px solid #1c1d1b}
+h3{font-size:11pt;margin:14px 0 4px}
+p{margin:0 0 8px}
+.sub{color:#5b5a54;font-size:11.5pt;margin-bottom:14px}
+.pb{page-break-before:always}
+table{border-collapse:collapse;width:100%;margin:6px 0 12px;font-size:9.5pt;page-break-inside:avoid}
+th,td{border-bottom:1px solid #dcd7cb;padding:5px 6px;text-align:left;vertical-align:top}
+th{background:#f2efe8;font-weight:600}
+code,.m{font-family:"IBM Plex Mono",Consolas,monospace;font-size:9pt}
+.box{border:1px solid #dcd7cb;border-radius:6px;padding:10px 12px;margin:8px 0 12px;background:#faf8f3;page-break-inside:avoid}
+.warn{border-color:#c23b12;background:#fbefe9}
+.ok{border-color:#3d6b4c;background:#eef6f0}
+svg{display:block;margin:6px auto 10px;max-width:100%}
+.cap{font-size:9pt;color:#5b5a54;text-align:center;margin:-4px 0 10px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tag{display:inline-block;font-size:8.5pt;font-weight:600;padding:1px 6px;border-radius:3px;background:#e8e4da}
+.tag.now{background:#dcebdf;color:#2f5a3d}.tag.prod{background:#f3e6c8;color:#7a4f00}
+</style>
+</head>
+<body>
+
+<h1>Sentinel</h1>
+<p class="sub">Data and system architecture · Resurrect 2026, Problem 2 (+ Problem 6) · github.com/roshanvijay37/resurrect2026 · live at chatu.in</p>
+
+<div class="box"><b>In one sentence.</b> Every fact Sentinel knows arrives as an <i>event</i>; events are stored once, never edited, and the whole picture of stock, orders and risk is <i>rebuilt</i> from them, so duplicates, junk or a replay can never change a number.</div>
+
+<div class="box warn"><b>Honest scope.</b> <span class="tag now">Built</span> marks what runs today at chatu.in: an in-memory event store per visitor, rebuilt on every change. <span class="tag prod">Production design</span> marks how the same model maps to a database (Postgres) for a real plant. That part is a design, not built or measured.</div>
+
+<h2>1. The big picture</h2>
+<svg width="680" height="300" viewBox="0 0 680 300" font-family="Segoe UI, Arial" font-size="11">
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1c1d1b"/></marker></defs>
+  <g fill="#faf8f3" stroke="#1c1d1b">
+    <rect x="10" y="20" width="120" height="40" rx="5"/><rect x="10" y="75" width="120" height="40" rx="5"/><rect x="10" y="130" width="120" height="40" rx="5"/><rect x="10" y="185" width="120" height="40" rx="5"/>
+    <rect x="175" y="95" width="125" height="70" rx="6" fill="#f2efe8" stroke-width="2"/>
+    <rect x="345" y="95" width="125" height="70" rx="6" fill="#f2efe8" stroke-width="2"/>
+    <rect x="515" y="30" width="155" height="55" rx="6"/>
+    <rect x="515" y="110" width="155" height="55" rx="6"/>
+    <rect x="515" y="190" width="155" height="55" rx="6"/>
+    <rect x="345" y="230" width="125" height="50" rx="6" fill="#fbefe9" stroke="#c23b12"/>
+  </g>
+  <g text-anchor="middle" fill="#1c1d1b">
+    <text x="70" y="44">Orders system (ERP)</text><text x="70" y="99">Warehouse (WMS)</text><text x="70" y="154">Supplier messages</text><text x="70" y="209">Heartbeats</text>
+    <text x="237" y="123" font-weight="600">Event store</text><text x="237" y="140">validate · de-duplicate</text><text x="237" y="155">quarantine</text>
+    <text x="407" y="123" font-weight="600">Engine</text><text x="407" y="140">rebuild · allocate</text><text x="407" y="155">project · alert</text>
+    <text x="592" y="53" font-weight="600">Agent</text><text x="592" y="70">proposals with what-if</text>
+    <text x="592" y="133" font-weight="600">Supplier-message reader</text><text x="592" y="150">clear / unclear / no date</text>
+    <text x="592" y="213" font-weight="600">Dashboard + API</text><text x="592" y="230">roles · approvals</text>
+    <text x="407" y="252" font-weight="600" fill="#c23b12">Human approval</text><text x="407" y="268">nothing is bought without it</text>
+  </g>
+  <g stroke="#1c1d1b" fill="none" marker-end="url(#a)">
+    <path d="M130 40 L175 115"/><path d="M130 95 L175 125"/><path d="M130 150 L175 138"/><path d="M130 205 L175 150"/>
+    <path d="M300 130 L345 130"/><path d="M470 120 L515 60"/><path d="M470 130 L515 137"/><path d="M470 145 L515 210"/>
+    <path d="M592 245 L470 255"/><path d="M345 255 L240 255 L240 165"/>
+  </g>
+</svg>
+<p class="cap">Events flow left to right. An approved purchase becomes a new event (a purchase order), which flows back into the store.</p>
+
+<h2>2. Events: the only way data gets in <span class="tag now">Built</span></h2>
+<p>Every event has the same envelope plus a few fields that depend on its type. Code: <code>sentinel/events.py</code>.</p>
+<table>
+<tr><th>Envelope field</th><th>Meaning</th><th>Rule</th></tr>
+<tr><td class="m">event_id</td><td>Unique id from the sending system</td><td>Same id twice = duplicate, ignored. Same id, different content = conflict, the smaller canonical copy is kept (same result in any arrival order)</td></tr>
+<tr><td class="m">type</td><td>What happened</td><td>One of the 10 types below, else quarantined</td></tr>
+<tr><td class="m">ts</td><td>When it happened (days since 2 Nov 2026, fractional)</td><td>0 to 100,000; not more than a day after it arrived (a future time could hide a dead feed)</td></tr>
+<tr><td class="m">source</td><td>erp, wms, supplier, or sentinel</td><td>Used for feed-health alerts</td></tr>
+</table>
+<table>
+<tr><th>Type</th><th>Sender</th><th>Fields</th></tr>
+<tr><td class="m">order_created</td><td>ERP</td><td class="m">order_id, product, qty, crd</td></tr>
+<tr><td class="m">order_cancelled</td><td>ERP</td><td class="m">order_id</td></tr>
+<tr><td class="m">production_started / order_shipped</td><td>ERP</td><td class="m">order_id</td></tr>
+<tr><td class="m">po_created</td><td>ERP</td><td class="m">po_id, material, qty, expected, expedite</td></tr>
+<tr><td class="m">po_date_changed</td><td>Supplier / planner</td><td class="m">po_id, expected</td></tr>
+<tr><td class="m">goods_received</td><td>WMS</td><td class="m">po_id, material, qty</td></tr>
+<tr><td class="m">stock_count</td><td>WMS</td><td class="m">material, counted</td></tr>
+<tr><td class="m">supplier_message</td><td>Supplier</td><td class="m">po_id, text</td></tr>
+<tr><td class="m">heartbeat</td><td>Any feed</td><td>none (proves the feed is alive)</td></tr>
+</table>
+<p>Limits that keep one bad sender from breaking the plant: quantities up to 10,000,000, event size up to 4 KB, text up to 2,000 characters; the latest 500 quarantined events are kept, with totals counted.</p>
+
+<h2>3. From events to the picture on screen <span class="tag now">Built</span></h2>
+<div class="two">
+<div>
+<h3>Rebuild (engine.rebuild)</h3>
+<p>Events are sorted by <code>(ts, event_id)</code> and replayed into a <b>book</b>: on-hand stock per material, every order and its status, every purchase order with its received quantity and date history, stock-count discrepancies and anomalies. Because the order is fixed, any replay gives the same book; a hash of it proves it.</p>
+</div>
+<div>
+<h3>Projection (engine.project)</h3>
+<p><b>Net availability = on hand + incoming − allocated.</b> Open orders are served earliest customer date first; each takes stock, then incoming POs by their risk-adjusted arrival (the supplier's learned average delay is added). Production starts when every part is covered and takes 2 days, giving each order a projected ship date and a risk: late, at risk (&lt; 2 days spare) or on track.</p>
+</div>
+</div>
+<table>
+<tr><th>Derived table (in memory)</th><th>Key</th><th>Main columns</th></tr>
+<tr><td>on_hand</td><td>material</td><td>quantity</td></tr>
+<tr><td>orders</td><td>order_id</td><td>product, qty, crd, status, started, shipped · projected_ship, slack, risk, reasons</td></tr>
+<tr><td>purchase orders</td><td>po_id</td><td>material, supplier, qty, received, expected, orig_expected, date_changes[], messages[], unclear</td></tr>
+<tr><td>supplier stats</td><td>supplier</td><td>deliveries, on-time rate, average delay, estimated delay (shrunk mean)</td></tr>
+<tr><td>alerts</td><td>key</td><td>kind, severity, message, first seen</td></tr>
+</table>
+
+<h2 class="pb">4. Production design: the same model in Postgres <span class="tag prod">Production design</span></h2>
+<p>The event model maps directly to an append-only table; everything else is either master data or a cache that can be thrown away and rebuilt.</p>
+<svg width="680" height="330" viewBox="0 0 680 330" font-family="Segoe UI, Arial" font-size="10.5">
+  <defs><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5b5a54"/></marker></defs>
+  <g font-family="Consolas, monospace" font-size="10">
+    <g transform="translate(10,10)"><rect width="200" height="128" rx="5" fill="#f2efe8" stroke="#1c1d1b" stroke-width="2"/><text x="10" y="18" font-weight="700" font-family="Segoe UI">events (append-only)</text>
+      <text x="10" y="38">event_id   text  PK</text><text x="10" y="54">type       text</text><text x="10" y="70">ts         numeric</text><text x="10" y="86">source     text</text><text x="10" y="102">payload    jsonb</text><text x="10" y="118">arrived_at timestamptz</text></g>
+    <g transform="translate(10,155)"><rect width="200" height="80" rx="5" fill="#fbefe9" stroke="#c23b12"/><text x="10" y="18" font-weight="700" font-family="Segoe UI">quarantine</text>
+      <text x="10" y="38">id        bigserial PK</text><text x="10" y="54">reason    text</text><text x="10" y="70">raw       jsonb</text></g>
+    <g transform="translate(240,10)"><rect width="200" height="96" rx="5" fill="#faf8f3" stroke="#1c1d1b"/><text x="10" y="18" font-weight="700" font-family="Segoe UI">materials</text>
+      <text x="10" y="38">id         text PK</text><text x="10" y="54">supplier_id  FK</text><text x="10" y="70">lead_days, expedite_days</text><text x="10" y="86">unit, unit_cost</text></g>
+    <g transform="translate(240,120)"><rect width="200" height="64" rx="5" fill="#faf8f3" stroke="#1c1d1b"/><text x="10" y="18" font-weight="700" font-family="Segoe UI">products · bom</text>
+      <text x="10" y="38">bom(product_id, material_id,</text><text x="10" y="54">    qty_per_unit) PK(both)</text></g>
+    <g transform="translate(240,198)"><rect width="200" height="48" rx="5" fill="#faf8f3" stroke="#1c1d1b"/><text x="10" y="18" font-weight="700" font-family="Segoe UI">suppliers</text><text x="10" y="38">id text PK, name</text></g>
+    <g transform="translate(470,10)"><rect width="200" height="112" rx="5" fill="#faf8f3" stroke="#1c1d1b"/><text x="10" y="18" font-weight="700" font-family="Segoe UI">proposals</text>
+      <text x="10" y="38">id text PK · material_id FK</text><text x="10" y="54">qty, expedite, cost</text><text x="10" y="70">effect jsonb (what-if)</text><text x="10" y="86">status, decided_by, decided_at</text><text x="10" y="102">po_event_id → events</text></g>
+    <g transform="translate(470,136)"><rect width="200" height="80" rx="5" fill="#faf8f3" stroke="#1c1d1b"/><text x="10" y="18" font-weight="700" font-family="Segoe UI">supplier_questions</text>
+      <text x="10" y="38">id PK · message_event_id FK</text><text x="10" y="54">question, status</text><text x="10" y="70">sent_by, answered_event_id</text></g>
+    <g transform="translate(470,230)"><rect width="200" height="64" rx="5" fill="#faf8f3" stroke="#1c1d1b"/><text x="10" y="18" font-weight="700" font-family="Segoe UI">outbox (emails)</text>
+      <text x="10" y="38">id PK · proposal/question FK</text><text x="10" y="54">body, approved_by, sent_at</text></g>
+    <g transform="translate(10,252)"><rect width="200" height="64" rx="5" fill="#eef6f0" stroke="#3d6b4c"/><text x="10" y="18" font-weight="700" font-family="Segoe UI">book_snapshot (cache)</text>
+      <text x="10" y="38">up_to_ts, hash, state jsonb</text><text x="10" y="54">rebuildable at any time</text></g>
+  </g>
+  <g stroke="#5b5a54" fill="none" marker-end="url(#b)">
+    <path d="M440 50 L470 60"/><path d="M340 106 L340 120"/><path d="M340 246 L340 260 L240 260 L240 60"/>
+    <path d="M470 100 L210 60"/><path d="M470 180 L210 80"/><path d="M570 216 L570 230"/><path d="M110 138 L110 155"/><path d="M110 138 L110 252"/>
+  </g>
+</svg>
+<p class="cap">Arrows point to the table a row refers to. Approvals and questions also write an event, so the event log stays the single source of truth.</p>
+<table>
+<tr><th>Concern</th><th>How the design handles it</th></tr>
+<tr><td>Duplicates</td><td><code>INSERT … ON CONFLICT (event_id) DO NOTHING</code>; a conflicting copy goes to quarantine.</td></tr>
+<tr><td>Malformed events</td><td>Validated in the API before insert; failures land in <code>quarantine</code> with the reason.</td></tr>
+<tr><td>Speed</td><td>Rebuild from the latest <code>book_snapshot</code> plus newer events, not from day one. Index on <code>(ts, event_id)</code>.</td></tr>
+<tr><td>Audit</td><td>Nothing is updated in place: who approved what, and when, is an event.</td></tr>
+<tr><td>Roles</td><td>Taken from the company sign-in (SSO). In the demo the role is a page switch.</td></tr>
+<tr><td>Email</td><td>An approved draft goes to <code>outbox</code>; a worker sends it. Nothing is sent before approval.</td></tr>
+</table>
+
+<h2>5. The demo server today <span class="tag now">Built</span></h2>
+<table>
+<tr><th>Part</th><th>What it is</th></tr>
+<tr><td>Runtime</td><td>Python 3.12, FastAPI + Uvicorn, one Docker container on our server (Caddy for HTTPS), deployed by GitHub Actions on every push.</td></tr>
+<tr><td>Sessions</td><td>Each visitor gets their own simulated plant (cookie), up to 24 at once, idle ones removed after 45 minutes; writes limited to 40 per 10 seconds.</td></tr>
+<tr><td>Data source</td><td>A seeded plant simulator (<code>sentinel/world.py</code>) sends events with deliberate faults: duplicates, junk, shuffled order, outages, vague supplier messages. External systems can post the same events to <code>/api/events</code>.</td></tr>
+<tr><td>Storage</td><td>In memory. A restart starts every plant again from day 4. Results of the evaluation are files in <code>results/</code>.</td></tr>
+</table>
+<h3>API</h3>
+<table>
+<tr><th>Endpoint</th><th>Purpose</th></tr>
+<tr><td class="m">GET /api/state?role=</td><td>Everything the dashboard shows for that role</td></tr>
+<tr><td class="m">POST /api/events</td><td>Ingest events (idempotent)</td></tr>
+<tr><td class="m">POST /api/proposals/{id}/approve|reject</td><td>Planner or buyer decision (403 for manager)</td></tr>
+<tr><td class="m">POST /api/questions/{id}/send|dismiss</td><td>Approve a question to a supplier</td></tr>
+<tr><td class="m">POST /api/pos/{po}/date</td><td>Set a date by hand after a phone call</td></tr>
+<tr><td class="m">POST /api/read, /api/messages</td><td>Read a supplier message / post one as the supplier</td></tr>
+<tr><td class="m">GET /api/orders/{id}/explain</td><td>Why an order is late, with its material sources</td></tr>
+<tr><td class="m">POST /api/advance, /api/inject/{kind}, /api/reset</td><td>Demo controls</td></tr>
+<tr><td class="m">GET /api/evidence</td><td>Headline results of the evaluation</td></tr>
+</table>
+
+<h2>6. Guarantees we measured</h2>
+<div class="box ok">
+<p style="margin:0">0 mismatches in 129,600 stock figures against a separately written calculator · 1,800/1,800 daily snapshots identical with and without duplicate/junk/shuffled events · 90/90 random-order replays identical · every briefing number and date checked against the facts it came from. Details: <code>results/RESULTS.md</code>.</p>
+</div>
+</body>
+</html>

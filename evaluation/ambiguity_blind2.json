@@ -1,0 +1,1131 @@
+{
+ "about": "Second blind set: written by an author who saw only docs/AMBIGUITY.md, never the reader's code or any other test set.",
+ "items": [
+  {
+   "text": "Dear Sir, Good morning. Due to a power cut at our unit for two days, the consignment against PO 4471 will now reach your plant on 7 Nov. Sorry for the inconvenience. Regards, Suresh - Sri Balaji Castings",
+   "sent": "2026-11-02",
+   "due": "2026-11-05",
+   "label": "clear",
+   "meant": "2026-11-07"
+  },
+  {
+   "text": "Hi team, our lathe machine broke down on Monday, so the lot of flanges is running 3 days late. Rest all ok. Thanks, Prakash",
+   "sent": "2026-11-03",
+   "due": "2026-11-05",
+   "label": "clear",
+   "meant": "2026-11-08",
+   "note": "'Monday' is when the machine broke down (past), not a delivery date; 3 days late = due + 3"
+  },
+  {
+   "text": "Dear Madam, With reference to your mail, kindly note the goods will be delivered by Friday. Thanks & regards, Kavitha (Sales)",
+   "sent": "2026-11-04",
+   "due": "2026-11-05",
+   "label": "clear",
+   "meant": "2026-11-06"
+  },
+  {
+   "text": "Sir material dispatched today by our own vehicle, will reach your gate tomorrow morning. LR copy attached.",
+   "sent": "2026-11-05",
+   "due": "2026-11-05",
+   "label": "clear",
+   "meant": "2026-11-06"
+  },
+  {
+   "text": "Dear Sir, Reg. PO 88213 - the order is on track and delivery will be as planned. Thanks & regards, Anil Kumar",
+   "sent": "2026-11-06",
+   "due": "2026-11-10",
+   "label": "clear",
+   "meant": "2026-11-10"
+  },
+  {
+   "text": "Dear Sir, Wishing you a very happy Deepavali in advance. Our factory will be closed for the festival, hence the balance quantity will reach you on Monday 16 Nov. Regards, Shetty Engineering Works",
+   "sent": "2026-11-07",
+   "due": "2026-11-10",
+   "label": "clear",
+   "meant": "2026-11-16",
+   "note": "weekday and date match"
+  },
+  {
+   "text": "Hello, due to continuous rain the vehicle could not be loaded yesterday. We will deliver within 4 days. Regards, Dispatch dept.",
+   "sent": "2026-11-09",
+   "due": "2026-11-11",
+   "label": "clear",
+   "meant": "2026-11-13"
+  },
+  {
+   "text": "Dear Sir, The consignment will reach on 12.11.2026 without fail. Regards, Ramesh",
+   "sent": "2026-11-10",
+   "due": "2026-11-11",
+   "label": "clear",
+   "meant": "2026-11-12"
+  },
+  {
+   "text": "Sir, 200 nos already delivered on 9th Nov. Remaining 300 nos will be delivered on Nov 17th. Pls arrange unloading.",
+   "sent": "2026-11-11",
+   "due": "2026-11-14",
+   "label": "clear",
+   "meant": "2026-11-17",
+   "note": "past partial delivery; label by the date for the rest"
+  },
+  {
+   "text": "Dear Sir, Due to the transport strike in Tamil Nadu the lot is delayed by 2 days. Inconvenience is regretted. Regards, Murugan Traders",
+   "sent": "2026-11-12",
+   "due": "2026-11-12",
+   "label": "clear",
+   "meant": "2026-11-14"
+  },
+  {
+   "text": "Hi, pls note delivery is on time. No change from our side.",
+   "sent": "2026-11-13",
+   "due": "2026-11-18",
+   "label": "clear",
+   "meant": "2026-11-18"
+  },
+  {
+   "text": "Good afternoon sir, we are short of raw material (HR coil) at the moment. Hopefully the goods will reach you next week Wednesday. Regards, Vinod",
+   "sent": "2026-11-14",
+   "due": "2026-11-16",
+   "label": "clear",
+   "meant": "2026-11-18",
+   "note": "hedge only"
+  },
+  {
+   "text": "Dear Sir, the courier will be delivered day after tomorrow. Tracking no. shared on mail. Thanks",
+   "sent": "2026-11-16",
+   "due": "2026-11-17",
+   "label": "clear",
+   "meant": "2026-11-18"
+  },
+  {
+   "text": "Sir, our machine breakdown is now fixed. Order will reach on Monday. Thank you for your patience.",
+   "sent": "2026-11-17",
+   "due": "2026-11-21",
+   "label": "clear",
+   "meant": "2026-11-23"
+  },
+  {
+   "text": "Dear Sir, Sorry for the delay in reply. The vehicle will reach your plant in 5 days. Regards, Logistics team",
+   "sent": "2026-11-18",
+   "due": "2026-11-20",
+   "label": "clear",
+   "meant": "2026-11-23"
+  },
+  {
+   "text": "bhai maal tomorrow pakka aa jayega. sorry for delay",
+   "sent": "2026-11-19",
+   "due": "2026-11-20",
+   "label": "clear",
+   "meant": "2026-11-20",
+   "note": "Hinglish: 'the goods will surely come tomorrow'"
+  },
+  {
+   "text": "Dear Sir, Due to labour shortage after the festival, the order is running 4 days late. Kindly revise your plan accordingly. Regards",
+   "sent": "2026-11-20",
+   "due": "2026-11-23",
+   "label": "clear",
+   "meant": "2026-11-27",
+   "note": "'running N days late' read as 'N days late'"
+  },
+  {
+   "text": "Dear Sir, Please note the consignment will reach you on Dec 1st. Our invoice no. INV/2611 dated 20 Nov is attached for your reference. Regards, Accounts",
+   "sent": "2026-11-21",
+   "due": "2026-11-23",
+   "label": "clear",
+   "meant": "2026-12-01",
+   "note": "invoice date is not a delivery date"
+  },
+  {
+   "text": "Dear Purchase team, The material will be delivered today evening by 6 pm. Regards, Sri Durga Packaging",
+   "sent": "2026-11-23",
+   "due": "2026-11-23",
+   "label": "clear",
+   "meant": "2026-11-23"
+  },
+  {
+   "text": "Sir, delivery on 26/11 as per schedule. Thanks",
+   "sent": "2026-11-24",
+   "due": "2026-11-27",
+   "label": "clear",
+   "meant": "2026-11-26",
+   "note": "26/11 cannot be mm/dd"
+  },
+  {
+   "text": "Hello sir, goods are ready and packed. Delivery on Thursday 26 Nov. Regds",
+   "sent": "2026-11-25",
+   "due": "2026-11-26",
+   "label": "clear",
+   "meant": "2026-11-26",
+   "note": "weekday and date match"
+  },
+  {
+   "text": "Dear Sir, There is a delay due to heavy rain in Kerala, roads are blocked near Palakkad. Revised delivery date: 2 Dec. Kindly bear with us. Regards, Thomas",
+   "sent": "2026-11-26",
+   "due": "2026-11-28",
+   "label": "clear",
+   "meant": "2026-12-02"
+  },
+  {
+   "text": "Dear Sir, The goods will be delivered in a week. Regards, Manjunath",
+   "sent": "2026-11-27",
+   "due": "2026-11-28",
+   "label": "clear",
+   "meant": "2026-12-04"
+  },
+  {
+   "text": "Sir, as discussed on call, the lot will come by Wednesday.",
+   "sent": "2026-11-28",
+   "due": "2026-12-02",
+   "label": "clear",
+   "meant": "2026-12-02"
+  },
+  {
+   "text": "Dear Sir, Earlier we had informed 2 Dec, but now the material will reach on 4 Dec. Sorry for the change. Regards",
+   "sent": "2026-11-30",
+   "due": "2026-12-02",
+   "label": "clear",
+   "meant": "2026-12-04",
+   "note": "2 Dec is the replaced date and is ignored"
+  },
+  {
+   "text": "Dear Sir, Not on the 4th - the consignment will reach on 7th Dec, because of the bandh on Thursday our truck cannot move. Regards",
+   "sent": "2026-12-01",
+   "due": "2026-12-04",
+   "label": "clear",
+   "meant": "2026-12-07",
+   "note": "'not the 4th' is ignored; Thursday is the bandh, not a delivery day"
+  },
+  {
+   "text": "Dear Sir, Our dispatch is scheduled for 3 Dec and the vehicle will reach your plant on 5 Dec. Regards, Despatch",
+   "sent": "2026-12-02",
+   "due": "2026-12-03",
+   "label": "clear",
+   "meant": "2026-12-05",
+   "note": "dispatch date and arrival date -> arrival"
+  },
+  {
+   "text": "Dear Sir, The order is delayed by 6 days due to non-availability of raw material from our mill. Regret the inconvenience caused. Regards",
+   "sent": "2026-12-03",
+   "due": "2026-12-03",
+   "label": "clear",
+   "meant": "2026-12-09"
+  },
+  {
+   "text": "Hi, delivery within 3 days. Thx",
+   "sent": "2026-12-04",
+   "due": "2026-12-06",
+   "label": "clear",
+   "meant": "2026-12-07"
+  },
+  {
+   "text": "Dear Sir, Hope you are doing well. The consignment will be delivered on Tuesday next week. Regards, Priya",
+   "sent": "2026-12-05",
+   "due": "2026-12-06",
+   "label": "clear",
+   "meant": "2026-12-08"
+  },
+  {
+   "text": "Dear Sir, Delivery date: 12.12.2026. Regards, Accounts & Dispatch",
+   "sent": "2026-12-07",
+   "due": "2026-12-12",
+   "label": "clear",
+   "meant": "2026-12-12"
+  },
+  {
+   "text": "sir 2 more days for the lot, power issue at plant",
+   "sent": "2026-12-08",
+   "due": "2026-12-10",
+   "label": "clear",
+   "meant": "2026-12-10"
+  },
+  {
+   "text": "Dear Sir, Please be informed that the goods will arrive on Dec 14th. Payment of the previous bill was due on 5 Dec, kindly release the same. Regards",
+   "sent": "2026-12-09",
+   "due": "2026-12-13",
+   "label": "clear",
+   "meant": "2026-12-14",
+   "note": "5 Dec is a payment date"
+  },
+  {
+   "text": "Dear Sir, Due to a machine breakdown in our CNC section the job is getting delayed. The material will now reach you on 14/12. Regards, Ganesh",
+   "sent": "2026-12-10",
+   "due": "2026-12-11",
+   "label": "clear",
+   "meant": "2026-12-14",
+   "note": "14/12 cannot be mm/dd"
+  },
+  {
+   "text": "Dear Sir, All good at our end, delivery on time as per PO. Regards",
+   "sent": "2026-12-11",
+   "due": "2026-12-14",
+   "label": "clear",
+   "meant": "2026-12-14"
+  },
+  {
+   "text": "Dear Sir, We have delivered 4 pallets on 10 Dec. Balance 2 pallets will reach you on Friday. Regards, Sunil",
+   "sent": "2026-12-12",
+   "due": "2026-12-14",
+   "label": "clear",
+   "meant": "2026-12-18",
+   "note": "past partial delivery; label by the rest"
+  },
+  {
+   "text": "Dear Sir, Regret to inform you that the order is 3 days late because of a strike at Chennai port. Kindly adjust your production plan. Thanks",
+   "sent": "2026-12-15",
+   "due": "2026-12-16",
+   "label": "clear",
+   "meant": "2026-12-19"
+  },
+  {
+   "text": "Dear Sir, The consignment should reach your end on 19th. Regards",
+   "sent": "2026-12-16",
+   "due": "2026-12-18",
+   "label": "clear",
+   "meant": "2026-12-19",
+   "note": "hedge only"
+  },
+  {
+   "text": "Dear Sir, we are trying to deliver by Monday. Regards",
+   "sent": "2026-12-17",
+   "due": "2026-12-20",
+   "label": "clear",
+   "meant": "2026-12-21",
+   "note": "hedge only"
+  },
+  {
+   "text": "Dear Sir, The courier will reach you on Wednesday 23 Dec. Regards",
+   "sent": "2026-12-18",
+   "due": "2026-12-20",
+   "label": "clear",
+   "meant": "2026-12-23",
+   "note": "weekday and date match"
+  },
+  {
+   "text": "Dear Sir, Our unit was shut for 2 days due to a power cut. Revised delivery is 24 December. Merry Christmas in advance!",
+   "sent": "2026-12-19",
+   "due": "2026-12-23",
+   "label": "clear",
+   "meant": "2026-12-24",
+   "note": "Christmas is a greeting here, not 'before Christmas'"
+  },
+  {
+   "text": "Dear Sir, Goods will reach within a week. Regards",
+   "sent": "2026-12-21",
+   "due": "2026-12-22",
+   "label": "clear",
+   "meant": "2026-12-28",
+   "note": "'within a week' = within 7 days, deadline"
+  },
+  {
+   "text": "Sir delivery tomorrow. LR no 55821.",
+   "sent": "2026-12-22",
+   "due": "2026-12-22",
+   "label": "clear",
+   "meant": "2026-12-23"
+  },
+  {
+   "text": "Dear Sir, Due to Christmas holidays at our transporter, the lot is delayed by 4 days. Regards",
+   "sent": "2026-12-23",
+   "due": "2026-12-26",
+   "label": "clear",
+   "meant": "2026-12-30"
+  },
+  {
+   "text": "Dear Sir, The material will reach on 28 Dec (Monday). Wish you a merry Christmas.",
+   "sent": "2026-12-24",
+   "due": "2026-12-26",
+   "label": "clear",
+   "meant": "2026-12-28",
+   "note": "weekday and date match"
+  },
+  {
+   "text": "Dear Sir, The vehicle broke down near Hassan. Repair is done, it will reach your plant day after tomorrow. Regards, Transport",
+   "sent": "2026-12-26",
+   "due": "2026-12-27",
+   "label": "clear",
+   "meant": "2026-12-28"
+  },
+  {
+   "text": "Hello sir, the remaining 40 boxes will be delivered on 31st. First 60 boxes already reached on 24th.",
+   "sent": "2026-12-28",
+   "due": "2026-12-30",
+   "label": "clear",
+   "meant": "2026-12-31",
+   "note": "past partial delivery; label by the rest"
+  },
+  {
+   "text": "Dear Sir, Due to year-end stock taking at our warehouse, the delivery is postponed to 4 Jan 2027. Happy New Year in advance. Regards",
+   "sent": "2026-12-29",
+   "due": "2026-12-30",
+   "label": "clear",
+   "meant": "2027-01-04"
+  },
+  {
+   "text": "Dear Sir, Kindly note there is no change in the delivery schedule. Regards",
+   "sent": "2026-12-30",
+   "due": "2027-01-02",
+   "label": "clear",
+   "meant": "2027-01-02"
+  },
+  {
+   "text": "Dear Sir, Goods will be delivered in 2 weeks due to shortage of packing material. Regards",
+   "sent": "2026-12-31",
+   "due": "2026-12-31",
+   "label": "clear",
+   "meant": "2027-01-14"
+  },
+  {
+   "text": "Dear Sir, The order will be delivered by 9 Nov positively. Regards",
+   "sent": "2026-11-04",
+   "due": "2026-11-09",
+   "label": "clear",
+   "meant": "2026-11-09"
+  },
+  {
+   "text": "Dear Sir, delivery after 3 days, transporter issue. Regards",
+   "sent": "2026-11-18",
+   "due": "2026-11-21",
+   "label": "clear",
+   "meant": "2026-11-21"
+  },
+  {
+   "text": "Dear sir, Thursday delivery confirmed. Pls keep the unloading crew ready.",
+   "sent": "2026-12-02",
+   "due": "2026-12-04",
+   "label": "clear",
+   "meant": "2026-12-03"
+  },
+  {
+   "text": "Dear Sir, The consignment is planned to reach you on Friday 13 Nov. Kindly confirm the receiving time. Regards",
+   "sent": "2026-11-10",
+   "due": "2026-11-16",
+   "label": "clear",
+   "meant": "2026-11-13",
+   "note": "weekday and date match"
+  },
+  {
+   "text": "Dear Sir, Due to heavy rain the consignment is delayed to next week. Regards, Ravi",
+   "sent": "2026-11-02",
+   "due": "2026-11-04",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-11-09",
+    "2026-11-15"
+   ],
+   "meant": "2026-11-11"
+  },
+  {
+   "text": "Hi, material will reach in a few days. Machine breakdown at our end, sorry.",
+   "sent": "2026-11-03",
+   "due": "2026-11-04",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-11-05",
+    "2026-11-08"
+   ],
+   "meant": "2026-11-06"
+  },
+  {
+   "text": "Dear Sir, Goods will be delivered next Friday. Regards, Harish",
+   "sent": "2026-11-04",
+   "due": "2026-11-07",
+   "label": "ambiguous",
+   "type": "next_weekday",
+   "range": [
+    "2026-11-06",
+    "2026-11-13"
+   ],
+   "meant": "2026-11-13"
+  },
+  {
+   "text": "Dear Sir, The lot will be dispatched on Monday from our Pune plant. Regards",
+   "sent": "2026-11-05",
+   "due": "2026-11-07",
+   "label": "ambiguous",
+   "type": "dispatch_vs_arrival",
+   "range": [
+    "2026-11-09",
+    "2026-11-11"
+   ],
+   "meant": "2026-11-10"
+  },
+  {
+   "text": "Dear Sir, There is a delay in the order due to festival rush. We will update the revised date shortly. Regards",
+   "sent": "2026-11-06",
+   "due": "2026-11-07",
+   "label": "ambiguous",
+   "type": "missing_date",
+   "range": [
+    "2026-11-07",
+    "2026-11-14"
+   ],
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, our plant is closed for Diwali. Material will reach after Diwali. Happy Deepavali!",
+   "sent": "2026-11-07",
+   "due": "2026-11-11",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-11-09",
+    "2026-11-13"
+   ],
+   "meant": "2026-11-10"
+  },
+  {
+   "text": "Dear Sir, delivery will be 2-3 days late due to the lorry strike. Regards",
+   "sent": "2026-11-09",
+   "due": "2026-11-09",
+   "label": "ambiguous",
+   "type": "range",
+   "range": [
+    "2026-11-11",
+    "2026-11-12"
+   ],
+   "meant": "2026-11-12"
+  },
+  {
+   "text": "Sir, delivery on 13th or 14th.",
+   "sent": "2026-11-10",
+   "due": "2026-11-12",
+   "label": "ambiguous",
+   "type": "alternatives",
+   "range": [
+    "2026-11-13",
+    "2026-11-14"
+   ],
+   "meant": "2026-11-14"
+  },
+  {
+   "text": "Dear Sir, The vehicle will reach on Thursday 13 Nov. Regards",
+   "sent": "2026-11-11",
+   "due": "2026-11-12",
+   "label": "ambiguous",
+   "type": "conflict",
+   "range": [
+    "2026-11-12",
+    "2026-11-13"
+   ],
+   "meant": "2026-11-13",
+   "note": "13 Nov is a Friday"
+  },
+  {
+   "text": "Dear Sir, The goods will reach by end of the week. Kindly excuse the delay. Regards",
+   "sent": "2026-11-12",
+   "due": "2026-11-15",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-11-13",
+    "2026-11-15"
+   ],
+   "meant": "2026-11-14"
+  },
+  {
+   "text": "Dear Sir, Due to a power shutdown at the courier hub, the courier will be delivered early next week. Regards",
+   "sent": "2026-11-13",
+   "due": "2026-11-15",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-11-16",
+    "2026-11-18"
+   ],
+   "meant": "2026-11-17"
+  },
+  {
+   "text": "Sir, material ready, dispatching tomorrow.",
+   "sent": "2026-11-14",
+   "due": "2026-11-15",
+   "label": "ambiguous",
+   "type": "dispatch_vs_arrival",
+   "range": [
+    "2026-11-15",
+    "2026-11-17"
+   ],
+   "meant": "2026-11-16"
+  },
+  {
+   "text": "Dear Sir, The consignment will reach in a couple of days. Regards",
+   "sent": "2026-11-16",
+   "due": "2026-11-19",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-11-18",
+    "2026-11-19"
+   ],
+   "meant": "2026-11-18"
+  },
+  {
+   "text": "Dear Sir, Due to shortage of raw material, the delivery will be delayed by 5 to 7 days. Regards, Purchase coordination",
+   "sent": "2026-11-17",
+   "due": "2026-11-19",
+   "label": "ambiguous",
+   "type": "range",
+   "range": [
+    "2026-11-24",
+    "2026-11-26"
+   ],
+   "meant": "2026-11-25"
+  },
+  {
+   "text": "Dear Sir, The order will be delivered mid next week. Regards",
+   "sent": "2026-11-18",
+   "due": "2026-11-19",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-11-24",
+    "2026-11-26"
+   ],
+   "meant": "2026-11-25"
+  },
+  {
+   "text": "Dear Sir, Our truck is stuck at the checkpost near Hosur. Will update. Regards",
+   "sent": "2026-11-19",
+   "due": "2026-11-19",
+   "label": "ambiguous",
+   "type": "missing_date",
+   "range": [
+    "2026-11-20",
+    "2026-11-27"
+   ],
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, Delivery around the 25th. Regards",
+   "sent": "2026-11-20",
+   "due": "2026-11-24",
+   "label": "ambiguous",
+   "type": "approximate",
+   "range": [
+    "2026-11-24",
+    "2026-11-26"
+   ],
+   "meant": "2026-11-25"
+  },
+  {
+   "text": "sir goods will come Mon/Tue",
+   "sent": "2026-11-21",
+   "due": "2026-11-23",
+   "label": "ambiguous",
+   "type": "alternatives",
+   "range": [
+    "2026-11-23",
+    "2026-11-24"
+   ],
+   "meant": "2026-11-24"
+  },
+  {
+   "text": "Dear Sir, Due to the strike at the port, the material will reach this week. Regards",
+   "sent": "2026-11-23",
+   "due": "2026-11-26",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-11-24",
+    "2026-11-29"
+   ],
+   "meant": "2026-11-27"
+  },
+  {
+   "text": "Dear Sir, The goods will reach by month end. Regards",
+   "sent": "2026-11-24",
+   "due": "2026-11-25",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-11-24",
+    "2026-11-30"
+   ],
+   "meant": "2026-11-30"
+  },
+  {
+   "text": "Dear Sir, We will dispatch the lot on Friday by road. Regards",
+   "sent": "2026-11-25",
+   "due": "2026-11-27",
+   "label": "ambiguous",
+   "type": "dispatch_vs_arrival",
+   "range": [
+    "2026-11-27",
+    "2026-11-29"
+   ],
+   "meant": "2026-11-28"
+  },
+  {
+   "text": "Dear Sir, Delivery will be in the first week of December. Regards",
+   "sent": "2026-11-26",
+   "due": "2026-11-29",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-12-01",
+    "2026-12-07"
+   ],
+   "meant": "2026-12-03"
+  },
+  {
+   "text": "Dear Sir, The vehicle will reach next Friday. Regards",
+   "sent": "2026-11-27",
+   "due": "2026-11-28",
+   "label": "ambiguous",
+   "type": "next_weekday",
+   "range": [
+    "2026-12-04",
+    "2026-12-11"
+   ],
+   "meant": "2026-12-04"
+  },
+  {
+   "text": "Dear Sir, We are short of labour this month, delivery will be late next week. Regards",
+   "sent": "2026-11-28",
+   "due": "2026-11-30",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-12-03",
+    "2026-12-06"
+   ],
+   "meant": "2026-12-04"
+  },
+  {
+   "text": "Hi, consignment will reach tomorrow or day after.",
+   "sent": "2026-11-30",
+   "due": "2026-11-30",
+   "label": "ambiguous",
+   "type": "alternatives",
+   "range": [
+    "2026-12-01",
+    "2026-12-02"
+   ],
+   "meant": "2026-12-02"
+  },
+  {
+   "text": "Dear Sir, Delivery is delayed. The new date will be shared tomorrow. Regards",
+   "sent": "2026-12-01",
+   "due": "2026-12-03",
+   "label": "ambiguous",
+   "type": "missing_date",
+   "range": [
+    "2026-12-03",
+    "2026-12-10"
+   ],
+   "meant": null,
+   "note": "'tomorrow' is when they will tell us, ignored"
+  },
+  {
+   "text": "Dear Sir, Due to a machine breakdown the goods will reach in 1-2 weeks. Regards",
+   "sent": "2026-12-02",
+   "due": "2026-12-03",
+   "label": "ambiguous",
+   "type": "range",
+   "range": [
+    "2026-12-09",
+    "2026-12-16"
+   ],
+   "meant": "2026-12-14",
+   "note": "counted from the message day, like 'in 2 weeks'"
+  },
+  {
+   "text": "Dear Sir, The goods will be delivered on Monday 8 Dec. Regards",
+   "sent": "2026-12-03",
+   "due": "2026-12-05",
+   "label": "ambiguous",
+   "type": "conflict",
+   "range": [
+    "2026-12-07",
+    "2026-12-08"
+   ],
+   "meant": "2026-12-08",
+   "note": "8 Dec is a Tuesday"
+  },
+  {
+   "text": "Dear Sir, Due to heavy rain in Chennai, the lot will reach after a few days. Regards",
+   "sent": "2026-12-04",
+   "due": "2026-12-07",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-12-06",
+    "2026-12-09"
+   ],
+   "meant": "2026-12-08",
+   "note": "'after a few days' read as 'a few days'"
+  },
+  {
+   "text": "Sir, material reach by 9th/10th.",
+   "sent": "2026-12-05",
+   "due": "2026-12-07",
+   "label": "ambiguous",
+   "type": "alternatives",
+   "range": [
+    "2026-12-09",
+    "2026-12-10"
+   ],
+   "meant": "2026-12-10"
+  },
+  {
+   "text": "Dear Sir, The consignment will reach end of next week. Regards",
+   "sent": "2026-12-07",
+   "due": "2026-12-08",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-12-18",
+    "2026-12-20"
+   ],
+   "meant": "2026-12-18"
+  },
+  {
+   "text": "Dear Sir, Delivery will be about a week from today. Regards",
+   "sent": "2026-12-08",
+   "due": "2026-12-08",
+   "label": "ambiguous",
+   "type": "approximate",
+   "range": [
+    "2026-12-14",
+    "2026-12-16"
+   ],
+   "meant": "2026-12-15"
+  },
+  {
+   "text": "Dear Sir, Will ship tomorrow via VRL Logistics. LR copy will follow.",
+   "sent": "2026-12-09",
+   "due": "2026-12-11",
+   "label": "ambiguous",
+   "type": "dispatch_vs_arrival",
+   "range": [
+    "2026-12-10",
+    "2026-12-12"
+   ],
+   "meant": "2026-12-11"
+  },
+  {
+   "text": "Dear Sir, There is a delay due to non-availability of trucks. Material will be sent ASAP. Regards",
+   "sent": "2026-12-10",
+   "due": "2026-12-13",
+   "label": "ambiguous",
+   "type": "missing_date",
+   "range": [
+    "2026-12-13",
+    "2026-12-20"
+   ],
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, The goods will reach this weekend. Regards",
+   "sent": "2026-12-11",
+   "due": "2026-12-12",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-12-12",
+    "2026-12-13"
+   ],
+   "meant": "2026-12-13"
+  },
+  {
+   "text": "Dear Sir, We will deliver next Friday positively. Regards",
+   "sent": "2026-12-12",
+   "due": "2026-12-14",
+   "label": "ambiguous",
+   "type": "next_weekday",
+   "range": [
+    "2026-12-18",
+    "2026-12-25"
+   ],
+   "meant": "2026-12-18"
+  },
+  {
+   "text": "Dear Sir, Delivery will be 3-4 days late, our supplier of castings has delayed. Regards",
+   "sent": "2026-12-14",
+   "due": "2026-12-17",
+   "label": "ambiguous",
+   "type": "range",
+   "range": [
+    "2026-12-20",
+    "2026-12-21"
+   ],
+   "meant": "2026-12-21"
+  },
+  {
+   "text": "Dear Sir, The material will reach before Christmas. Regards",
+   "sent": "2026-12-15",
+   "due": "2026-12-16",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-12-22",
+    "2026-12-24"
+   ],
+   "meant": "2026-12-23"
+  },
+  {
+   "text": "Dear Sir, The lot will reach later this week. Regards",
+   "sent": "2026-12-16",
+   "due": "2026-12-18",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-12-17",
+    "2026-12-20"
+   ],
+   "meant": "2026-12-18"
+  },
+  {
+   "text": "Dear Sir, We are expecting to deliver on 21st or 22nd. Regards",
+   "sent": "2026-12-17",
+   "due": "2026-12-17",
+   "label": "ambiguous",
+   "type": "alternatives",
+   "range": [
+    "2026-12-21",
+    "2026-12-22"
+   ],
+   "meant": "2026-12-22"
+  },
+  {
+   "text": "Dear Sir, Goods will be dispatched on 22 Dec. Regards",
+   "sent": "2026-12-18",
+   "due": "2026-12-21",
+   "label": "ambiguous",
+   "type": "dispatch_vs_arrival",
+   "range": [
+    "2026-12-22",
+    "2026-12-24"
+   ],
+   "meant": "2026-12-23"
+  },
+  {
+   "text": "Dear Sir, Our staff are on leave for Christmas, so delivery will be in the coming days. Regards",
+   "sent": "2026-12-19",
+   "due": "2026-12-21",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-12-21",
+    "2026-12-24"
+   ],
+   "meant": "2026-12-23"
+  },
+  {
+   "text": "Dear Sir, The order will reach early next month. Regards",
+   "sent": "2026-12-21",
+   "due": "2026-12-22",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2027-01-01",
+    "2027-01-10"
+   ],
+   "meant": "2027-01-05"
+  },
+  {
+   "text": "Dear Sir, The consignment will reach on Wednesday 25 Dec. Regards",
+   "sent": "2026-12-22",
+   "due": "2026-12-24",
+   "label": "ambiguous",
+   "type": "conflict",
+   "range": [
+    "2026-12-23",
+    "2026-12-25"
+   ],
+   "meant": "2026-12-23",
+   "note": "25 Dec is a Friday"
+  },
+  {
+   "text": "Dear Sir, The material will reach next week. Regards",
+   "sent": "2026-12-23",
+   "due": "2026-12-26",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-12-28",
+    "2027-01-03"
+   ],
+   "meant": "2026-12-29"
+  },
+  {
+   "text": "sir due to power cut, little delay. will reach soon",
+   "sent": "2026-12-24",
+   "due": "2026-12-25",
+   "label": "ambiguous",
+   "type": "missing_date",
+   "range": [
+    "2026-12-25",
+    "2027-01-01"
+   ],
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, Delivery around 30th. Regards",
+   "sent": "2026-12-26",
+   "due": "2026-12-28",
+   "label": "ambiguous",
+   "type": "approximate",
+   "range": [
+    "2026-12-29",
+    "2026-12-31"
+   ],
+   "meant": "2026-12-30"
+  },
+  {
+   "text": "Dear Sir, 50% qty delivered last week. Balance will be delivered in a few days. Regards",
+   "sent": "2026-12-28",
+   "due": "2026-12-31",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2026-12-30",
+    "2027-01-02"
+   ],
+   "meant": "2026-12-31",
+   "note": "past partial delivery; label by the rest"
+  },
+  {
+   "text": "Dear Sir, The goods will be dispatched on 31 Dec, kindly note. Regards",
+   "sent": "2026-12-29",
+   "due": "2026-12-30",
+   "label": "ambiguous",
+   "type": "dispatch_vs_arrival",
+   "range": [
+    "2026-12-31",
+    "2027-01-02"
+   ],
+   "meant": "2027-01-02"
+  },
+  {
+   "text": "Dear Sir, The order will reach early next week, after New Year. Regards",
+   "sent": "2026-12-30",
+   "due": "2027-01-01",
+   "label": "ambiguous",
+   "type": "vague_period",
+   "range": [
+    "2027-01-04",
+    "2027-01-06"
+   ],
+   "meant": "2027-01-05"
+  },
+  {
+   "text": "Dear Sir, Happy New Year! Delivery next Friday. Regards",
+   "sent": "2026-12-31",
+   "due": "2027-01-01",
+   "label": "ambiguous",
+   "type": "next_weekday",
+   "range": [
+    "2027-01-01",
+    "2027-01-08"
+   ],
+   "meant": "2027-01-08"
+  },
+  {
+   "text": "Dear Sir, Please find attached our invoice no. 1123 dated 2 Nov. Kindly arrange payment by 15 Nov. Regards, Accounts",
+   "sent": "2026-11-03",
+   "due": "2026-11-06",
+   "label": "none",
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, Kindly share the revised drawing for part no. 7781 at the earliest. Regards",
+   "sent": "2026-11-05",
+   "due": "2026-11-07",
+   "label": "none",
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, Our office will remain closed on 14 Nov for a local holiday. Regards",
+   "sent": "2026-11-10",
+   "due": "2026-11-14",
+   "label": "none",
+   "meant": null,
+   "note": "office holiday, says nothing about the delivery"
+  },
+  {
+   "text": "Sir, payment received, thank you. Regards",
+   "sent": "2026-11-14",
+   "due": "2026-11-15",
+   "label": "none",
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, Can we fix a meeting on Friday 20 Nov to discuss next year's rate contract? Regards",
+   "sent": "2026-11-17",
+   "due": "2026-11-20",
+   "label": "none",
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, Please find the quotation for the new die, valid till 30 Nov. Regards",
+   "sent": "2026-11-20",
+   "due": "2026-11-22",
+   "label": "none",
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, We have received your PO 9921 dated 23 Nov. Thanks for the order. Regards",
+   "sent": "2026-11-24",
+   "due": "2026-11-24",
+   "label": "none",
+   "meant": null
+  },
+  {
+   "text": "Hi sir, GST invoice will be corrected and resent tomorrow.",
+   "sent": "2026-11-27",
+   "due": "2026-12-01",
+   "label": "none",
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, Please release the pending payment of Rs 2,45,000 by 5 Dec. Our bank details are unchanged. Regards",
+   "sent": "2026-12-01",
+   "due": "2026-12-03",
+   "label": "none",
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, Our auditor will visit your plant next week for the PPAP documents. Regards",
+   "sent": "2026-12-03",
+   "due": "2026-12-04",
+   "label": "none",
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, Test certificates for the last lot are attached. Regards",
+   "sent": "2026-12-08",
+   "due": "2026-12-11",
+   "label": "none",
+   "meant": null
+  },
+  {
+   "text": "Sir pls send C-form for Q2 by 20/12. Thx",
+   "sent": "2026-12-12",
+   "due": "2026-12-14",
+   "label": "none",
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, Kindly note our new GSTIN is effective from 1 Jan 2027. Please update your vendor master. Regards",
+   "sent": "2026-12-16",
+   "due": "2026-12-20",
+   "label": "none",
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, Wishing you and your team a Merry Christmas and a Happy New Year!",
+   "sent": "2026-12-22",
+   "due": "2026-12-25",
+   "label": "none",
+   "meant": null
+  },
+  {
+   "text": "Dear Sir, Credit note for the rejected quantity will be issued on 31 Dec. Regards",
+   "sent": "2026-12-28",
+   "due": "2026-12-30",
+   "label": "none",
+   "meant": null
+  }
+ ]
+}

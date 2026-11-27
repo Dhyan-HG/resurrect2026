@@ -1,6 +1,6 @@
 # Sentinel – evaluation results
 
-30 seeded runs × 60 days. Ground truth = the plant simulator. Runtime 2.3 s. Reproduce: `python -m evaluation.run_eval --seeds 30`.
+30 seeded runs × 60 days. Ground truth = the plant simulator. Runtime 2.4 s. Reproduce: `python -m evaluation.run_eval --seeds 30`.
 
 Orders scored: **6609**, of which **496** really missed their CRD (7.5%) under the company's existing reorder-point planner.
 
@@ -86,6 +86,11 @@ Same seeds, same plant, same faults. *Baseline* = the existing reorder-point pla
 | Agent, no supplier-delay learning | stockout_material_days | -7.40 [-10.17, -4.73] | 0.0000 | 24 / 6 |
 | Agent, no supplier-delay learning | po_spend | +522.46 [-22386.49, +22779.45] | 0.9640 | 16 / 14 |
 | Agent, no supplier-delay learning | avg_stock_value | +702.97 [-1071.00, +2599.85] | 0.4727 | 15 / 15 |
+
+## E6 – Supplier messages in plain language (linked Problem 6)
+
+Reported separately in [AMBIGUITY.md](AMBIGUITY.md) (`python -m evaluation.run_ambiguity --seeds 30`). E1-E5 above run with structured supplier dates, exactly as before E6 was added.
+
 
 ## Limitations (read before trusting the numbers)
 

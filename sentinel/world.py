@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 
 from .catalog import EXPEDITE_PREMIUM, PROD_DAYS, Catalog, generate_catalog
 from .events import FEED_SOURCES, EventStore
-from . import engine
+from . import engine, supplier_text
 
 
 @dataclass
@@ -34,6 +34,10 @@ class Faults:
     shuffle_rate: float = 0.10
     junk_rate: float = 0.02
     outage: bool = True
+    # Plain-language supplier messages (Problem 6). Off by default so E1-E5 are unchanged.
+    supplier_text: float = 0.0      # share of delay notices written as free text instead of a structured date
+    text_vague: float = 0.6         # of those, share written vaguely (when a truthful vague phrasing exists)
+    confirmations: float = 0.0      # share of on-time POs that get an "on track" message
 
     @classmethod
     def none(cls) -> "Faults":
@@ -53,6 +57,8 @@ class Truth:
     po_spend: float = 0.0
     stock_value_days: float = 0.0
     stockout_material_days: int = 0
+    messages: list = field(default_factory=list)    # {po, ts, text, label, kind: notice|confirm|reply}
+    questions: list = field(default_factory=list)   # {po, asked, answered_at}
 
 
 class World:
@@ -66,6 +72,7 @@ class World:
         self.cat = catalog or generate_catalog(seed)
         self.rng = random.Random(seed)
         self.frng = random.Random(seed * 31 + 7)   # feed-fault randomness, separate stream
+        self.trng = random.Random(seed * 97 + 13)  # supplier wording, separate stream
         self.physical = {m: float(mat.opening_stock) for m, mat in self.cat.materials.items()}
         self.orders: dict[str, dict] = {}
         self.pos: dict[str, dict] = {}
@@ -178,8 +185,14 @@ class World:
             if self.rng.random() < rel["notify"]:
                 notified_at = round(ts + max(0.3, 0.4 * (expected - ts)), 3)
         actual = expected + delay
+        f = self.faults
+        as_text = f.supplier_text > 0 and self.trng.random() < f.supplier_text
+        confirm_at = None
+        if delay == 0 and f.confirmations > 0 and self.trng.random() < f.confirmations:
+            confirm_at = round(ts + max(0.3, 0.5 * (expected - ts)), 3)
         self.pos[pid] = {"material": material, "qty": qty, "expected": expected, "actual": actual,
-                         "received": False, "notified_at": notified_at, "expedite": expedite}
+                         "received": False, "notified_at": notified_at, "expedite": expedite,
+                         "as_text": as_text, "confirm_at": confirm_at}
         self.truth.pos[pid] = {"material": material, "qty": qty, "created": ts, "expected": expected,
                                "actual": actual, "delay": delay, "notified_at": notified_at,
                                "expedite": expedite, "source": source}
@@ -187,6 +200,25 @@ class World:
         self._emit("po_created", ts, "erp" if source == "erp" else source, po_id=pid,
                    material=material, qty=qty, expected=expected, expedite=expedite)
         return pid
+
+    # ------------------------------------------------------------ supplier messages
+    def send_text(self, pid: str, ts: float, text: str, label: dict, kind: str) -> dict:
+        ev = self._emit("supplier_message", ts, "supplier", po_id=pid, text=text)
+        self.truth.messages.append({"po": pid, "ts": ts, "event_id": ev["event_id"], "text": text,
+                                    "label": label, "kind": kind, "due": self.pos[pid]["expected"]})
+        return ev
+
+    def answer_question(self, pid: str, asked_at: float) -> float | None:
+        """A planner-approved question reached the supplier; they reply with the exact date."""
+        p = self.pos.get(pid)
+        if not p or p["received"]:
+            return None
+        reply_at = round(asked_at + self.trng.uniform(0.15, 0.45), 3)
+        text = supplier_text.reply_message(self.trng, pid, p["actual"])
+        self.send_text(pid, reply_at, text, {"label": "clear", "type": None, "lo": p["actual"],
+                                              "hi": p["actual"], "meant": p["actual"]}, "reply")
+        self.truth.questions.append({"po": pid, "asked": asked_at, "answered_at": reply_at})
+        return reply_at
 
     # ------------------------------------------------------------ one day
     def simulate_day(self, d: int):
@@ -197,7 +229,15 @@ class World:
         # supplier delay notices due today
         for pid, p in self.pos.items():
             if p["notified_at"] is not None and math.floor(p["notified_at"]) == d and not p["received"]:
-                self._emit("po_date_changed", p["notified_at"], "supplier", po_id=pid, expected=p["actual"])
+                if p.get("as_text"):
+                    text, label = supplier_text.delay_message(self.trng, pid, p["notified_at"], p["expected"],
+                                                              p["actual"], self.faults.text_vague)
+                    self.send_text(pid, p["notified_at"], text, label, "notice")
+                else:
+                    self._emit("po_date_changed", p["notified_at"], "supplier", po_id=pid, expected=p["actual"])
+            if p.get("confirm_at") is not None and math.floor(p["confirm_at"]) == d and not p["received"]:
+                text, label = supplier_text.confirm_message(self.trng, pid, p["expected"])
+                self.send_text(pid, p["confirm_at"], text, label, "confirm")
         # receipts
         for pid, p in self.pos.items():
             if not p["received"] and p["actual"] == d:
@@ -299,13 +339,21 @@ def _poisson(r: random.Random, lam: float) -> int:
 
 
 def agent_planner(world: "World", d: int, approve=None, allow_expedite: bool = True,
-                  opt: "engine.EngineOptions | None" = None) -> list[dict]:
+                  opt: "engine.EngineOptions | None" = None, ask: bool = False) -> list[dict]:
     """Sentinel's agent proposes; `approve(proposal) -> bool` plays the human.
     Approved proposals become real POs in the plant. Returns the proposals."""
     from . import agent
     t = d + 0.95
     world.deliver_until(t)
     snap = engine.snapshot(world.store, t, opt)
+    if ask:   # the planner approves every drafted question to a supplier
+        asked = getattr(world, "_asked", set())
+        for p in snap["_state"].pos.values():
+            u = p.get("unclear")
+            if p["status"] == "open" and u and u["event_id"] not in asked:
+                asked.add(u["event_id"])
+                world.answer_question(p["id"], t)
+        world._asked = asked
     proj = {"orders": snap["orders"], "materials": snap["materials"], "suppliers": snap["suppliers"]}
     props = agent.propose(snap["_state"], proj, world.cat, opt, allow_expedite=allow_expedite)
     for p in props:

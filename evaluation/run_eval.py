@@ -492,6 +492,9 @@ def write_markdown(R: dict, path: Path):
             c = cm[m]
             a(f"| {labels.get(pp, pp)} | {m} | {c['mean_diff']:+.2f} [{c['ci95'][0]:+.2f}, {c['ci95'][1]:+.2f}] | "
               f"{c['p_value']:.4f} | {c['seeds_better']} / {c['seeds_worse']} |")
+    a("\n## E6 – Supplier messages in plain language (linked Problem 6)\n")
+    a("Reported separately in [AMBIGUITY.md](AMBIGUITY.md) (`python -m evaluation.run_ambiguity --seeds 30`). "
+      "E1-E5 above run with structured supplier dates, exactly as before E6 was added.\n")
     a("\n## Limitations (read before trusting the numbers)\n")
     a("- The plant is a simulator we wrote. It encodes our assumptions about suppliers, demand and stock loss; "
       "results transfer to a real plant only as far as those assumptions hold.")

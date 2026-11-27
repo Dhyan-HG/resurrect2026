@@ -23,6 +23,30 @@ Reproduce every number with one command (about a minute):
 python -m evaluation.run_eval --seeds 30
 ```
 
+## Linked problem: #6 Ambiguity, in the supplier messages
+
+Suppliers rarely send a clean date. They write "delayed to next week", "2-3 days late", "next Friday",
+"will dispatch Monday". Sentinel reads each message ([sentinel/ambiguity.py](sentinel/ambiguity.py)),
+decides whether it is **clear**, **ambiguous** or has **no date**, and for an ambiguous one:
+plans for the **latest** possible day (so nothing is late by surprise), raises an alert, and drafts
+**one** question to the supplier, which is sent only after a planner approves it. When the
+supplier replies, or the planner sets the date after a phone call, the plan updates.
+Definitions of what counts as ambiguous: [docs/AMBIGUITY.md](docs/AMBIGUITY.md).
+Full report: [results/AMBIGUITY.md](results/AMBIGUITY.md).
+
+| Question | Result |
+|---|---|
+| Does it read messages it has never seen? | First run on **120 messages written blind** (author saw only the definitions, never the code): **110 fully right**; ambiguity precision 0.91, recall 0.96; 5 clear messages questioned needlessly. All failures are listed. (An earlier blind set scored 101/120 on its first run; rules were fixed after it, so it no longer counts.) |
+| Does it plan on a guess? | Planned date earlier than the real one: **1 of 100** messages vs **42 of 100** for a plain date parser |
+| Does it change outcomes? | 30 plants, every delay notice written as text: on-time **95.6% (plain parser) → 96.5%** (+0.9 pts, 95% CI +0.1 to +1.7, p = 0.045, 20/30 seeds); stock-out days −3.9 (p < 0.001). Same as when suppliers send exact dates (96.3%). Asking makes the planned date 5x more accurate but adds no on-time gain beyond planning for the latest day |
+
+```bash
+python -m evaluation.run_ambiguity --seeds 30     # a few seconds
+```
+
+In the dashboard: **Simulate a problem → A supplier writes something vague**, or **Write one yourself**
+to type any message and watch Sentinel read it live.
+
 ## Run it
 
 ```bash
@@ -70,6 +94,8 @@ see but cannot approve; the API returns 403).
 | `sentinel/events.py` | Event schema, validation, idempotent store, quarantine |
 | `sentinel/engine.py` | Book rebuild, net availability, allocation, projection, alerts |
 | `sentinel/agent.py` | PO proposals with what-if, role briefings, grounding check, optional Claude |
+| `sentinel/ambiguity.py` | Reads supplier messages: clear / ambiguous / no date, range, question draft |
+| `sentinel/supplier_text.py` | The simulated suppliers' writing (truthful, often vague), with labels |
 | `sentinel/world.py` | Seeded plant simulator: ground truth and the faulty feed |
 | `sentinel/server.py` | Web API and live demo session |
 | `web/index.html` | Dashboard |

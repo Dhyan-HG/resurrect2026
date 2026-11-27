@@ -189,6 +189,35 @@ main{max-width:1320px;margin:0 auto;padding:26px 28px 80px}
 .ev-row .num{font-size:22px}
 .method{font-size:13px;color:var(--mute);border-top:1px solid var(--ink);padding-top:12px;margin:6px 0 0}
 
+/* ---------- supplier messages ---------- */
+.ask{border:1px solid var(--risk);border-radius:8px;background:var(--sheet);padding:16px 18px 14px}
+.ask + .ask{margin-top:12px}
+.ask .from{font-size:12.5px;color:var(--mute);margin:0 0 6px}
+.quote{font-family:var(--serif);font-size:18px;line-height:1.35;margin:0;font-variation-settings:"opsz" 30}
+.quote::before{content:"\201C"} .quote::after{content:"\201D"}
+mark{background:var(--risk-soft);color:inherit;padding:0 2px;border-radius:2px;box-shadow:inset 0 -2px 0 var(--risk)}
+.reading{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;font-size:13.5px;margin:12px 0;padding:10px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.reading dt{color:var(--mute)} .reading dd{margin:0}
+.draft{font-size:13.5px;color:var(--ink-2);border-left:2px solid var(--rule);padding:2px 0 2px 12px;margin:0 0 12px}
+.draft b{display:block;font-size:12px;color:var(--mute);font-weight:500;margin-bottom:2px}
+.msgs{border-top:1px solid var(--ink)}
+.msg{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:10px 0;border-bottom:1px solid var(--rule-2);font-size:13.5px}
+.msg q{quotes:"\201C" "\201D";color:var(--ink)}
+.msg small{grid-column:1/-1;color:var(--mute);font-size:12.5px}
+.chip{font-size:11.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;padding:2px 7px;border-radius:3px;align-self:start;white-space:nowrap}
+.chip.clear{background:var(--ok-soft);color:var(--ok)} .chip.ambiguous{background:var(--risk-soft);color:var(--risk)} .chip.none{background:var(--rule-2);color:var(--mute)}
+.chip.answered{background:var(--ok-soft);color:var(--ok)}
+.days{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}
+.days button{border:1px solid var(--rule);border-radius:6px;padding:6px 10px;font-size:13px;background:var(--paper)}
+.days button:hover{border-color:var(--ink)}
+.try textarea{width:100%;min-height:86px;font:15px/1.45 var(--sans);color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:10px 12px;resize:vertical}
+.try select{font:14px var(--sans);color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:7px 8px;width:100%}
+.try label{display:block;font-size:12.5px;color:var(--mute);margin:12px 0 5px}
+.preview{margin:14px 0;padding:12px 14px;border-radius:6px;background:var(--paper);border:1px solid var(--rule);font-size:14px;min-height:48px}
+.examples{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.examples button{font-size:12.5px;border:1px dashed var(--rule);border-radius:12px;padding:3px 9px;color:var(--ink-2)}
+.examples button:hover{border-color:var(--ink-2)}
+
 .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--ink);color:var(--paper);padding:11px 16px;border-radius:6px;font-size:14px;opacity:0;transition:all .25s;z-index:60;width:max-content;max-width:min(560px,calc(100vw - 32px));pointer-events:none}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
@@ -297,6 +326,12 @@ main{max-width:1320px;margin:0 auto;padding:26px 28px 80px}
       </section>
 
       <section data-tab="today">
+        <div class="sec-h"><h2 id="msgTitle">Supplier messages</h2><button class="linkbtn" id="tryBtn" style="margin-left:auto">Write one yourself</button></div>
+        <div id="asks"></div>
+        <div class="msgs" id="msgs"></div>
+      </section>
+
+      <section data-tab="today">
         <div class="sec-h"><h2 id="noteTitle">Briefing</h2></div>
         <div class="note" id="note"></div>
         <button class="rw-more ev-link" id="evBtnM" style="margin-top:22px;border-top:1px solid var(--rule)">How we know it works: results from 30 simulated plants →</button>
@@ -358,13 +393,24 @@ async function api(path, opts = {}) {
 }
 function toast(msg, ms = 3800) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), ms); }
 function clockText(now) { const d = Math.floor(now), h = Math.floor((now - d) * 24); return `Day ${d} · ${String(h).padStart(2, "0")}:00`; }
+const DAY0 = Date.UTC(2026, 10, 2);   // simulation day 0 = Monday 2 Nov 2026
+function dateOf(day) { const d = new Date(DAY0 + day * 864e5); return d.toLocaleDateString("en-GB", {weekday: "short", day: "numeric", month: "short", timeZone: "UTC"}).replace(",", ""); }
+function marked(text, cues) {
+  let h = esc(text);
+  for (const c of cues || []) {
+    if (!c || c.length < 2) continue;
+    const re = new RegExp(c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+"), "i");
+    h = h.replace(re, m => `<mark>${m}</mark>`);
+  }
+  return h;
+}
 const matName = id => ((S && S.materials.find(m => m.id === id)) || {}).name || id;
 
 /* ------------------------------------------------ headline */
 function lede(s) {
   const k = s.kpis, late = s.orders.filter(o => o.risk === "late" && o.status === "open");
   const prop = s.proposals[0], feeds = k.feeds_down;
-  $("#kicker").textContent = `${clockText(s.now)} · ${plural(k.open_orders, "open order")}`;
+  $("#kicker").textContent = `${dateOf(Math.floor(s.now))} · ${clockText(s.now)} · ${plural(k.open_orders, "open order")}`;
   let h, sub;
   if (feeds.length) {
     h = `The <em>${feeds.map(f => ({erp: "orders", wms: "warehouse", supplier: "supplier"}[f] || f)).join(" and ")} feed</em> has gone quiet.`;
@@ -383,6 +429,8 @@ function lede(s) {
     h = `<span class="calm">Every open order</span> is on track to ship by its customer date.`;
     sub = "Sentinel re-plans each time an event arrives: a new order, a delivery, a stock count, a note from a supplier.";
   }
+  const asks = (s.questions || []).filter(q => q.status === "pending").length;
+  if (asks && !feeds.length) sub = `${sub} ${asks === 1 ? "One supplier message is" : asks + " supplier messages are"} unclear, so Sentinel plans for the latest possible day and has a question ready.`;
   $("#headline").innerHTML = h;
   $("#sub").textContent = sub;
   $("#stats").innerHTML = [
@@ -460,6 +508,33 @@ function decisions(s) {
     </article>`;
   }).join("");
 }
+function messages(s) {
+  const can = s.role !== "manager";
+  const pend = (s.questions || []).filter(q => q.status === "pending");
+  const sent = (s.questions || []).filter(q => q.status === "sent");
+  $("#msgTitle").textContent = pend.length ? (pend.length === 1 ? "One unclear supplier message" : `${pend.length} unclear supplier messages`) : "Supplier messages";
+  $("#asks").innerHTML = pend.map(q => {
+    const r = q.read, opts = r.readings && r.readings.length <= 4 ? r.readings.map(d => `${dateOf(d)}`).join(" or ") : `any day from ${q.lo_label} to ${q.hi_label}`;
+    return `<article class="ask">
+      <p class="from">${esc(q.supplier)} about ${esc(q.po)} (${esc(q.material_name)}) · ${dateOf(Math.floor(q.sent_ts))}</p>
+      <p class="quote">${marked(q.message, r.cues)}</p>
+      <dl class="reading"><dt>Could mean</dt><dd>${esc(opts)}</dd><dt>Planning for</dt><dd><b>${dateOf(r.hi)}</b> <span class="mute">(day ${r.hi}), the latest reading, so nothing is late by surprise</span></dd></dl>
+      <p class="draft"><b>Question drafted for the supplier</b>${esc(q.question)}</p>
+      <div class="d-actions">
+        <button class="btn go" data-qs="${esc(q.id)}" ${can ? "" : "disabled"}>Send question</button>
+        <button class="btn" data-qd="${esc(q.id)}" ${can ? "" : "disabled"}>I phoned them</button>
+        <button class="btn quiet" data-qx="${esc(q.id)}" ${can ? "" : "disabled"}>Dismiss</button>
+      </div>
+      ${can ? "" : `<p class="note-role">Managers can read this, but only planners and buyers can contact a supplier.</p>`}
+    </article>`;
+  }).join("") + sent.map(q => `<p class="empty" style="margin:10px 0 0">Asked ${esc(q.supplier)} about ${esc(q.po)}; waiting for the answer.</p>`).join("");
+  const ms = (s.messages || []).filter(m => !(m.open_question && pend.some(q => q.event_id === m.event_id)));
+  $("#msgs").innerHTML = ms.slice(0, 6).map(m => {
+    const r = m.read, chip = m.open_question ? "ambiguous" : r.status;
+    const label = {clear: "Clear", ambiguous: "Unclear", none: "No date"}[r.status];
+    return `<div class="msg"><span><span class="mono mute" style="font-size:12px">${esc(m.po)}</span> <q>${marked(m.text, r.status === "ambiguous" ? r.cues : [])}</q></span><span class="chip ${chip}">${label}</span><small>${esc(r.explanation)}</small></div>`;
+  }).join("") || `<p class="empty" style="padding-top:10px">No messages from suppliers yet. When one writes, Sentinel reads it here.</p>`;
+}
 function note(s) {
   const b = s.briefing;
   $("#noteTitle").textContent = {planner: "Briefing for the planner", buyer: "Briefing for the buyer", manager: "Briefing for the manager"}[s.role];
@@ -503,19 +578,22 @@ function signals(s) {
   $("#quality").textContent = `${fmt(q.received)} events received. ${fmt(q.duplicates)} duplicates were ignored and ${fmt(q.quarantined)} malformed events set aside, so neither changed a single figure.`;
   $("#sups").innerHTML = `<div class="sup h"><span style="text-align:left">Supplier</span><span>On time</span><span>Avg late</span></div>` +
     s.suppliers.map(x => `<div class="sup"><div>${esc(x.name)} <span class="mute" style="font-size:12px">${plural(x.delivered, "delivery", "deliveries")}</span></div><span>${x.on_time_rate == null ? "–" : Math.round(x.on_time_rate * 100) + "%"}</span><span class="${(x.avg_delay_days || 0) >= 1 ? "risk-t" : ""}">${x.avg_delay_days == null ? "–" : x.avg_delay_days + "d"}</span></div>`).join("");
-  const log = [...s.decisions.map(d => ({t: d.t, txt: `${d.decision === "approved" ? "Approved" : "Declined"} ${d.proposal} as ${d.by}${d.po ? `, created ${d.po}` : ""}`})),
+  const logTxt = d => d.question ? `${d.decision === "sent" ? "Sent question about" : "Dismissed question about"} ${d.po} as ${d.by}`
+    : d.proposal ? `${d.decision === "approved" ? "Approved" : "Declined"} ${d.proposal} as ${d.by}${d.po ? `, created ${d.po}` : ""}`
+    : `${d.po}: ${d.note} (by ${d.by})`;
+  const log = [...s.decisions.map(d => ({t: d.t, txt: logTxt(d)})),
                ...s.injections.map(i => ({t: i.t, txt: `Simulated: ${i.detail}`}))].sort((a, b) => b.t - a.t);
   $("#log").innerHTML = log.map(l => `<div><span class="mono">${clockText(l.t)}</span>${esc(l.txt)}</div>`).join("") || `<p class="empty">Approvals and simulated problems are listed here.</p>`;
 }
 function badges(s) {
   const set = (id, n) => { const b = $(id); b.hidden = !n; b.textContent = n; };
-  set("#bToday", s.proposals.length); set("#bOrders", s.kpis.late);
+  set("#bToday", s.proposals.length + (s.questions || []).filter(q => q.status === "pending").length); set("#bOrders", s.kpis.late);
   set("#bSig", s.alerts.filter(a => a.severity === "high" && !a.kind.startsWith("order_")).length);
 }
 function render(s) {
   S = s;
   $("#clock").textContent = $("#clockM").textContent = clockText(s.now);
-  lede(s); runway(s); decisions(s); note(s); stock(s); signals(s); badges(s);
+  lede(s); runway(s); decisions(s); messages(s); note(s); stock(s); signals(s); badges(s);
 }
 
 /* ------------------------------------------------ sheet */
@@ -543,6 +621,7 @@ async function explain(oid) {
 }
 
 const SCENARIOS = [
+  ["vague", "A supplier writes something vague", "The delivery most orders wait on slips, and the supplier says so the way people do: “next week”, “2-4 days late”, “next Friday”."],
   ["supplier_delay", "A supplier slips a week", "The delivery that most orders are waiting on moves back seven days. The supplier does warn you."],
   ["spike", "Demand spike", "Tomorrow one product gets a burst of eight to fourteen extra orders."],
   ["outage", "Warehouse feed goes down", "The WMS stops sending for 30 hours. Its events arrive late, all at once."],
@@ -563,9 +642,63 @@ async function showEvidence() {
     <div class="ev-row"><span class="num">${pct(e.detection.recall)}</span><p>of the orders that really did miss were flagged three days ahead (precision ${e.detection.precision.toFixed(2)}). A standard stock check caught ${pct(e.detection.static_recall)}. Median warning: ${e.detection.lead_median} days.</p></div>
     <div class="ev-row"><span class="num">${e.numbers.mismatches} errors</span><p>in ${fmt(e.numbers.checks)} stock figures checked against an independently written calculator, with ${fmt(e.numbers.dups)} duplicate and ${fmt(e.numbers.junk)} malformed events in the feed. ${e.numbers.replay} of ${e.numbers.replay_total} full replays gave identical results.</p></div>
     <div class="ev-row"><span class="num">${fmt(e.agent.grounded)} of ${fmt(e.agent.briefings)}</span><p>briefings had every figure traced to the data (${fmt(e.agent.numbers)} figures in all). Stock claims correct: ${fmt(e.agent.claims_ok)} of ${fmt(e.agent.claims)}.</p></div>
+    ${e.ambiguity ? `<div class="ev-row"><span class="num">${esc(e.ambiguity.big)}</span><p>${esc(e.ambiguity.text)}</p></div>` : ""}
     <div class="ev-row"><span class="num">${e.alerts.outages_found}/${e.alerts.outages} · ${e.alerts.spikes_found}/${e.alerts.spikes} · ${e.alerts.shrink_found}/${e.alerts.shrink}</span><p>feed outages, demand spikes and hidden stock losses detected.</p></div>
     <p class="method">What this does not show: the plant is a simulator and the approvals were simulated, so no real planner has used Sentinel yet. About one "late" flag in four turns out to be a false alarm. The method, baselines and failure cases are written up in the project's RESULTS.md.</p>`);
 }
+
+/* ------------------------------------------------ supplier messages: try it, phone date */
+const EXAMPLES = ["Sorry sir, material will reach next week", "Running 2-3 days late", "Delivery next Friday",
+  "Will dispatch on Monday", "Delivery on Thursday 27 Nov", "Delayed, will update the new date", "Arriving tomorrow", "Invoice attached"];
+function tryIt() {
+  const pos = (S.pos || []).slice().sort((a, b) => a.id < b.id ? 1 : -1);
+  if (!pos.length) { toast("No open purchase orders right now. Advance a day and try again."); return; }
+  openSheet("Write a supplier message", `<div class="try">
+    <p class="mute" style="margin:0;font-size:13.5px">Type what a supplier might send, the way people really write. Sentinel reads it as you type; nothing changes until you send it.</p>
+    <label for="tPo">About purchase order</label>
+    <select id="tPo">${pos.map(p => `<option value="${esc(p.id)}">${esc(p.id)} · ${esc(matName(p.material))} · due ${dateOf(p.expected)}</option>`).join("")}</select>
+    <label for="tTxt">Message</label>
+    <textarea id="tTxt" maxlength="500" placeholder="e.g. Sorry sir, delivery next week"></textarea>
+    <div class="examples">${EXAMPLES.map(x => `<button type="button" data-ex="${esc(x)}">${esc(x)}</button>`).join("")}</div>
+    <div class="preview" id="tPrev"><span class="mute">Sentinel's reading appears here.</span></div>
+    <button class="btn go" id="tSend" disabled>Send as the supplier</button>
+  </div>`);
+  const run = async () => {
+    const text = $("#tTxt").value.trim();
+    $("#tSend").disabled = !text;
+    if (!text) { $("#tPrev").innerHTML = `<span class="mute">Sentinel's reading appears here.</span>`; return; }
+    const r = await api("/api/read", {method: "POST", body: JSON.stringify({po: $("#tPo").value, text})});
+    const label = {clear: "Clear", ambiguous: "Unclear", none: "No date"}[r.status];
+    $("#tPrev").innerHTML = `<span class="chip ${r.status}">${label}</span> <span style="margin-left:6px">${esc(r.explanation)}</span>
+      <div class="mute" style="font-size:12.5px;margin-top:6px">Today is ${esc(r.today_label)}; this PO was due ${esc(r.due_label)}.</div>
+      ${r.question ? `<p class="draft" style="margin:10px 0 0"><b>Question Sentinel would draft</b>${esc(r.question)}</p>` : ""}`;
+  };
+  let h; const later = () => { clearTimeout(h); h = setTimeout(() => run().catch(e => toast(e.message)), 220); };
+  $("#tTxt").oninput = later; $("#tPo").onchange = later;
+  $$("[data-ex]").forEach(b => b.onclick = () => { $("#tTxt").value = b.dataset.ex; later(); });
+  $("#tSend").onclick = async () => {
+    try {
+      const r = await api("/api/messages", {method: "POST", body: JSON.stringify({po: $("#tPo").value, text: $("#tTxt").value.trim()})});
+      closeSheet(); await refresh();
+      toast(r.read.status === "ambiguous" ? "Unclear, so Sentinel plans for the latest day and has a question ready for you to approve." : r.read.explanation, 5200);
+    } catch (e) { toast(e.message); }
+  };
+  setTimeout(() => $("#tTxt").focus(), 250);
+}
+function phoneDate(qid) {
+  const q = S.questions.find(x => x.id === qid), r = q.read;
+  const days = r.readings && r.readings.length <= 6 ? r.readings : Array.from({length: Math.min(10, r.hi - r.lo + 1)}, (_, i) => r.lo + i);
+  openSheet("What did the supplier say?", `<p class="mute" style="margin:0 0 6px;font-size:13.5px">${esc(q.supplier)} about ${esc(q.po)}: “${esc(q.message)}”</p>
+    <p style="margin:12px 0 0;font-weight:500">Pick the day they confirmed</p>
+    <div class="days">${days.map(d => `<button data-pd="${d}" data-pp="${esc(q.po)}">${dateOf(d)}</button>`).join("")}</div>
+    <p class="mute" style="font-size:13px;margin:0">Another day? <input type="date" id="pdOther" style="font:inherit;color:inherit;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:4px 6px"> <button class="btn" id="pdGo" data-pp="${esc(q.po)}" style="height:32px">Set</button></p>`);
+  $("#pdGo").onclick = () => { const v = $("#pdOther").value; if (!v) return; setDay(q.po, Math.round((Date.parse(v) - DAY0) / 864e5)); };
+}
+async function setDay(po, day) {
+  try { await api(`/api/pos/${encodeURIComponent(po)}/date`, {method: "POST", body: JSON.stringify({day})}); closeSheet(); await refresh(); toast(`${po} now planned for ${dateOf(day)}. The question is closed.`); }
+  catch (e) { toast(e.message); }
+}
+$("#tryBtn").onclick = tryIt;
 
 /* ------------------------------------------------ actions */
 async function refresh() { render(await api(`/api/state?role=${role}`)); }
@@ -585,10 +718,18 @@ $("#evBtn").onclick = $("#evBtnM").onclick = showEvidence;
 $$("[data-go]").forEach(b => b.onclick = () => { document.body.dataset.view = b.dataset.go; $$("[data-go]").forEach(x => x.setAttribute("aria-selected", x === b)); scrollTo({top: 0}); });
 
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-o],[data-ap],[data-rj],[data-em],[data-inj],[data-reset],#rwMore,#sigAll");
+  const t = e.target.closest("[data-o],[data-ap],[data-rj],[data-em],[data-inj],[data-reset],[data-qs],[data-qx],[data-qd],[data-pd],#rwMore,#sigAll");
   if (!t) return;
   try {
     if (t.id === "rwMore") { showAll = !showAll; runway(S); }
+    else if (t.dataset.qs || t.dataset.qx) {
+      const id = t.dataset.qs || t.dataset.qx, send = !!t.dataset.qs; t.disabled = true;
+      await api(`/api/questions/${encodeURIComponent(id)}/${send ? "send" : "dismiss"}`, {method: "POST", body: "{}"});
+      await refresh();
+      toast(send ? "Question sent. Keep planning for the latest day until the supplier answers; advance a few hours to see the reply." : "Dismissed. Sentinel keeps planning for the latest day.", 5200);
+    }
+    else if (t.dataset.qd) phoneDate(t.dataset.qd);
+    else if (t.dataset.pd) await setDay(t.dataset.pp, +t.dataset.pd);
     else if (t.id === "sigAll") openSheet("All signals", S.alerts.filter(a => !a.kind.startsWith("order_")).map(signalHTML).join(""));
     else if (t.dataset.o) await explain(t.dataset.o);
     else if (t.dataset.em) { const p = S.proposals.find(x => x.id === t.dataset.em); openSheet("Email to the supplier", `<p class="mute" style="margin:0 0 12px;font-size:13.5px">A draft only. Sentinel never sends email; once a purchase is approved, the buyer sends it.</p><pre style="white-space:pre-wrap;font:13.5px/1.6 var(--mono);margin:0">${esc(p.email)}</pre>`); }

@@ -28,6 +28,7 @@ SCHEMAS: dict[str, dict[str, str]] = {
     "production_started": {"order_id": "str"},
     "order_shipped": {"order_id": "str"},
     "stock_count": {"material": "material", "counted": "nonnegint"},
+    "supplier_message": {"po_id": "str", "text": "str"},   # free text, read by sentinel/ambiguity.py
     "heartbeat": {},
 }
 
@@ -56,7 +57,7 @@ def validate(ev: Any, catalog: Catalog) -> str | None:
         if fname not in ev:
             return f"missing {fname}"
         v = ev[fname]
-        if kind == "str" and (not isinstance(v, str) or not v.strip()):
+        if kind == "str" and (not isinstance(v, str) or not v.strip() or len(v) > 2000):
             return f"bad {fname}"
         if kind == "num" and (not _is_num(v) or v < 0):
             return f"bad {fname}"

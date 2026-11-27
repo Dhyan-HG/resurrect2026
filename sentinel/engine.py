@@ -19,6 +19,7 @@ import json
 import math
 from dataclasses import dataclass, field
 
+from . import ambiguity
 from .catalog import PROD_DAYS, Catalog
 from .events import FEED_SOURCES, EventStore
 
@@ -35,6 +36,11 @@ class EngineOptions:
     learn_supplier_delay: bool = True   # add each supplier's learned average delay to ETAs
     handle_overdue: bool = True         # push ETA of overdue POs past "now"
     time_phased: bool = True            # project per order by date (False = static net check)
+    # How plain-language supplier messages move a PO's expected date:
+    #   "worst"  - clear: that date; ambiguous: the latest reading, and ask (default)
+    #   "guess"  - take the earliest reading silently (a plain date parser)
+    #   "ignore" - do not read free text at all (structured events only)
+    text_policy: str = "worst"
 
 
 @dataclass
@@ -47,7 +53,7 @@ class BookState:
     anomalies: list[dict] = field(default_factory=list)
 
 
-def rebuild(store: EventStore, now: float) -> BookState:
+def rebuild(store: EventStore, now: float, text_policy: str = "worst") -> BookState:
     cat = store.catalog
     on_hand = {m: 0.0 for m in cat.materials}
     orders: dict[str, dict] = {}
@@ -103,13 +109,36 @@ def rebuild(store: EventStore, now: float) -> BookState:
             pos[pid] = {"id": pid, "material": ev["material"], "supplier": m.supplier,
                         "qty": ev["qty"], "expected": ev["expected"],
                         "orig_expected": ev["expected"], "created": ts, "received": 0,
-                        "status": "open", "closed": None, "date_changes": [],
+                        "status": "open", "closed": None, "date_changes": [], "messages": [], "unclear": None,
                         "expedite": bool(ev.get("expedite", False)), "source": ev["source"]}
         elif t == "po_date_changed":
             p = pos.get(ev["po_id"])
             if p and p["status"] == "open":
                 p["date_changes"].append({"ts": ts, "old": p["expected"], "new": ev["expected"]})
                 p["expected"] = ev["expected"]
+                p["unclear"] = None
+        elif t == "supplier_message":
+            p = pos.get(ev["po_id"])
+            if not p:
+                anom.append({"ts": ts, "what": f"supplier message about unknown PO {ev['po_id']}"})
+                continue
+            read = ambiguity.interpret(ev["text"], ts, p["orig_expected"], p["id"])
+            p["messages"].append({"ts": ts, "event_id": ev["event_id"], "text": ev["text"], "read": read})
+            if p["status"] != "open" or text_policy == "ignore":
+                continue
+            if text_policy == "guess":
+                new = ambiguity.naive_guess(ev["text"], ts, p["orig_expected"])
+            elif read["status"] == "ambiguous":
+                new = read["plan_day"]
+                p["unclear"] = {"event_id": ev["event_id"], "ts": ts, "text": ev["text"], **read}
+            elif read["status"] == "clear":
+                new = None if read["no_change"] else read["day"]
+                p["unclear"] = None
+            else:
+                new = None
+            if new is not None and new != p["expected"]:
+                p["date_changes"].append({"ts": ts, "old": p["expected"], "new": new, "from_text": ev["event_id"]})
+                p["expected"] = new
         elif t == "goods_received":
             on_hand[ev["material"]] += ev["qty"]
             p = pos.get(ev["po_id"])
@@ -343,6 +372,12 @@ def alerts(state: BookState, proj: dict, store: EventStore, cat: Catalog) -> lis
                 f"PO {p['id']} ({p['material']}, {p['qty']} units, {cat.suppliers[p['supplier']].name}) "
                 f"was due day {p['expected']:g} and has not arrived.",
                 po=p["id"], material=p["material"], expected=p["expected"])
+        elif p.get("unclear"):
+            u = p["unclear"]
+            add(f"supplier_unclear:{p['id']}:{u['event_id']}", "supplier_unclear", "medium",
+                f"Supplier message on PO {p['id']} ({p['material']}) is unclear: \"{u['text']}\". "
+                f"It could mean day {u['lo']} to day {u['hi']}. Planning for day {u['hi']} until they confirm.",
+                po=p["id"], material=p["material"], lo=u["lo"], hi=u["hi"], text=u["text"])
         elif p["expected"] > p["orig_expected"]:
             add(f"po_delayed:{p['id']}", "po_delayed", "medium",
                 f"Supplier moved PO {p['id']} ({p['material']}) from day {p['orig_expected']:g} "
@@ -381,7 +416,8 @@ def alerts(state: BookState, proj: dict, store: EventStore, cat: Catalog) -> lis
 # ---------------------------------------------------------------- snapshot
 def snapshot(store: EventStore, now: float, opt: EngineOptions | None = None) -> dict:
     cat = store.catalog
-    state = rebuild(store, now)
+    opt = opt or EngineOptions()
+    state = rebuild(store, now, opt.text_policy)
     proj = project(state, cat, opt)
     al = alerts(state, proj, store, cat)
     open_orders = [o for o in proj["orders"] if o["status"] in ("open", "in_production")]
@@ -399,14 +435,30 @@ def snapshot(store: EventStore, now: float, opt: EngineOptions | None = None) ->
         "quarantined": store.stats["quarantined"],
         "duplicates_ignored": store.stats["duplicates"],
         "events_accepted": store.stats["accepted"],
+        "unclear_messages": sum(1 for p in state.pos.values() if p["status"] == "open" and p.get("unclear")),
     }
     snap = {"now": now, "kpis": kpis, "orders": proj["orders"], "materials": proj["materials"],
             "suppliers": proj["suppliers"], "alerts": al,
             "pos": sorted(state.pos.values(), key=lambda p: p["created"]),
-            "anomalies": state.anomalies[-20:], "discrepancies": state.discrepancies[-20:]}
+            "anomalies": state.anomalies[-20:], "discrepancies": state.discrepancies[-20:],
+            "messages": recent_messages(state, cat)}
     snap["hash"] = state_hash(state, proj)
     snap["_state"] = state
     return snap
+
+
+def recent_messages(state: BookState, cat: Catalog, n: int = 12) -> list[dict]:
+    """Latest supplier messages with how Sentinel read them (for the dashboard)."""
+    out = []
+    for p in state.pos.values():
+        for m in p.get("messages", []):
+            out.append({"po": p["id"], "material": p["material"], "material_name": cat.materials[p["material"]].name,
+                        "supplier": cat.suppliers[p["supplier"]].name, "ts": m["ts"], "event_id": m["event_id"],
+                        "text": m["text"], "read": m["read"], "po_status": p["status"],
+                        "open_question": bool(p.get("unclear") and p["unclear"]["event_id"] == m["event_id"]),
+                        "expected_now": p["expected"], "orig_expected": p["orig_expected"]})
+    out.sort(key=lambda x: -x["ts"])
+    return out[:n]
 
 
 def state_hash(state: BookState, proj: dict) -> str:

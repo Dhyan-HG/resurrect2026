@@ -1,7 +1,7 @@
 {
  "seeds": 30,
  "days": 60,
- "runtime_s": 2.3,
+ "runtime_s": 2.4,
  "dataset": {
   "orders_scored": 6609,
   "late_orders": 496,

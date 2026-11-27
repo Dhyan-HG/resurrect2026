@@ -14,9 +14,9 @@ from typing import Any
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 
-from . import agent, engine
+from . import agent, ambiguity, engine, supplier_text
 from .catalog import PROD_DAYS
-from .world import World
+from .world import Faults, World
 
 WEB = Path(__file__).resolve().parents[1] / "web"
 APPROVER_ROLES = {"planner", "buyer"}
@@ -25,7 +25,9 @@ APPROVER_ROLES = {"planner", "buyer"}
 class Session:
     def __init__(self, seed: int = 7):
         self.seed = seed
-        self.world = World(seed=seed, days=120)
+        # Suppliers write most delay notices in plain language here (Problem 6 in the demo).
+        self.world = World(seed=seed, days=120, faults=Faults(supplier_text=0.8, confirmations=0.15))
+        self.questions: dict[str, dict] = {}
         self.clock = 0.0
         self.rop_done = True
         self.proposals: dict[str, dict] = {}
@@ -83,11 +85,81 @@ class Session:
                 p["id"] = f"{p['id']}-{len(self.proposals)}"
             p["email"] = agent.supplier_email(p)
             self.proposals[p["id"]] = p
+        self._sync_questions(snap)
         self._snap = snap
         k = snap["kpis"]
         if not self.history or self.clock - self.history[-1]["t"] >= 0.24:
             self.history.append({"t": round(self.clock, 2), "late": k["late"], "at_risk": k["at_risk"],
                                  "open": k["open_orders"], "stockouts": k["stockouts"]})
+
+    # -------------------------------------------------------------- supplier questions
+    def _sync_questions(self, snap):
+        cat = self.world.cat
+        live = {}
+        for p in snap["_state"].pos.values():
+            u = p.get("unclear")
+            if p["status"] == "open" and u:
+                live["Q-" + u["event_id"]] = (p, u)
+        for qid, (p, u) in live.items():
+            if qid not in self.questions:
+                self.questions[qid] = {
+                    "id": qid, "po": p["id"], "event_id": u["event_id"], "status": "pending",
+                    "created": round(self.clock, 3), "supplier": cat.suppliers[p["supplier"]].name,
+                    "material": p["material"], "material_name": cat.materials[p["material"]].name,
+                    "message": u["text"], "sent_ts": u["ts"], "question": u["question"],
+                    "read": {k: u[k] for k in ("type", "lo", "hi", "readings", "explanation", "cues")},
+                    "lo_label": ambiguity.fmt(u["lo"]), "hi_label": ambiguity.fmt(u["hi"])}
+        for q in self.questions.values():
+            if q["status"] in ("pending", "sent") and q["id"] not in live:
+                q["status"] = "answered" if q["status"] == "sent" else "resolved"
+                q["closed_at"] = round(self.clock, 3)
+                p = snap["_state"].pos.get(q["po"])
+                if p:
+                    q["final_day"] = p["expected"]
+                    q["final_label"] = ambiguity.fmt(p["expected"])
+
+    def decide_question(self, qid: str, send: bool, role: str) -> dict:
+        q = self.questions.get(qid)
+        if not q:
+            raise HTTPException(404, "no such question")
+        if q["status"] != "pending":
+            raise HTTPException(409, f"question already {q['status']}")
+        q["status"] = "sent" if send else "dismissed"
+        q["decided_at"], q["decided_by"] = round(self.clock, 3), role
+        rec = {"t": round(self.clock, 2), "question": qid, "po": q["po"], "decision": q["status"], "by": role}
+        if send:
+            when = self.world.answer_question(q["po"], self.clock)
+            rec["note"] = ("question sent to the supplier after approval" +
+                           (f"; in this demo the supplier replies around day {when:.2f}" if when else ""))
+        self.decisions.append(rec)
+        self.refresh()
+        return rec
+
+    def set_date(self, po: str, day: int, role: str) -> dict:
+        p = self._snap["_state"].pos.get(po)
+        if not p or p["status"] != "open":
+            raise HTTPException(404, "no open PO with that id")
+        if not math.floor(self.clock) <= day <= math.floor(self.clock) + 60:
+            raise HTTPException(400, "day must be between today and 60 days ahead")
+        self.world._emit("po_date_changed", self.clock + 0.001, "sentinel", po_id=po, expected=int(day))
+        self.world.deliver_until(self.clock + 0.03)
+        self.clock += 0.03
+        rec = {"t": round(self.clock, 2), "po": po, "decision": "date set by hand", "by": role,
+               "note": f"expected day set to {day} ({ambiguity.fmt(day)})"}
+        self.decisions.append(rec)
+        self.refresh()
+        return rec
+
+    def post_message(self, po: str, text: str) -> dict:
+        p = self._snap["_state"].pos.get(po)
+        if not p:
+            raise HTTPException(404, "no PO with that id")
+        ts = self.clock + 0.001
+        ev = self.world._emit("supplier_message", ts, "supplier", po_id=po, text=text)
+        self.world.deliver_until(self.clock + 0.03)
+        self.clock += 0.03
+        self.refresh()
+        return {"event_id": ev["event_id"], "read": ambiguity.interpret(text, ts, p["orig_expected"], po)}
 
     # -------------------------------------------------------------- human decisions
     def decide(self, pid: str, approve: bool, role: str, note: str = "") -> dict:
@@ -135,6 +207,23 @@ class Session:
             w.truth.pos[pid]["actual"] = p["actual"]
             w._emit("po_date_changed", self.clock + 0.01, "supplier", po_id=pid, expected=p["actual"])
             info["detail"] = f"{pid} ({w.cat.materials[p['material']].name}) slips 7 days to day {p['actual']}"
+        elif kind == "vague":
+            open_pos = [(pid, p) for pid, p in w.pos.items() if not p["received"] and p["actual"] > self.clock + 1]
+            if not open_pos:
+                return {**info, "detail": "no open PO to delay"}
+            waiting: dict[str, int] = {}
+            for o in self._snap["orders"]:
+                for rr in o.get("reasons", []):
+                    if rr["kind"] == "waiting_po":
+                        waiting[rr["po"]] = waiting.get(rr["po"], 0) + 1
+            pid, p = max(open_pos, key=lambda x: (waiting.get(x[0], 0), x[1]["qty"]))
+            p["actual"] = max(p["actual"], p["expected"]) + r.randint(4, 8)
+            w.truth.pos[pid]["actual"] = p["actual"]
+            text, label = supplier_text.delay_message(w.trng, pid, self.clock + 0.01, p["expected"], p["actual"],
+                                                      force="ambiguous")
+            w.send_text(pid, self.clock + 0.01, text, label, "notice")
+            info["detail"] = f"Supplier of {pid} ({w.cat.materials[p['material']].name}) writes: \u201c{text}\u201d"
+            info["po"] = pid
         elif kind == "outage":
             src = "wms"
             start, end = self.clock, self.clock + 1.25
@@ -198,6 +287,14 @@ class Session:
                 {"reason": q["reason"], "arrival": q["arrival"]} for q in self.world.store.quarantine[-6:]][::-1]},
             "history": self.history[-160:],
             "injections": self.injections[-8:][::-1],
+            "messages": [{**m, "sent_label": ambiguity.fmt(math.floor(m["ts"])),
+                          "plan_label": ambiguity.fmt(m["read"]["plan_day"]) if m["read"]["plan_day"] is not None else None,
+                          "lo_label": ambiguity.fmt(m["read"]["lo"]) if m["read"]["lo"] is not None else None}
+                         for m in s["messages"]],
+            "questions": sorted((q for q in self.questions.values()
+                                 if q["status"] in ("pending", "sent") or self.clock - q.get("closed_at", 0) < 2),
+                                key=lambda q: (q["status"] != "pending", -q["created"]))[:10],
+            "today_label": ambiguity.fmt(math.floor(self.clock)),
             "rule": ("Open orders are served by earliest Customer Request Date (ties: earliest created). "
                      "Each takes stock on hand first, then incoming POs by risk-adjusted arrival. Production "
                      f"starts when every material is covered and takes {PROD_DAYS} days."),
@@ -239,7 +336,12 @@ def evidence():
     st3 = R["E1_detection"]["static@3"]
     cmp = R["E5_vs_baseline"]["agent"]
     pm = R["E5_policy_means"]
+    e6 = None
+    a = WEB.parent / "results" / "ambiguity.json"
+    if a.exists():
+        e6 = json.loads(a.read_text(encoding="utf-8")).get("headline")
     return {
+        "ambiguity": e6,
         "seeds": R["seeds"], "days": R["days"], "orders": R["dataset"]["orders_scored"],
         "late_orders": R["dataset"]["late_orders"],
         "on_time": {"baseline": pm["baseline"]["on_time_pct"], "agent": pm["agent"]["on_time_pct"],
@@ -300,6 +402,61 @@ async def decide(pid: str, action: str, req: Request, x_role: str | None = Heade
     body = await req.json() if (await req.body()) else {}
     with _lock:
         return S.decide(pid, action == "approve", role, str(body.get("note", ""))[:200])
+
+
+@app.post("/api/questions/{qid}/{action}")
+async def question(qid: str, action: str, x_role: str | None = Header(default=None)):
+    role = _role(x_role)
+    if role not in APPROVER_ROLES:
+        raise HTTPException(403, f"a {role} cannot send questions to suppliers")
+    if action not in ("send", "dismiss"):
+        raise HTTPException(400, "action must be send or dismiss")
+    with _lock:
+        return S.decide_question(qid, action == "send", role)
+
+
+@app.post("/api/pos/{po}/date")
+async def po_date(po: str, req: Request, x_role: str | None = Header(default=None)):
+    """A planner sets the date by hand (e.g. after phoning the supplier)."""
+    role = _role(x_role)
+    if role not in APPROVER_ROLES:
+        raise HTTPException(403, f"a {role} cannot change PO dates")
+    body = await req.json() if (await req.body()) else {}
+    try:
+        day = int(body["day"])
+    except (KeyError, TypeError, ValueError):
+        raise HTTPException(400, "body must be an object with an integer 'day'")
+    with _lock:
+        return S.set_date(po, day, role)
+
+
+@app.post("/api/messages")
+async def message(req: Request):
+    """Type a supplier message yourself (demo). Body: {"po": "PO0012", "text": "..."}"""
+    body = await req.json() if (await req.body()) else {}
+    po, text = str(body.get("po", "")), str(body.get("text", "")).strip()
+    if not text or len(text) > 500:
+        raise HTTPException(400, "text must be 1-500 characters")
+    with _lock:
+        return S.post_message(po, text)
+
+
+@app.post("/api/read")
+async def read(req: Request):
+    """Read a message without changing anything (live preview while typing)."""
+    body = await req.json() if (await req.body()) else {}
+    text = str(body.get("text", ""))[:500]
+    with _lock:
+        p = S._snap["_state"].pos.get(str(body.get("po", "")))
+        due = p["orig_expected"] if p else math.floor(S.clock) + 3
+        r = ambiguity.interpret(text, S.clock, due, p["id"] if p else "this order")
+        for k in ("lo", "hi", "plan_day", "day"):
+            if r.get(k) is not None:
+                r[k + "_label"] = ambiguity.fmt(r[k])
+        r["due"] = due
+        r["due_label"] = ambiguity.fmt(due)
+        r["today_label"] = ambiguity.fmt(math.floor(S.clock))
+        return r
 
 
 @app.post("/api/inject/{kind}")

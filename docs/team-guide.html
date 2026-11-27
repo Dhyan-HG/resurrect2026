@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sentinel – the team guide</title>
+<style>
+@page{size:A4;margin:16mm 15mm 18mm}
+body{font:11.5pt/1.6 "Segoe UI",Arial,sans-serif;color:#1d1d1b;margin:0}
+h1{font:600 30pt/1.1 Georgia,serif;margin:0 0 6px;letter-spacing:-.5px}
+h2{font:600 18pt/1.2 Georgia,serif;margin:30px 0 8px;padding-top:10px;border-top:2px solid #1d1d1b;page-break-after:avoid}
+h3{font-size:12.5pt;margin:18px 0 4px;page-break-after:avoid}
+p{margin:6px 0 10px}
+.lead{font-size:13.5pt;color:#333}
+.box{border:1.5px solid #1d1d1b;border-radius:8px;padding:12px 16px;margin:12px 0;page-break-inside:avoid}
+.box.soft{border-color:#d8d3c7;background:#f7f4ee}
+.box.warn{border-color:#c23b12;background:#fbefe9}
+.big{font:600 15pt Georgia,serif}
+table{border-collapse:collapse;width:100%;margin:8px 0 14px;font-size:10.5pt;page-break-inside:avoid}
+th,td{border-bottom:1px solid #ddd;padding:6px 8px;text-align:left;vertical-align:top}
+th{border-bottom:1.5px solid #1d1d1b;font-weight:600}
+td.n{white-space:nowrap;font-weight:600}
+.red{color:#c23b12;font-weight:600} .green{color:#2f6b45;font-weight:600}
+img{max-width:100%;border:1px solid #ccc;border-radius:6px;display:block;margin:8px auto}
+.pair{display:flex;gap:12px;page-break-inside:avoid} .pair img{width:48%;margin:0}
+.cap{font-size:9.5pt;color:#666;text-align:center;margin:2px 0 12px}
+ol li,ul li{margin:4px 0}
+.toc{columns:2;font-size:10.5pt}
+.step{display:flex;gap:12px;margin:10px 0;page-break-inside:avoid}
+.step b.n{flex:none;width:28px;height:28px;border-radius:50%;background:#1d1d1b;color:#fff;text-align:center;line-height:28px;font-size:11pt}
+.cover{border-bottom:2px solid #1d1d1b;padding-bottom:14px;margin-bottom:10px}
+.small{font-size:9.5pt;color:#666}
+.pb{page-break-before:always}
+</style>
+</head>
+<body>
+
+<div class="cover">
+<p class="small">Resurrect 2026 hackathon · Problem 2: Smart Inventory Intelligence · written 27 November 2026</p>
+<h1>Sentinel</h1>
+<p class="lead">What we built, why, and how it works, explained from zero. No technical knowledge needed.</p>
+<p><b>Try it yourself:</b> <span class="big">https://chatu.in</span> (works on phone and laptop)</p>
+</div>
+
+<div class="box">
+<p class="big" style="margin:0 0 6px">The whole idea in one breath</p>
+<p style="margin:0">Factories promise customers a delivery date. To keep that promise, the factory needs the right parts at the right time. Parts often come late, and people usually find out too late to fix it. <b>Sentinel watches everything happening in the factory, spots a coming delay a week or more in advance, tells you exactly why, and suggests a fix. A person always makes the final decision.</b></p>
+</div>
+
+<p><b>What's inside:</b></p>
+<div class="toc">
+<ol>
+<li>The hackathon and why we chose this problem</li>
+<li>The problem, told as a story</li>
+<li>Words you need to know</li>
+<li>What we built: the five parts</li>
+<li>How it works, step by step</li>
+<li>A tour of the website</li>
+<li>How we proved it works (all the numbers)</li>
+<li>What it does NOT prove (be honest about this)</li>
+<li>How it helps in real life</li>
+<li>What is needed from us</li>
+<li>Who does what in the team</li>
+<li>The 3-minute demo</li>
+<li>Questions judges may ask, with answers</li>
+<li>Where everything is</li>
+</ol>
+</div>
+
+<h2>1. The hackathon and why we chose this problem</h2>
+<p>Resurrect 2026 gave us <b>6 problems</b> to choose from:</p>
+<table>
+<tr><th>#</th><th>Problem</th><th>In simple words</th></tr>
+<tr><td>1</td><td>Rapid Knowledge Internalization</td><td>Help people understand hundreds of pages quickly</td></tr>
+<tr><td><b>2</b></td><td><b>Smart Inventory Intelligence</b></td><td><b>Help a factory deliver orders on time ← we chose this</b></td></tr>
+<tr><td>3</td><td>Human-Agent Interaction</td><td>A new way for people and AI to work together</td></tr>
+<tr><td>4</td><td>Self-Learning UI</td><td>An app screen that improves itself from how people use it</td></tr>
+<tr><td>5</td><td>Embedding model + visualizer</td><td>Show how AI organises the meaning of words</td></tr>
+<tr><td>6</td><td>Ambiguity in language</td><td>Spot sentences that can mean two things</td></tr>
+</table>
+<p><b>The most important rule in the whole hackathon:</b> every team must <b>prove</b> its solution works with measured numbers. The rules say: <i>"Claims without measured evidence will not be scored."</i> So it is not enough to build something that looks good. We must show numbers, compare against the normal way of doing things, and let anyone check our work.</p>
+<p><b>Why Problem 2?</b></p>
+<ul>
+<li><b>It can be measured exactly.</b> We built a pretend factory on the computer, so we know the true answer for every order. Problems 1, 3 and 4 need surveys of real people, and judges can easily pick holes in a survey of 10 friends.</li>
+<li><b>The judges gave a clear checklist</b> for Problem 2, and we built every item on it.</li>
+<li><b>Fewer strong teams pick it.</b> Most teams go for the "AI-sounding" topics.</li>
+</ul>
+
+<h2>2. The problem, told as a story</h2>
+<p>Imagine a factory that makes <b>mixer grinders, fans, heaters and geysers</b>.</p>
+<p>A shop orders <b>13 mixer grinders</b> and says: <i>"We need them by day 21."</i> The factory says yes. That promised day is called the <b>customer date</b>.</p>
+<p>To build 13 mixer grinders, the factory needs parts: switches, bearings, heating elements. It has some parts in its store room. The rest are coming from <b>suppliers</b> (other companies that sell parts).</p>
+<p>Now, one supplier quietly becomes late. The switches that were coming on day 19 will now come on day 26. Building takes 2 days, so the mixer grinders will ship on day 28, <span class="red">7 days late</span>.</p>
+<p>And it's not only this one order. <b>Six orders</b> were all waiting for those same switches. All six will be late.</p>
+<div class="box warn"><p style="margin:0"><b>The real problem:</b> in most factories, nobody notices until day 21 itself, when the order fails to go out. By then it's too late to do anything. The customer is unhappy, and the factory may lose them.</p></div>
+<p>If someone had noticed on <b>day 14</b>, they could have quickly ordered switches from the supplier with fast delivery ("rush order"), and all six orders would have shipped on time. <b>Noticing early is everything.</b> That's what Sentinel does.</p>
+
+<h2>3. Words you need to know</h2>
+<table>
+<tr><th>Word</th><th>What it means</th><th>Everyday example</th></tr>
+<tr><td>Order</td><td>A customer asking to buy products</td><td>"Send us 13 mixer grinders"</td></tr>
+<tr><td>Customer date (CRD)</td><td>The day we promised to deliver. CRD stands for Customer Request Date.</td><td>"By day 21"</td></tr>
+<tr><td>Material / part</td><td>Things needed to build a product</td><td>Switches, bearings, paint</td></tr>
+<tr><td>Supplier</td><td>A company that sells us materials</td><td>"Deccan Electricals"</td></tr>
+<tr><td>Purchase order (PO)</td><td>Our order to a supplier, with a number like PO0055</td><td>"Send us 90 switches by day 19"</td></tr>
+<tr><td>Lead time</td><td>How many days a supplier needs to deliver</td><td>Normal delivery 7 days, rush delivery 4 days</td></tr>
+<tr><td>Rush order (expedite)</td><td>Pay a bit more to get materials faster</td><td>Like paying extra for express delivery</td></tr>
+<tr><td>On hand</td><td>Material already in our store room</td><td>"We have 34 switches"</td></tr>
+<tr><td>Incoming</td><td>Material ordered but not yet arrived</td><td>"200 switches are on the way"</td></tr>
+<tr><td>Allocated</td><td>Material already promised to orders</td><td>"121 switches are needed for orders we accepted"</td></tr>
+<tr><td>Net availability</td><td>On hand + incoming − allocated. What's really free.</td><td>34 + 200 − 121 = 113 free</td></tr>
+<tr><td>Days of cover</td><td>How many days our stock will last</td><td>"0.5 days of cover" means we run out tomorrow</td></tr>
+<tr><td>Stock-out</td><td>Running out of a material</td><td>No switches left for the next order</td></tr>
+<tr><td>Planner</td><td>Person who decides what gets built when</td><td>The main user of Sentinel</td></tr>
+<tr><td>Buyer</td><td>Person who buys materials from suppliers</td><td>Sends the purchase orders</td></tr>
+<tr><td>Manager</td><td>Boss who watches the big picture</td><td>Can see everything but can't approve purchases</td></tr>
+<tr><td>Event</td><td>A small message saying something happened</td><td>"Order placed", "goods arrived", "stock counted"</td></tr>
+<tr><td>Feed</td><td>A steady stream of events from one system</td><td>The warehouse system sends a message every time goods arrive</td></tr>
+<tr><td>ERP / WMS</td><td>The factory's office software (orders) / warehouse software (stock)</td><td>Like the factory's diary and its store-room register</td></tr>
+<tr><td>Simulator</td><td>A pretend factory that runs inside the computer</td><td>Like a video game version of a factory</td></tr>
+<tr><td>AI agent</td><td>A computer helper that looks at the data and suggests actions</td><td>An assistant who says "I think you should order this"</td></tr>
+</table>
+
+<h2 class="pb">4. What we built: the five parts</h2>
+<p>We named it <b>Sentinel</b>, which means a guard who keeps watch. It has five parts. Think of it like a person:</p>
+
+<div class="step"><b class="n">1</b><div><b>The ears: the event inbox.</b> Every time something happens in the factory (an order arrives, goods are delivered, stock is counted), a small message comes in. Real systems are messy: the same message sometimes arrives twice, some messages are broken (like "−5 switches arrived"), and some arrive in the wrong order. Sentinel <b>ignores repeats</b>, <b>puts broken messages aside</b> in a separate pile (we call it "quarantine"), and <b>sorts everything by time</b>. Because of this, messy data never changes a single number.</div></div>
+
+<div class="step"><b class="n">2</b><div><b>The memory: the stock calculator.</b> From all the messages, it keeps an exact count for every material: how much is <b>on hand</b>, how much is <b>incoming</b>, how much is <b>allocated</b> to orders, and what is really <b>free</b> (net availability).</div></div>
+
+<div class="step"><b class="n">3</b><div><b>The eyes: the planner.</b> For every single order, it works out <b>which day the order will really ship</b>. It shares out materials fairly with a clear written rule: <i>orders with the earliest customer date get served first; each order takes stock from the store room first, then from deliveries that are coming.</i> It also <b>learns which suppliers are usually late</b> and by how much, and plans with that in mind. If the ship day is after the customer date, the order turns <span class="red">red</span>.</div></div>
+
+<div class="step"><b class="n">4</b><div><b>The helper: the AI agent.</b> When orders are going to be late, the helper looks for a fix, for example <i>"rush-order 90 switches from Deccan Electricals."</i> Before suggesting it, it <b>tests the fix</b> on the plan: "if we buy this, late orders go from 6 to 0." It only shows a suggestion if the test proves it helps. It also writes a short <b>briefing</b> (a summary note) for each person: planner, buyer, manager. Every number in the briefing is <b>checked against the real data</b>, so the helper can never make up a number.</div></div>
+
+<div class="step"><b class="n">5</b><div><b>The human: the approve button.</b> <b>Nothing is bought and no email is sent unless a person clicks "Approve purchase."</b> Only planners and buyers can approve. A manager can see everything but cannot approve. This was a strict rule in the hackathon problem, and we follow it.</div></div>
+
+<p>On top of that, we built a sixth piece used only for testing and the demo:</p>
+<div class="step"><b class="n">+</b><div><b>The pretend factory (simulator).</b> Since we don't have a real factory, we built one inside the computer: <b>8 products, 24 materials, 6 suppliers</b>, with new customer orders every day. Suppliers are sometimes late. Some days bring a sudden rush of orders. Stock sometimes goes missing quietly (like theft or damage). Messages arrive twice, broken, or late. The pretend factory knows the <b>true answer</b> for everything, like an answer key in an exam, so we can check if Sentinel got it right.</div></div>
+
+<h2>5. How it works, step by step</h2>
+<p>Here is the exact story you will see in the demo:</p>
+<ol>
+<li><b>Day 4.</b> The factory is calm. All orders are on track. The website says: <i>"Every open order is on track to ship by its customer date."</i></li>
+<li><b>Time moves forward</b> (you press "+1 day" or Play). New orders come in, deliveries arrive, stock gets used. Sentinel re-plans every time a message arrives.</li>
+<li><b>Day 14: problem!</b> (You press "Simulate a problem", then "A supplier slips a week".) The supplier of switches says their delivery PO0055 will now arrive on day 26 instead of day 19.</li>
+<li><b>Sentinel reacts instantly.</b> The headline changes to <span class="red">"6 orders will miss their customer date."</span> It explains: <i>"All of them are waiting for Switch assembly on PO0055."</i> On the runway chart, six bars turn red.</li>
+<li><b>The helper suggests a fix:</b> <i>"Rush-order 90 pcs of Switch assembly from Deccan Electricals. Arrives day 18. Cost ₹3,650. Late orders 6 → 0. Days late in total 24 → 0."</i></li>
+<li><b>A manager tries to approve.</b> The button is greyed out: only planners and buyers can approve.</li>
+<li><b>The planner approves.</b> A new purchase order (PO0056) is created. The email to the supplier is prepared as a draft for the buyer to send. Late orders drop to <span class="green">0</span>.</li>
+</ol>
+<p>Without Sentinel, the factory would have discovered the problem on day 21, a full week later, when it was too late.</p>
+
+<h2 class="pb">6. A tour of the website</h2>
+<p>Open <b>https://chatu.in</b>. Here is what each part means.</p>
+<img src="img/d1-desktop.png" style="max-height:200mm">
+<p class="cap">The laptop view on day 14, right after the supplier delay.</p>
+
+<h3>Top bar</h3>
+<ul>
+<li><b>Day 14 · 06:00</b>: the pretend factory's clock. Time only moves when you press the buttons.</li>
+<li><b>▶ (Play)</b>: time runs by itself, 6 hours every second. <b>+6h</b> and <b>+1 day</b> jump forward.</li>
+<li><b>Planner / Buyer / Manager</b>: see the page as that person. Each gets a different briefing. Only Planner and Buyer can approve.</li>
+<li><b>Simulate a problem</b>: create trouble on purpose (late supplier, demand spike, warehouse system down, missing stock, broken messages, or start over).</li>
+<li><b>Evidence</b>: our proof numbers, for the judges.</li>
+</ul>
+<h3>The headline</h3>
+<p>One big sentence that tells you the most important thing right now, for example <i>"6 orders will miss their customer date"</i>, with the reason underneath. Next to it are four numbers: projected late, at risk (less than 2 days to spare), percentage on track, and stock-outs ahead.</p>
+<h3>Order runway (the chart)</h3>
+<p>Each row is one order. The bar starts <b>today</b> and ends on the day the order will <b>really ship</b>.</p>
+<ul>
+<li>The small <b style="color:#2f6b45">green tick</b> is the customer date.</li>
+<li>If the bar goes <b>past</b> the tick, that extra part is <span class="red">red</span>: that's how late it will be.</li>
+<li>A <b>dotted bar</b> means the order is already being built.</li>
+<li>"Slack" on the right: +2d means 2 days to spare, −7d means 7 days late.</li>
+<li><b>Click any row</b> to see exactly where each material for that order comes from.</li>
+</ul>
+<h3>Decision card</h3>
+<p>The helper's suggestion, what it costs, and what it changes (late orders before → after). Buttons: <b>Approve purchase</b>, <b>Not now</b>, and <b>Supplier email</b> (to view the draft email).</p>
+<h3>Briefing</h3>
+<p>A short note written for the person you selected (planner, buyer or manager). At the bottom it says how many figures were checked against the data.</p>
+<h3>Stock</h3>
+<p>Every material with on hand, incoming, allocated and net. The little bar shows days of cover. The <b style="color:#a8700f">yellow tick</b> on it is the supplier's lead time. If the stock bar is shorter than the tick, a new order would arrive too late.</p>
+<h3>Signals</h3>
+<p>Health of the three data feeds (orders, warehouse, supplier), plus warnings like "PO0016 was due day 13 and has not arrived" or "Demand spike on Room heater".</p>
+
+<div class="pair">
+<img src="img/m1-today.png">
+<img src="img/m3-explain.png">
+</div>
+<p class="cap">On a phone: the Today tab (left) and an order's explanation (right). Four tabs at the bottom: Today, Orders, Stock, Signals.</p>
+
+<h2 class="pb">7. How we proved it works (all the numbers)</h2>
+<div class="box soft">
+<p style="margin:0 0 6px"><b>How the test worked.</b> We ran <b>30 different pretend factories</b>, each for <b>60 days</b>. Together they had <b>6,609 customer orders</b>. The pretend factory secretly knows how every order really ends, like an answer key. Sentinel only sees the messages, never the answer key. Then we compared Sentinel's answers with the answer key.</p>
+<p style="margin:0">We compared against <b>the normal way</b> factories work today (a standard reorder rule: "when stock gets low, order more"). Under the normal way, <b>496 of the 6,609 orders (7.5%) were late</b>.</p>
+</div>
+<p>Anyone can repeat every number below with one command. That matters to the judges: <i>"report results with enough rigor that a third party could reproduce them."</i></p>
+
+<h3>A. Does it get the numbers right?</h3>
+<table>
+<tr><th>What we checked</th><th>Result</th><th>What it means</th></tr>
+<tr><td>Stock numbers compared with a separate calculator we wrote independently</td><td class="n">0 mistakes in 172,800 checks</td><td>Every stock figure was exactly right, every day, in every factory.</td></tr>
+<tr><td>Messy messages: 1,829 repeated and 1,232 broken messages were mixed in</td><td class="n">1,800 of 1,800 days identical</td><td>The answers with messy data were exactly the same as with clean data.</td></tr>
+<tr><td>Feeding all messages again in a random order</td><td class="n">90 of 90 identical</td><td>Run it again, get the same answer. Always.</td></tr>
+</table>
+
+<h3>B. Does it catch late orders early?</h3>
+<table>
+<tr><th>What we checked</th><th>Result</th><th>What it means</th></tr>
+<tr><td>Of the 496 orders that really were late, how many did Sentinel warn about 3 days before?</td><td class="n green">496 of 496 (100%)</td><td>It caught every single one.</td></tr>
+<tr><td>Same, 5 days before</td><td class="n">376 of 496 (76%)</td><td>Most were caught even earlier.</td></tr>
+<tr><td>How early was the first warning?</td><td class="n green">8 days (middle value)</td><td>Usually more than a week of time to fix it.</td></tr>
+<tr><td>False alarms 3 days before</td><td class="n">164 (precision 0.75)</td><td>About 3 out of 4 warnings were real. 1 in 4 was a false alarm.</td></tr>
+<tr><td>The normal method (a simple stock check)</td><td class="n red">0 of 496 caught</td><td>The normal screen looked fine while orders were going late, because it checks totals, not timing.</td></tr>
+</table>
+
+<h3>C. Does it catch other problems?</h3>
+<table>
+<tr><th>Problem</th><th>Result</th><th>Notes</th></tr>
+<tr><td>Warehouse or order system goes silent</td><td class="n">30 of 30 caught</td><td>Within about 17 hours. It waits 18 hours of silence before warning, so it doesn't panic over a short gap. 2 false alarms.</td></tr>
+<tr><td>Sudden rush of orders (demand spike)</td><td class="n">60 of 60 caught</td><td>On the same day. 24 false alarms (about 7 in 10 warnings were real).</td></tr>
+<tr><td>Stock quietly going missing</td><td class="n">89 of 89 found</td><td>Usually 3 days later, when the next stock count happened. It can't know earlier, because nobody counted.</td></tr>
+<tr><td>Supplier deliveries that came late</td><td class="n">1,780 of 1,780</td><td>Warned before the goods arrived, usually about 5 days ahead.</td></tr>
+</table>
+
+<h3>D. Can we trust the AI helper?</h3>
+<table>
+<tr><th>What we checked</th><th>Result</th><th>What it means</th></tr>
+<tr><td>Briefings written by the helper</td><td class="n green">5,400 of 5,400 passed</td><td>Every number in every note was found in the real data. 0 made-up numbers out of 76,838.</td></tr>
+<tr><td>Stock claims in the notes</td><td class="n">21,668 of 21,668 correct</td><td>Checked against the separate calculator.</td></tr>
+<tr><td>Customer dates mentioned in the notes</td><td class="n">5,314 of 5,314 correct</td><td>Checked against the answer key.</td></tr>
+</table>
+
+<h3>E. Does the factory actually do better? (the most important result)</h3>
+<p>Same 30 factories, same problems, run twice: once the normal way, once with Sentinel's suggestions approved.</p>
+<table>
+<tr><th>Average per factory (60 days)</th><th>Normal way</th><th>With Sentinel</th><th>Change</th></tr>
+<tr><td>Orders delivered on time</td><td>92.6%</td><td class="green">96.3%</td><td class="n green">+3.8 points</td></tr>
+<tr><td>Late orders</td><td>16.5</td><td class="green">8.0</td><td class="n green">about half</td></tr>
+<tr><td>Total days late (all orders added up)</td><td>41.8</td><td class="green">15.4</td><td class="n green">63% less</td></tr>
+<tr><td>Days a material was out of stock when needed</td><td>19.2</td><td class="green">8.2</td><td class="n green">57% less</td></tr>
+<tr><td>Money spent on purchases</td><td>₹7,87,512</td><td>₹7,85,027</td><td class="n">no real change</td></tr>
+</table>
+<ul>
+<li>Sentinel did better in <b>28 of the 30</b> factories.</li>
+<li>The chance that this improvement happened by pure luck is <b>less than 1 in 1,000</b> (in science this is written "p &lt; 0.001").</li>
+<li>Even if the planner approves <b>only half</b> of the suggestions, on-time delivery still goes up, to <b>95.2%</b>.</li>
+<li>It does <b>not</b> spend more money. It buys the right thing at the right time instead of buying extra.</li>
+</ul>
+
+<h3>F. Which part made the difference?</h3>
+<p>We switched parts of Sentinel off to see what matters. Scientists call this an "ablation".</p>
+<ul>
+<li><b>Without learning which suppliers are late:</b> on-time only goes to 94.8% instead of 96.3%. Learning supplier habits matters.</li>
+<li><b>Without rush orders:</b> no improvement at all (92.6%). The gain comes from spotting slow deliveries early and rushing them.</li>
+</ul>
+
+<h2>8. What it does NOT prove (be honest about this)</h2>
+<div class="box warn">
+<p style="margin:0 0 6px">Judges respect teams that know their limits. Say these openly:</p>
+<ul style="margin:0">
+<li><b>It's a pretend factory.</b> We wrote the simulator, so results in a real factory depend on how close our pretend world is to reality.</li>
+<li><b>No real planner has used it yet.</b> The "person who approves" was simulated (approve all, or approve about half at random).</li>
+<li><b>1 in 4 "late" warnings is a false alarm.</b> That's the price of assuming late suppliers will stay late.</li>
+<li><b>It needs history.</b> For a brand-new supplier it doesn't yet know how late they usually are, so it assumes 1 day.</li>
+<li><b>If a factory can't rush-order,</b> it would still get the early warnings, but not the on-time improvement.</li>
+</ul>
+</div>
+
+<h2>9. How it helps in real life</h2>
+<ul>
+<li><b>Happier customers:</b> more orders arrive on the promised day.</li>
+<li><b>Time to act:</b> about a week of warning instead of finding out on the day.</li>
+<li><b>Less panic:</b> one clear decision instead of digging through spreadsheets.</li>
+<li><b>Trust:</b> every number can be traced back to the data, and the AI cannot make things up.</li>
+<li><b>Safety:</b> nothing is bought without a person approving it.</li>
+<li><b>Works with messy data:</b> repeated or broken messages from old factory systems don't confuse it, and it warns when a system goes silent.</li>
+<li><b>Saves money:</b> fewer stock-outs without buying extra stock.</li>
+</ul>
+<p><b>Who could use it?</b> Any company that makes products from parts and promises delivery dates: appliances, electronics, furniture, auto parts, garments, medicines.</p>
+
+<h2>10. What is needed from us</h2>
+<h3>To run the demo: nothing</h3>
+<p>It's already online at chatu.in, running 24/7 on our own server. No passwords, no paid AI service, no extra cost.</p>
+<h3>To win the hackathon</h3>
+<ol>
+<li><b>Check the rules.</b> Some hackathons only allow code written during the event. If so, this is our practice run and we rebuild it there (faster now, because we know exactly what to build).</li>
+<li><b>Everyone opens chatu.in on their phone and laptop</b> and plays with it. Tell Roshan if anything looks wrong.</li>
+<li><b>Practise the 3-minute demo</b> (section 12) until it's smooth.</li>
+<li><b>Learn the key numbers:</b> 92.6% → 96.3% on time; 100% of late orders caught 3 days ahead; 8 days median warning; 0 mistakes in 172,800 checks; 0 made-up numbers.</li>
+<li><b>Prepare for questions</b> (section 13).</li>
+<li><b>Press Reset before presenting.</b> Everyone who opens the link shares the same pretend factory, so someone else may have changed it.</li>
+<li>Make slides if the event asks for them.</li>
+</ol>
+<h3>For a real factory to use it (future)</h3>
+<ul>
+<li>Their real product recipes (which parts go into each product), supplier lead times and stock counts.</li>
+<li>Connect their order and warehouse software so it sends messages to Sentinel. The "inbox" for this already exists.</li>
+<li>Proper logins for each person (today, the Planner/Buyer/Manager switch is only for the demo).</li>
+</ul>
+
+<h2>11. Who does what in the team</h2>
+<p>We don't know the final team size yet. Here is a split for <b>4 members</b>. With fewer people, combine roles.</p>
+<table>
+<tr><th>Member</th><th>Role</th><th>Must know well</th></tr>
+<tr><td>1</td><td><b>Presenter and demo driver</b></td><td>The story (section 2), the demo (section 12), the headline numbers</td></tr>
+<tr><td>2</td><td><b>Evidence and numbers owner</b></td><td>Sections 7 and 8; answers "how do you know it works?"</td></tr>
+<tr><td>3</td><td><b>How-it-works explainer</b></td><td>The five parts (section 4), the sharing rule, why messy data doesn't matter</td></tr>
+<tr><td>4</td><td><b>Real-world and business</b></td><td>Section 9; who would use it, what a real factory needs, cost</td></tr>
+</table>
+
+<h2>12. The 3-minute demo</h2>
+<table>
+<tr><th>Time</th><th>Do this</th><th>Say this</th></tr>
+<tr><td>0:00</td><td>Open chatu.in, press Simulate → Start over</td><td>"Factories usually find out an order is late on the day it fails. Sentinel predicts every order's ship date, all the time."</td></tr>
+<tr><td>0:20</td><td>Press +1 day until day 14</td><td>"Every number comes from the factory's messages. Repeated or broken messages are ignored, so they never change a figure."</td></tr>
+<tr><td>0:40</td><td>Simulate → A supplier slips a week</td><td>"A supplier just pushed a delivery back a week."</td></tr>
+<tr><td>0:50</td><td>Point at the red headline and bars, click a red row</td><td>"Six orders will now miss their date, two weeks before it happens. And here's exactly why: they're all waiting for switches on PO0055."</td></tr>
+<tr><td>1:20</td><td>Point at the decision card</td><td>"Sentinel already tested a fix: rush-order 90 switches. Late orders go from 6 to 0, for ₹3,650."</td></tr>
+<tr><td>1:45</td><td>Switch to Manager, show the greyed-out button</td><td>"Managers see it, but only planners and buyers can buy."</td></tr>
+<tr><td>1:55</td><td>Switch to Planner, press Approve purchase</td><td>"The planner approves. Late orders drop to zero. Nothing was sent until a human said yes."</td></tr>
+<tr><td>2:10</td><td>Simulate → Warehouse feed goes down, then +1 day</td><td>"If a data feed dies, Sentinel says so, instead of quietly showing old numbers."</td></tr>
+<tr><td>2:30</td><td>Open Evidence</td><td>"30 pretend factories, 6,609 orders: on-time from 92.6% to 96.3%, every late order caught 3 days ahead, zero calculation mistakes."</td></tr>
+<tr><td>2:50</td><td></td><td>"Our limits: it's a simulated factory and no real planner has used it yet. We wrote both down."</td></tr>
+</table>
+
+<h2>13. Questions judges may ask, with answers</h2>
+<p><b>Q: Isn't this just a dashboard?</b><br>A: No. A dashboard shows totals. Sentinel predicts the ship day of every order, explains why it's late, tests a fix before suggesting it, and waits for a person to approve. The normal stock check caught 0 of 496 late orders; Sentinel caught all 496.</p>
+<p><b>Q: How do you know your numbers are right?</b><br>A: We wrote a second, separate calculator and compared them: 0 mistakes in 172,800 checks. With repeated, broken and out-of-order messages mixed in, the answers stayed exactly the same.</p>
+<p><b>Q: What if the AI makes things up?</b><br>A: Every number the helper writes is checked against the data before it's shown. In 5,400 notes, 0 numbers were made up. If the AI ever writes a number that isn't in the data, its text is thrown away and a safe version is shown instead.</p>
+<p><b>Q: Why use a pretend factory?</b><br>A: Because it gives us an answer key. In a real factory you never know for sure what "would have happened". In the simulator we know the truth for every order, so we can measure exactly. It's also our biggest limitation, and we say so.</p>
+<p><b>Q: Does it just buy more stock to look good?</b><br>A: No. Spending showed no real change (₹7,87,512 vs ₹7,85,027), and the stock held was about the same. It buys smarter, not more.</p>
+<p><b>Q: What about false alarms?</b><br>A: About 1 in 4 "late" warnings turns out fine. We chose this on purpose: missing a real late order is much worse than checking a false alarm. The planner can also see "at risk" separately from "late".</p>
+<p><b>Q: Is it luck?</b><br>A: It was better in 28 of 30 factories, and the chance of that being luck is less than 1 in 1,000.</p>
+<p><b>Q: How would a real factory start using it?</b><br>A: Load their product recipes and supplier list, connect their order and warehouse systems to Sentinel's message inbox, and add logins. The inbox already handles messy data.</p>
+
+<h2>14. Where everything is</h2>
+<table>
+<tr><th>What</th><th>Where</th></tr>
+<tr><td>Live website</td><td>https://chatu.in</td></tr>
+<tr><td>Code</td><td>GitHub: roshanvijay37/resurrect2026 (private for now; ask Roshan for access)</td></tr>
+<tr><td>Full results report</td><td>results/RESULTS.md in the code</td></tr>
+<tr><td>Demo script</td><td>DEMO.md in the code</td></tr>
+<tr><td>Re-run every number</td><td>One command: <code>python -m evaluation.run_eval --seeds 30</code> (takes about a minute)</td></tr>
+<tr><td>Automatic tests</td><td>14 tests, all passing</td></tr>
+</table>
+<p class="small">Technical summary for the curious: Python (FastAPI) server, a plain HTML/JavaScript website, running in a Docker container on our own Linux server behind HTTPS. AI writing (Claude) is optional and off by default; all suggestions and numbers come from rules we can check.</p>
+
+</body>
+</html>

@@ -1,7 +1,7 @@
 {
  "seeds": 30,
  "days": 60,
- "runtime_s": 3.9,
+ "runtime_s": 4.2,
  "dataset": {
   "orders_scored": 6455,
   "late_orders": 420,
@@ -698,13 +698,13 @@
  "E4_mutations": {
   "number_changed": {
    "n": 1800,
-   "strict": 1640,
-   "loose": 1340
+   "strict": 1653,
+   "loose": 1418
   },
   "numbers_swapped": {
-   "n": 1643,
-   "strict": 483,
-   "loose": 191
+   "n": 1654,
+   "strict": 731,
+   "loose": 541
   },
   "false_count": {
    "n": 1800,

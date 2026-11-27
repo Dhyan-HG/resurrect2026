@@ -257,8 +257,8 @@ ol li,ul li{margin:4px 0}
 <tr><th>Planted mistake</th><th>Stopped</th></tr>
 <tr><td>"Nothing is late" when orders are late</td><td class="n green">100%</td></tr>
 <tr><td>An order number that doesn't exist</td><td class="n green">100%</td></tr>
-<tr><td>A number changed (e.g. 14 → 15)</td><td class="n">91%</td></tr>
-<tr><td>Two numbers swapped</td><td class="n red">29%</td></tr>
+<tr><td>A number changed (e.g. 14 → 15)</td><td class="n">92%</td></tr>
+<tr><td>Two numbers swapped</td><td class="n red">44%</td></tr>
 </table>
 <p>So the check is strong but not perfect: swapped numbers mostly get through. Say so if asked.</p>
 
@@ -346,7 +346,7 @@ ol li,ul li{margin:4px 0}
 <p><b>Q: Is the gain just rush orders?</b><br>A: Yes, all of it. The point is <i>which</i> rush orders: a rule that rushes every late delivery gets the same on-time level but spends 9% more and holds 23% more stock.</p>
 <p><b>Q: Does it spend more?</b><br>A: Yes, a little: +0.75%. We say that openly.</p>
 <p><b>Q: How do you know your numbers are right?</b><br>A: A second, separate calculator: 0 mistakes in 129,600 checks. Messy messages and replays give exactly the same answers. An independent reviewer reran everything and got the same numbers.</p>
-<p><b>Q: What if the AI makes things up?</b><br>A: A safety check stops 100% of false counts and fake order numbers and 91% of changed numbers, but only 29% of swapped numbers. If the AI's text fails the check, a safe template is shown instead.</p>
+<p><b>Q: What if the AI makes things up?</b><br>A: A safety check stops 100% of false counts and fake order numbers and 92% of changed numbers, but only 44% of swapped numbers. If the AI's text fails the check, a safe template is shown instead.</p>
 <p><b>Q: Who wrote your test messages for Topic 6?</b><br>A: Separate AI agents that only saw our rules page, never the code. We keep the first score on each set; the third set was saved in git before we scored it, so the order can be checked.</p>
 <p><b>Q: Planning for the latest day means you're often too late?</b><br>A: Yes, until the supplier answers, on purpose. Too late in the plan means acting a bit early; too early means an order fails by surprise. After the answer, the plan is off by only 0.18 days.</p>
 <p><b>Q: Can I approve a purchase from a command line?</b><br>A: In the demo, yes, but only inside your own pretend factory. A real company would use proper logins.</p>

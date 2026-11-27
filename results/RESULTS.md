@@ -1,6 +1,6 @@
 # Sentinel – evaluation results
 
-30 seeded runs × 60 days. Ground truth = the plant simulator. Reproduce: `python -m evaluation.run_eval --seeds 30` (runtime 3.9 s).
+30 seeded runs × 60 days. Ground truth = the plant simulator. Reproduce: `python -m evaluation.run_eval --seeds 30` (runtime 4.2 s).
 
 Orders scored: **6455**, of which **420** really missed their CRD (6.51%) under the company's existing reorder-point planner.
 
@@ -83,8 +83,8 @@ On-time orders that were *ever* flagged late at some point: Sentinel 4.6%, witho
 
 | Planted error | n | Strict check rejects | Earlier loose check rejected |
 |---|---|---|---|
-| A number changed by 1-3 | 1800 | **91%** | 74% |
-| Two numbers in a sentence swapped | 1643 | **29%** | 12% |
+| A number changed by 1-3 | 1800 | **92%** | 79% |
+| Two numbers in a sentence swapped | 1654 | **44%** | 33% |
 | A false count ('nothing is late') | 1800 | **100%** | 29% |
 | An order or PO ID that does not exist | 768 | **100%** | 0% |
 

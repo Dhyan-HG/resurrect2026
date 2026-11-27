@@ -354,26 +354,27 @@ def alerts(state: BookState, proj: dict, store: EventStore, cat: Catalog) -> lis
     # Feed health: no events at all (heartbeats included) from a source.
     for src, last in feeds_down(store, now):
         add(f"feed_down:{src}", "feed_down", "high",
-            f"{src.upper()} feed silent for {now - last:.1f} days (last event day {last:.2f}). "
-            f"Numbers that depend on it may be stale.", source=src, silent_days=round(now - last, 2))
+            f"{ {'erp': 'Orders (ERP)', 'wms': 'Warehouse (WMS)', 'supplier': 'Supplier'}.get(src, src)} feed silent for "
+            f"{round(24 * (now - last))} hours (since {ambiguity.fmt(last)} {int(24 * (last % 1)):02d}:00). "
+            f"Figures that depend on it may be stale.", source=src, silent_days=round(now - last, 2))
 
     for o in sorted(proj["orders"], key=lambda o: o["slack"]):
         if o["status"] not in ("open", "in_production"):
             continue
         if o["risk"] == "late":
             add(f"order_late:{o['id']}", "order_late", "high",
-                f"Order {o['id']} projected to ship day {o['projected_ship']}, "
-                f"{-o['slack']} day(s) after its CRD (day {o['crd']}).",
+                f"Order {o['id']} projected to ship {ambiguity.fmt(o['projected_ship'])}, "
+                f"{-o['slack']} day(s) after its customer date ({ambiguity.fmt(o['crd'])}).",
                 order=o["id"], projected_ship=o["projected_ship"], crd=o["crd"], slack=o["slack"])
         elif o["risk"] == "at_risk":
             add(f"order_at_risk:{o['id']}", "order_at_risk", "medium",
-                f"Order {o['id']} has only {o['slack']} day(s) of slack before CRD day {o['crd']}.",
+                f"Order {o['id']} has only {o['slack']} day(s) to spare before its customer date ({ambiguity.fmt(o['crd'])}).",
                 order=o["id"], projected_ship=o["projected_ship"], crd=o["crd"], slack=o["slack"])
 
     for m in proj["materials"]:
         if m["uncovered"] > 0:
             add(f"stockout:{m['id']}", "stockout", "high",
-                f"{m['name']} ({m['id']}) runs out by day {m['stockout_day']}: short "
+                f"{m['name']} ({m['id']}) runs out by {ambiguity.fmt(m['stockout_day'])}: short "
                 f"{m['uncovered']:g} {m['unit']} with nothing on order to cover it "
                 f"({len(m['affected_orders'])} order(s) affected).",
                 material=m["id"], short=m["uncovered"], day=m["stockout_day"],
@@ -388,19 +389,20 @@ def alerts(state: BookState, proj: dict, store: EventStore, cat: Catalog) -> lis
             continue
         if now > p["expected"] + OVERDUE_GRACE:
             add(f"po_overdue:{p['id']}", "po_overdue", "high",
-                f"PO {p['id']} ({p['material']}, {p['qty']} units, {cat.suppliers[p['supplier']].name}) "
-                f"was due day {p['expected']:g} and has not arrived.",
+                f"{p['id']} ({cat.materials[p['material']].name}, {p['qty']} units, {cat.suppliers[p['supplier']].name}) "
+                f"was due {ambiguity.fmt(p['expected'])} and has not arrived.",
                 po=p["id"], material=p["material"], expected=p["expected"])
         elif p.get("unclear"):
             u = p["unclear"]
             add(f"supplier_unclear:{p['id']}:{u['event_id']}", "supplier_unclear", "medium",
-                f"Supplier message on PO {p['id']} ({p['material']}) is unclear: \"{u['text']}\". "
-                f"It could mean day {u['lo']} to day {u['hi']}. Planning for day {u['hi']} until they confirm.",
+                f"Supplier message on {p['id']} ({cat.materials[p['material']].name}) is unclear: \u201c{u['text']}\u201d "
+                f"It could mean {ambiguity.fmt(u['lo'])} to {ambiguity.fmt(u['hi'])}; planning for "
+                f"{ambiguity.fmt(u['hi'])} until they confirm.",
                 po=p["id"], material=p["material"], lo=u["lo"], hi=u["hi"], text=u["text"])
         elif p["expected"] > p["orig_expected"]:
             add(f"po_delayed:{p['id']}", "po_delayed", "medium",
-                f"Supplier moved PO {p['id']} ({p['material']}) from day {p['orig_expected']:g} "
-                f"to day {p['expected']:g}.",
+                f"Supplier moved {p['id']} ({cat.materials[p['material']].name}) from {ambiguity.fmt(p['orig_expected'])} "
+                f"to {ambiguity.fmt(p['expected'])}.",
                 po=p["id"], material=p["material"], expected=p["expected"], was=p["orig_expected"])
 
     for d in state.discrepancies:

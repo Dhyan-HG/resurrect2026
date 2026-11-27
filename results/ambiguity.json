@@ -3889,7 +3889,7 @@
    "answer_hours": 7.360499999999972
   }
  ],
- "runtime_s": 5.2,
+ "runtime_s": 5.0,
  "headline": {
   "big": "96.1% \u2192 96.7%",
   "text": "orders on time when suppliers write their dates vaguely (\u201cnext week\u201d, \u201c2-3 days late\u201d): a plain date parser vs Sentinel, which plans for the latest reading and asks the supplier after a planner approves (p = 0.050; with exact dates it is 96.7%). The price: until the supplier answers, Sentinel's planned date is often later than the real one. On 150 test messages written blind by a separate AI agent, the first run got 135 fully right."

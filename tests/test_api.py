@@ -31,8 +31,7 @@ def test_every_injection_and_roles():
     s = client.get("/api/state").json()
     assert s["quality"]["quarantined"] >= 5                      # the 5 bad events
     assert any(a["kind"] == "po_delayed" for a in s["alerts"])   # the supplier's slip notice
-    client.post("/api/advance", json={"days": 1.0})              # outage lasts 30 h
-    s = client.get("/api/state?role=manager").json()
+    s = client.get("/api/state?role=manager").json()             # the demo jumps to the moment the alert fires
     assert "wms" in s["kpis"]["feeds_down"]
     client.post("/api/advance", json={"days": 1.0})              # feed recovers, buffered events flush
     assert client.get("/api/state").json()["kpis"]["feeds_down"] == []

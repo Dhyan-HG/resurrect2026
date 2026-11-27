@@ -46,8 +46,9 @@ def clear_styles(r: random.Random, po: str, S: int, D: int, A: int) -> list[str]
            f"Sorry for the delay on {po}. New delivery date is {_d(A)}.",
            f"{po} will now reach your plant on the {_ord(to_date(A).day)}."]
     if A - D >= 1:
-        out.append(f"{po} is running {A - D} days late.")
-        out.append(f"Delivery of {po} delayed by {A - D} days.")
+        n = f"{A - D} day" + ("" if A - D == 1 else "s")
+        out.append(f"{po} is running {n} late.")
+        out.append(f"Delivery of {po} delayed by {n}.")
     if 2 <= A - S <= 14:
         out.append(f"{po} will reach you in {A - S} days.")
     if A - S == 1:

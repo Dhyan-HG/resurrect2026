@@ -11,19 +11,21 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+@font-face{font-family:"Fraunces Fallback";src:local("Georgia");size-adjust:104%;ascent-override:92%;descent-override:24%}
 :root{
-  --paper:#f2efe8; --sheet:#faf8f3; --ink:#1c1d1b; --ink-2:#4a4a45; --mute:#7b7a72; --rule:#dcd7cb; --rule-2:#e8e4da;
-  --late:#c23b12; --late-soft:#f6dfd3; --risk:#a8700f; --risk-soft:#f3e6c8; --ok:#3d6b4c; --ok-soft:#dcebdf;
-  --track:#e6e1d5; --bar:#2b2c29; --focus:#1f5fbf;
-  --serif:"Fraunces",Georgia,serif; --sans:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --paper:#f2efe8; --sheet:#faf8f3; --ink:#1c1d1b; --ink-2:#45453f; --mute:#6b6a62; --rule:#dcd7cb; --rule-2:#e8e4da;
+  --late:#b8360f; --late-soft:#f6dfd3; --risk:#8a5a00; --risk-soft:#f3e6c8; --risk-bar:#b07a12; --ok:#356245; --ok-soft:#dcebdf;
+  --track:#e6e1d5; --bar:#2b2c29; --focus:#1f5fbf; --on-late:#fff;
+  --serif:"Fraunces","Fraunces Fallback",Georgia,serif; --sans:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
 }
 @media (prefers-color-scheme:dark){:root{
-  --paper:#141513; --sheet:#1b1c1a; --ink:#ebe9e2; --ink-2:#c4c2b9; --mute:#8d8b82; --rule:#2f302c; --rule-2:#262724;
-  --late:#f0784a; --late-soft:#3a2219; --risk:#ddb05a; --risk-soft:#342a17; --ok:#86bd95; --ok-soft:#1d2c22;
-  --track:#2a2b28; --bar:#d9d6cc; --focus:#7aa7ff;
+  --paper:#141513; --sheet:#1b1c1a; --ink:#ebe9e2; --ink-2:#c9c7be; --mute:#9a988f; --rule:#2f302c; --rule-2:#262724;
+  --late:#f0784a; --late-soft:#3a2219; --risk:#ddb05a; --risk-soft:#342a17; --risk-bar:#ddb05a; --ok:#86bd95; --ok-soft:#1d2c22;
+  --track:#2a2b28; --bar:#d9d6cc; --focus:#7aa7ff; --on-late:#1c1d1b;
 }}
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 var(--sans);overflow-x:hidden;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
 :focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:3px}
@@ -31,76 +33,123 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .mute{color:var(--mute)}
 .late-t{color:var(--late)} .risk-t{color:var(--risk)} .ok-t{color:var(--ok)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 /* ---------- top bar ---------- */
 .bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--rule)}
-.bar-in{max-width:1320px;margin:0 auto;padding:10px 28px;display:flex;align-items:center;gap:18px}
-.mark{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.01em;font-size:16px}
+.bar-in{max-width:1320px;margin:0 auto;padding:10px 28px;display:flex;align-items:center;gap:16px}
+.mark{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.01em;font-size:15px}
 .mark i{width:18px;height:18px;border:2px solid var(--ink);border-radius:2px;position:relative;display:block}
 .mark i::after{content:"";position:absolute;left:3px;right:3px;top:6px;height:2px;background:var(--late)}
-.plant{color:var(--mute);font-size:13px;border-left:1px solid var(--rule);padding-left:14px}
+.plant{color:var(--mute);font-size:13.5px;border-left:1px solid var(--rule);padding-left:14px}
 .transport{display:flex;align-items:center;gap:4px;margin-left:auto}
-.clock{font-family:var(--mono);font-size:14px;padding:0 10px;min-width:118px;text-align:right}
-.tbtn{height:34px;min-width:34px;padding:0 10px;border:1px solid var(--rule);border-radius:6px;font-size:13.5px;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--sheet)}
+.clock{font-size:13.5px;padding:0 10px;text-align:right;white-space:nowrap}
+.clock b{font-weight:600}
+.clock span{color:var(--mute);font-family:var(--mono);font-size:12px;margin-left:6px}
+.tbtn{height:34px;min-width:34px;padding:0 10px;border:1px solid var(--rule);border-radius:6px;font-size:13.5px;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--sheet);transition:border-color .15s,background .15s}
 .tbtn:hover{border-color:var(--ink-2)}
 .tbtn.play{background:var(--ink);color:var(--paper);border-color:var(--ink);min-width:40px}
 .tbtn svg{width:14px;height:14px}
-.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--sheet)}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:7px;background:var(--sheet)}
 .seg button{padding:6px 12px;font-size:13.5px;color:var(--ink-2)}
+.seg button:first-child{border-radius:6px 0 0 6px} .seg button:last-child{border-radius:0 6px 6px 0}
 .seg button+button{border-left:1px solid var(--rule)}
 .seg button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+.seg button:focus-visible{outline-offset:-3px;box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 35%,transparent)}
+.btn-sim{height:34px;padding:0 12px;border:1px solid var(--ink);border-radius:6px;font-size:13.5px;font-weight:500;display:inline-flex;align-items:center;gap:7px}
+.btn-sim svg{width:14px;height:14px;color:var(--late)}
+.btn-sim:hover{background:var(--ink);color:var(--paper)}
+.btn-sim.pulse{animation:pulse 1.6s var(--ease) 2}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--late) 45%,transparent)}100%{box-shadow:0 0 0 12px transparent}}
 .linkbtn{font-size:13.5px;color:var(--ink-2);padding:6px 4px;border-bottom:1px solid transparent}
 .linkbtn:hover{color:var(--ink);border-bottom-color:var(--ink)}
+.iconbtn{display:none;width:34px;height:34px;border-radius:6px;align-items:center;justify-content:center;border:1px solid var(--rule);background:var(--sheet)}
+.iconbtn svg{width:16px;height:16px}
+
+.tbtn,.btn-sim,.linkbtn,.seg button{white-space:nowrap}
+@media (max-width:1400px){.plant{display:none}}
+@media (max-width:1180px){.clock span{display:none}.bar-in{gap:10px}}
+/* ---------- feed banner ---------- */
+.banner{display:none;background:var(--late);color:var(--on-late);font-size:13.5px}
+.banner.on{display:block;animation:drop .35s var(--ease)}
+.banner-in{max-width:1320px;margin:0 auto;padding:8px 28px;display:flex;gap:10px;align-items:center}
+.banner i{width:8px;height:8px;border-radius:50%;background:currentColor;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+@keyframes drop{from{transform:translateY(-100%);opacity:0}}
 
 /* ---------- page ---------- */
 main{max-width:1320px;margin:0 auto;padding:26px 28px 80px}
 .lede{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:40px;align-items:end;padding-bottom:24px;border-bottom:1px solid var(--rule)}
-.kicker{font-size:13px;color:var(--mute);margin:0 0 8px}
-.headline{font-family:var(--serif);font-weight:500;font-size:clamp(26px,3.3vw,40px);line-height:1.12;letter-spacing:-.015em;margin:0;font-variation-settings:"opsz" 100}
-.headline em{font-style:normal;color:var(--late)}
+.kicker{font-size:13.5px;color:var(--mute);margin:0 0 8px}
+.headline{font-family:var(--serif);font-weight:500;font-size:clamp(28px,3.3vw,40px);line-height:1.12;letter-spacing:-.015em;margin:0;font-variation-settings:"opsz" 100;transition:color .4s}
+.headline em{font-style:normal;color:var(--late);transition:color .4s}
 .headline .calm{color:var(--ok)}
+.headline .amber{color:var(--risk)}
 .sub{margin:12px 0 0;color:var(--ink-2);max-width:60ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chipbtn{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;padding:5px 11px;border-radius:999px;border:1px solid var(--risk);color:var(--risk);background:var(--risk-soft)}
+.chipbtn:hover{filter:brightness(.97)}
+.chipbtn.go{border-color:var(--ink);color:var(--ink);background:var(--sheet)}
+.chipbtn svg{width:13px;height:13px}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);border-left:1px solid var(--rule)}
 .stat{padding:2px 0 2px 16px}
-.stat b{display:block;font-family:var(--mono);font-weight:500;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
-.stat span{font-size:12.5px;color:var(--mute)}
+.stat b{display:block;font-family:var(--mono);font-weight:500;font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums;transition:color .4s}
+.stat span{font-size:12px;color:var(--mute)}
 .grid{display:grid;grid-template-columns:minmax(0,1.62fr) minmax(0,1fr);gap:40px;margin-top:26px}
-.col{min-width:0;display:flex;flex-direction:column;gap:34px}
+.col{min-width:0;display:flex;flex-direction:column;gap:36px}
 .sec-h{display:flex;align-items:baseline;gap:12px;margin:0 0 12px}
 .sec-h h2{font-family:var(--serif);font-weight:500;font-size:21px;letter-spacing:-.01em;margin:0;font-variation-settings:"opsz" 40}
-.sec-h .aside{margin-left:auto;font-size:12.5px;color:var(--mute)}
-.legend{display:flex;gap:16px;font-size:12.5px;color:var(--mute);flex-wrap:wrap}
+.sec-h .aside{margin-left:auto;font-size:12px;color:var(--mute)}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--mute);flex-wrap:wrap}
 .legend i{display:inline-block;vertical-align:middle;margin-right:6px}
 
 /* ---------- runway ---------- */
-.runway{border-top:1px solid var(--ink)}
+.runway{border-top:1px solid var(--ink);position:relative}
 .rw-axis,.rw-row{display:grid;grid-template-columns:150px minmax(0,1fr) 64px;align-items:center}
-.rw-axis{height:28px;font-size:11.5px;color:var(--mute);border-bottom:1px solid var(--rule)}
-.rw-axis .ticks{position:relative;height:100%}
-.rw-axis .ticks span{position:absolute;top:7px;transform:translateX(-50%);font-family:var(--mono);white-space:nowrap}
-.rw-row{min-height:40px;border-bottom:1px solid var(--rule-2);cursor:pointer;width:100%;text-align:left}
+.rw-axis{height:30px;font-size:12px;color:var(--mute);border-bottom:1px solid var(--rule)}
+.ticks{position:relative;height:100%}
+.ticks span{position:absolute;top:7px;transform:translateX(-50%);white-space:nowrap}
+.ticks .today{color:var(--ink);font-weight:600}
+.rw-body{position:relative}
+.grid-lines{position:absolute;inset:0 64px 0 150px;pointer-events:none}
+.grid-lines i{position:absolute;top:0;bottom:0;width:1px;background:var(--rule-2)}
+.grid-lines .now{background:var(--ink);opacity:.4;width:1px}
+.rw-row{min-height:42px;border-bottom:1px solid var(--rule-2);cursor:pointer;width:100%;text-align:left;position:relative;transition:background .25s}
 .rw-row:hover{background:var(--sheet)}
-.rw-row.flash{animation:flash 1.6s ease-out}
-@keyframes flash{0%{background:var(--risk-soft)}100%{background:transparent}}
-.rw-id{font-family:var(--mono);font-size:13px;line-height:1.2;padding:6px 8px 6px 0}
+.rw-row.sel{background:var(--sheet);box-shadow:inset 3px 0 0 var(--ink)}
+.rw-row.hl{background:var(--ok-soft)}
+.rw-row.flash-late{animation:flashLate 1.8s ease-out both}
+.rw-row.flash-ok{animation:flashOk 1.8s ease-out both}
+@keyframes flashLate{0%,30%{background:var(--late-soft)}100%{background:transparent}}
+@keyframes flashOk{0%,30%{background:var(--ok-soft)}100%{background:transparent}}
+.rw-id{font-family:var(--mono);font-size:13.5px;line-height:1.2;padding:6px 8px 6px 0}
 .rw-id small{display:block;font-family:var(--sans);color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.track{position:relative;height:40px}
-.track .now{position:absolute;top:0;bottom:0;width:1px;background:var(--ink);opacity:.35}
-.seg-bar{position:absolute;top:17px;height:6px;border-radius:1px;background:var(--bar)}
+.track{position:relative;height:42px}
+.seg-bar,.seg-over,.crd{transition:left .55s var(--ease),width .55s var(--ease),background .3s}
+.seg-bar{position:absolute;top:17px;height:8px;border-radius:2px;background:var(--bar)}
 .seg-bar.prod{background:repeating-linear-gradient(90deg,var(--bar) 0 3px,transparent 3px 5px)}
-.seg-over{position:absolute;top:15px;height:10px;background:var(--late);border-radius:1px}
-.crd{position:absolute;top:9px;height:22px;width:2px;background:var(--ok)}
+.seg-over{position:absolute;top:15px;height:12px;background:var(--late);border-radius:2px}
+.crd{position:absolute;top:9px;height:24px;width:2px;background:var(--ok)}
 .crd.miss{background:var(--late)}
-.rw-row.risk .seg-bar{background:var(--risk)}
-.rw-slack{font-family:var(--mono);font-size:13px;text-align:right;padding-right:2px}
+.rw-row.risk .seg-bar{background:var(--risk-bar)}
+.rw-row.risk .crd{background:var(--risk-bar)}
+.rw-row.risk .seg-bar.prod{background:repeating-linear-gradient(90deg,var(--risk-bar) 0 3px,transparent 3px 5px)}
+.rw-slack{font-family:var(--mono);font-size:13.5px;text-align:right;padding-right:2px}
 .rw-more{display:block;width:100%;padding:12px 0;font-size:13.5px;color:var(--ink-2);text-align:left;border-bottom:1px solid var(--rule)}
 .rw-more:hover{color:var(--ink)}
+.calm-band{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:0 0 12px;border-radius:8px;background:var(--ok-soft);color:var(--ok);font-size:13.5px}
+.calm-band b{font-weight:600}
+.calm-band button{margin-left:auto;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 
 /* ---------- decisions ---------- */
-.decision{border:1px solid var(--ink);border-radius:8px;background:var(--sheet);padding:18px 18px 16px}
+.decision{border:1px solid var(--ink);border-radius:8px;background:var(--sheet);padding:18px 18px 16px;transition:box-shadow .25s,opacity .4s,transform .4s}
 .decision + .decision{margin-top:12px}
-.d-what{font-family:var(--serif);font-size:19px;line-height:1.3;margin:0;font-variation-settings:"opsz" 30}
-.d-meta{font-size:13px;color:var(--mute);margin:6px 0 14px}
+.decision.alt{border-color:var(--rule)}
+.decision:hover{box-shadow:0 6px 24px -12px rgba(0,0,0,.25)}
+.d-tag{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ok);margin-bottom:6px}
+.d-tag.alt{color:var(--mute)}
+.d-what{font-family:var(--serif);font-size:18px;line-height:1.3;margin:0;font-variation-settings:"opsz" 30}
+.d-meta{font-size:13.5px;color:var(--mute);margin:6px 0 14px}
 .d-effect{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:14px}
 .d-effect div{padding:10px 0}
 .d-effect div+div{border-left:1px solid var(--rule);padding-left:14px}
@@ -108,22 +157,37 @@ main{max-width:1320px;margin:0 auto;padding:26px 28px 80px}
 .d-effect span{display:block;font-size:12px;color:var(--mute)}
 .d-effect b span{display:inline;font-size:inherit}
 .d-actions{display:flex;gap:8px;flex-wrap:wrap}
-.btn{height:38px;padding:0 16px;border-radius:6px;font-size:14px;font-weight:500;border:1px solid var(--rule);background:var(--paper)}
+.btn{height:38px;padding:0 16px;border-radius:6px;font-size:13.5px;font-weight:500;border:1px solid var(--rule);background:var(--paper);transition:opacity .15s,border-color .15s}
 .btn:hover{border-color:var(--ink-2)}
 .btn.go{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .btn.go:hover{opacity:.88}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .btn.quiet{border-color:transparent;color:var(--ink-2);padding:0 8px;background:none}
-.empty{color:var(--mute);font-size:14px;padding:4px 0 0;max-width:46ch;margin:0}
-.note-role{font-size:12.5px;color:var(--mute);margin:10px 0 0}
+.empty{color:var(--mute);font-size:13.5px;padding:4px 0 0;max-width:46ch;margin:0}
+.note-role{font-size:12px;color:var(--mute);margin:10px 0 0}
+.d-warn{font-size:12px;color:var(--late);margin:10px 0 0}
+.d-email{font:12px/1.55 var(--mono);color:var(--ink-2);background:var(--paper);border-radius:6px;padding:10px 12px;margin:0 0 14px;white-space:pre-wrap}
+.receipt{border-radius:8px;background:var(--ok-soft);color:var(--ok);padding:14px 16px;display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;animation:pop .45s var(--ease)}
+.receipt svg{width:22px;height:22px;flex:none;margin-top:1px}
+.receipt b{display:block;font-family:var(--serif);font-size:18px;font-weight:500;color:var(--ink)}
+.receipt span{font-size:13.5px;color:var(--ink-2)}
+.receipt.out{animation:fadeOut .5s forwards}
+@keyframes pop{from{transform:scale(.96);opacity:0}}
+@keyframes fadeOut{to{opacity:0;transform:translateY(-6px)}}
+.mgr{border-top:1px solid var(--ink)}
+.mgr-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule-2);font-size:13.5px}
+.mgr-row b{font-family:var(--mono);font-weight:500}
+.pending{display:flex;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule-2);font-size:13.5px}
+.pending .chip{margin-left:auto}
 
 /* ---------- note ---------- */
 .note{border-left:2px solid var(--ink);padding:2px 0 2px 16px}
-.note p{margin:0 0 8px;color:var(--ink-2);font-size:14.5px}
-.note p:first-child{color:var(--ink)}
+.note p{margin:0 0 8px;color:var(--ink-2);font-size:15px}
 .note ul{margin:0 0 8px;padding:0;list-style:none}
-.note li{font-size:14px;color:var(--ink-2);padding:3px 0}
-.checked{font-size:12.5px;color:var(--mute);display:flex;gap:6px;align-items:center}
+.note li{font-size:13.5px;color:var(--ink-2);padding:4px 0}
+.note li strong{color:var(--ink);font-weight:600}
+.note .more{font-size:13.5px;color:var(--ink-2);text-decoration:underline;text-underline-offset:3px;margin-bottom:8px}
+.checked{font-size:12px;color:var(--mute);display:flex;gap:6px;align-items:center}
 .checked::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok);flex:none}
 .checked.bad::before{background:var(--late)}
 
@@ -131,15 +195,15 @@ main{max-width:1320px;margin:0 auto;padding:26px 28px 80px}
 .sig{display:grid;grid-template-columns:10px minmax(0,1fr);gap:12px;padding:11px 0;border-bottom:1px solid var(--rule-2)}
 .sig:first-child{border-top:1px solid var(--ink)}
 .sig .dot{width:8px;height:8px;border-radius:50%;margin-top:7px;background:var(--mute)}
-.sig.high .dot{background:var(--late)} .sig.medium .dot{background:var(--risk)}
-.sig p{margin:0;font-size:14px}
+.sig.high .dot{background:var(--late)} .sig.medium .dot{background:var(--risk-bar)}
+.sig p{margin:0;font-size:13.5px}
 .sig small{color:var(--mute);font-size:12px}
 .sig-more{font-size:13.5px;color:var(--ink-2);padding:10px 0}
 .feeds{display:flex;gap:8px 18px;flex-wrap:wrap;font-size:13.5px;margin-bottom:12px}
 .feed{display:flex;align-items:center;gap:7px}
 .feed i{width:8px;height:8px;border-radius:50%;background:var(--ok)}
 .feed.down i{background:var(--late);box-shadow:0 0 0 3px var(--late-soft)}
-.quality{font-size:13px;color:var(--mute);margin:12px 0 0}
+.quality{font-size:12px;color:var(--mute);margin:12px 0 0}
 
 /* ---------- stock ---------- */
 .stock{width:100%;border-collapse:collapse;font-size:13.5px}
@@ -147,79 +211,109 @@ main{max-width:1320px;margin:0 auto;padding:26px 28px 80px}
 .stock th:first-child{text-align:left;padding-left:0}
 .stock td{padding:8px 0 8px 12px;border-bottom:1px solid var(--rule-2);text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;vertical-align:top}
 .stock td:first-child{text-align:left;padding-left:0;font-family:var(--sans)}
-.stock td small{color:var(--mute);font-family:var(--mono);font-size:11.5px;margin-left:6px}
+.stock td small{color:var(--mute);font-family:var(--mono);font-size:12px;margin-left:6px}
+.stock td.stale{background:repeating-linear-gradient(135deg,transparent 0 5px,var(--late-soft) 5px 7px)}
 .cover{display:flex;align-items:center;gap:8px;justify-content:flex-end}
 .cover .t{position:relative;width:88px;height:6px;background:var(--track);border-radius:1px}
-.cover .f{position:absolute;left:0;top:0;bottom:0;background:var(--bar);border-radius:1px}
-.cover .lt{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--risk)}
+.cover .f{position:absolute;left:0;top:0;bottom:0;background:var(--bar);border-radius:1px;transition:width .5s var(--ease)}
+.cover .lt{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--risk-bar)}
 .neg{color:var(--late)}
-.short{color:var(--late);font-family:var(--sans);font-size:12.5px}
-.rule-note{font-size:13px;color:var(--mute);margin:12px 0 0;max-width:70ch}
+.short{color:var(--late);font-family:var(--sans);font-size:12px}
+.rule-note{font-size:13.5px;color:var(--mute);margin:12px 0 0;max-width:70ch}
 .sup{display:grid;grid-template-columns:minmax(0,1fr) 70px 70px;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--rule-2)}
 .sup span{text-align:right;font-family:var(--mono)}
 .sup.h{font-size:12px;color:var(--mute);border-bottom:1px solid var(--ink)}
 .sup.h span{font-family:var(--sans)}
-.log{font-size:13px;color:var(--ink-2)}
+.log{font-size:13.5px;color:var(--ink-2)}
 .log div{padding:6px 0;border-bottom:1px solid var(--rule-2)}
-.log .mono{color:var(--mute);margin-right:8px}
-
-/* ---------- sheet (explain / simulate / evidence) ---------- */
-.scrim{position:fixed;inset:0;background:rgba(20,20,18,.36);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
-.scrim.on{opacity:1;pointer-events:auto}
-.sheet{position:fixed;z-index:41;background:var(--sheet);color:var(--ink);top:0;right:0;bottom:0;width:min(460px,100vw);border-left:1px solid var(--rule);transform:translateX(100%);transition:transform .26s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;visibility:hidden}
-.sheet.on{transform:none;visibility:visible}
-.sheet header{display:flex;align-items:center;padding:18px 22px;border-bottom:1px solid var(--rule)}
-.sheet h3{font-family:var(--serif);font-weight:500;font-size:21px;margin:0}
-.sheet .x{margin-left:auto;width:34px;height:34px;border-radius:6px;font-size:22px;line-height:1}
-.sheet .x:hover{background:var(--rule-2)}
-.sheet .in{padding:20px 22px;overflow:auto;flex:1}
-.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;font-size:14px;margin:0 0 18px}
-.kv dt{color:var(--mute)} .kv dd{margin:0;font-family:var(--mono)}
-.mat-line{padding:12px 0;border-top:1px solid var(--rule)}
-.mat-line b{font-weight:500}
-.mat-line p{margin:4px 0 0;font-size:13.5px;color:var(--ink-2)}
-.scen{display:block;width:100%;text-align:left;padding:14px 0;border-bottom:1px solid var(--rule)}
-.scen:first-child{border-top:1px solid var(--ink)}
-.scen b{display:block;font-weight:500;font-size:15px}
-.scen span{font-size:13.5px;color:var(--mute)}
-.scen:hover b{text-decoration:underline;text-underline-offset:3px}
-.ev-row .ev-big{font-family:var(--serif);font-size:40px;color:var(--ink);line-height:1.05;font-variation-settings:"opsz" 120;margin:0}
-.ev-row{padding:16px 0;border-top:1px solid var(--rule)}
-.ev-row p{margin:6px 0 0;font-size:13.5px;color:var(--ink-2)}
-.ev-row .num{font-size:22px}
-.method{font-size:13px;color:var(--mute);border-top:1px solid var(--ink);padding-top:12px;margin:6px 0 0}
+.log .mono{color:var(--mute);margin-right:8px;font-size:12px}
 
 /* ---------- supplier messages ---------- */
-.ask{border:1px solid var(--risk);border-radius:8px;background:var(--sheet);padding:16px 18px 14px}
+.ask{border:1px solid var(--risk-bar);border-radius:8px;background:var(--sheet);padding:16px 18px 14px}
 .ask + .ask{margin-top:12px}
-.ask .from{font-size:12.5px;color:var(--mute);margin:0 0 6px}
+.ask .from{font-size:12px;color:var(--mute);margin:0 0 6px}
 .quote{font-family:var(--serif);font-size:18px;line-height:1.35;margin:0;font-variation-settings:"opsz" 30}
 .quote::before{content:"\201C"} .quote::after{content:"\201D"}
-mark{background:var(--risk-soft);color:inherit;padding:0 2px;border-radius:2px;box-shadow:inset 0 -2px 0 var(--risk)}
+mark{background:var(--risk-soft);color:inherit;padding:0 2px;border-radius:2px;box-shadow:inset 0 -2px 0 var(--risk-bar)}
 .reading{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;font-size:13.5px;margin:12px 0;padding:10px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
 .reading dt{color:var(--mute)} .reading dd{margin:0}
+.range{position:relative;height:6px;border-radius:3px;background:var(--track);margin:8px 0 2px}
+.range i{position:absolute;top:0;bottom:0;border-radius:3px;background:var(--risk-bar)}
+.range b{position:absolute;top:-4px;width:3px;height:14px;background:var(--ink);border-radius:1px}
+.range-l{display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
 .draft{font-size:13.5px;color:var(--ink-2);border-left:2px solid var(--rule);padding:2px 0 2px 12px;margin:0 0 12px}
 .draft b{display:block;font-size:12px;color:var(--mute);font-weight:500;margin-bottom:2px}
+.ask.fresh mark{animation:markIn .6s var(--ease) both .1s}
+.ask.fresh .reading{animation:rise .5s var(--ease) both .55s}
+.ask.fresh .draft,.ask.fresh .d-actions{animation:rise .5s var(--ease) both 1s}
+@keyframes markIn{from{background:transparent;box-shadow:inset 0 0 0 var(--risk-bar)}}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}}
 .msgs{border-top:1px solid var(--ink)}
 .msg{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:10px 0;border-bottom:1px solid var(--rule-2);font-size:13.5px}
 .msg q{quotes:"\201C" "\201D";color:var(--ink)}
-.msg small{grid-column:1/-1;color:var(--mute);font-size:12.5px}
-.chip{font-size:11.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;padding:2px 7px;border-radius:3px;align-self:start;white-space:nowrap}
+.msg small{grid-column:1/-1;color:var(--mute);font-size:12px}
+.chip{font-size:12px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;padding:2px 7px;border-radius:3px;align-self:start;white-space:nowrap}
 .chip.clear{background:var(--ok-soft);color:var(--ok)} .chip.ambiguous{background:var(--risk-soft);color:var(--risk)} .chip.none{background:var(--rule-2);color:var(--mute)}
-.chip.answered{background:var(--ok-soft);color:var(--ok)}
+.chip.wait{background:var(--rule-2);color:var(--ink-2)}
 .days{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}
-.days button{border:1px solid var(--rule);border-radius:6px;padding:6px 10px;font-size:13px;background:var(--paper)}
+.days button{border:1px solid var(--rule);border-radius:6px;padding:6px 10px;font-size:13.5px;background:var(--paper)}
 .days button:hover{border-color:var(--ink)}
 .try textarea{width:100%;min-height:86px;font:15px/1.45 var(--sans);color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:10px 12px;resize:vertical}
-.try select{font:14px var(--sans);color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:7px 8px;width:100%}
-.try label{display:block;font-size:12.5px;color:var(--mute);margin:12px 0 5px}
-.preview{margin:14px 0;padding:12px 14px;border-radius:6px;background:var(--paper);border:1px solid var(--rule);font-size:14px;min-height:48px}
+.try select{font:13.5px var(--sans);color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:7px 8px;width:100%}
+.try label{display:block;font-size:12px;color:var(--mute);margin:12px 0 5px}
+.preview{margin:14px 0;padding:12px 14px;border-radius:6px;background:var(--paper);border:1px solid var(--rule);font-size:13.5px;min-height:48px}
 .examples{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.examples button{font-size:12.5px;border:1px dashed var(--rule);border-radius:12px;padding:3px 9px;color:var(--ink-2)}
+.examples button{font-size:12px;border:1px dashed var(--rule);border-radius:12px;padding:3px 9px;color:var(--ink-2)}
 .examples button:hover{border-color:var(--ink-2)}
+.tryicon{margin-left:auto;display:inline-flex;align-items:center;gap:6px}
+.tryicon svg{width:14px;height:14px}
 
-.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--ink);color:var(--paper);padding:11px 16px;border-radius:6px;font-size:14px;opacity:0;transition:all .25s;z-index:60;width:max-content;max-width:min(560px,calc(100vw - 32px));pointer-events:none}
-.toast.on{opacity:1;transform:translate(-50%,0)}
+/* ---------- sheet ---------- */
+.scrim{position:fixed;inset:0;background:rgba(20,20,18,.36);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;z-index:41;background:var(--sheet);color:var(--ink);top:0;right:0;bottom:0;width:min(480px,100vw);border-left:1px solid var(--rule);transform:translateX(100%);transition:transform .28s var(--ease);display:flex;flex-direction:column;visibility:hidden}
+.sheet.on{transform:none;visibility:visible}
+.sheet header{display:flex;align-items:center;padding:18px 22px;border-bottom:1px solid var(--rule)}
+.sheet h3{font-family:var(--serif);font-weight:500;font-size:21px;margin:0}
+.sheet .x{margin-left:auto;width:34px;height:34px;border-radius:6px;font-size:21px;line-height:1}
+.sheet .x:hover{background:var(--rule-2)}
+.sheet .in{padding:20px 22px;overflow:auto;flex:1}
+.handle{display:none}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;font-size:13.5px;margin:0 0 18px}
+.kv dt{color:var(--mute)} .kv dd{margin:0}
+.because{font-family:var(--serif);font-size:18px;line-height:1.35;margin:0 0 16px}
+.because em{font-style:normal;color:var(--late)}
+.mat-line{padding:12px 0;border-top:1px solid var(--rule)}
+.mat-line b{font-weight:500}
+.mat-line p{margin:4px 0 0;font-size:13.5px;color:var(--ink-2)}
+.mat-line.culprit b{color:var(--late)}
+.tl{position:relative;height:22px;margin:8px 0 2px}
+.tl::before{content:"";position:absolute;left:0;right:0;top:10px;height:2px;background:var(--track)}
+.tl i{position:absolute;top:5px;width:12px;height:12px;border-radius:50%;background:var(--bar);transform:translateX(-50%);border:2px solid var(--sheet)}
+.tl i.bad{background:var(--late)}
+.tl .crdl{position:absolute;top:0;bottom:0;width:2px;background:var(--ok)}
+.tl .crdl.miss{background:var(--late)}
+.scen{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 12px;width:100%;text-align:left;padding:14px 0;border-bottom:1px solid var(--rule)}
+.scen:first-child{border-top:1px solid var(--ink)}
+.scen .ic{grid-row:1/3;width:28px;height:28px;border-radius:6px;background:var(--paper);display:flex;align-items:center;justify-content:center;font-size:15px}
+.scen b{font-weight:500;font-size:15px}
+.scen span{font-size:13.5px;color:var(--mute)}
+.scen em{font-style:normal;color:var(--ink-2)}
+.scen:hover b{text-decoration:underline;text-underline-offset:3px}
+.ev-row{padding:16px 0;border-top:1px solid var(--rule)}
+.ev-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 4px}
+.ev-big{font-family:var(--serif);font-size:40px;color:var(--ink);line-height:1.05;font-variation-settings:"opsz" 120;margin:0}
+.ev-mid{font-family:var(--serif);font-size:28px;color:var(--ink);line-height:1.1;margin:0}
+.ev-row p{margin:6px 0 0;font-size:13.5px;color:var(--ink-2)}
+.plants{display:flex;flex-wrap:wrap;gap:4px;margin:10px 0 2px}
+.plants i{width:12px;height:12px;border-radius:50%;background:var(--rule)}
+.plants i.win{background:var(--ok)} .plants i.loss{background:var(--late)}
+.method{font-size:13.5px;color:var(--mute);border-top:1px solid var(--ink);padding-top:12px;margin:6px 0 0}
+
+/* ---------- toast ---------- */
+.toast{position:fixed;top:66px;right:28px;max-width:min(420px,calc(100vw - 32px));background:var(--ink);color:var(--paper);padding:12px 16px 12px 14px;border-radius:8px;font-size:13.5px;opacity:0;transform:translateY(-8px);transition:opacity .25s,transform .25s var(--ease);z-index:60;pointer-events:none;border-left:4px solid var(--ok);box-shadow:0 10px 30px -12px rgba(0,0,0,.4)}
+.toast.warn{border-left-color:var(--risk-bar)} .toast.err{border-left-color:var(--late)}
+.toast.on{opacity:1;transform:none}
 
 /* ---------- mobile ---------- */
 .tabs,.mob-transport{display:none}
@@ -230,40 +324,48 @@ mark{background:var(--risk-soft);color:inherit;padding:0 2px;border-radius:2px;b
   .stat:first-child{padding-left:0}
 }
 @media (max-width:720px){
-  body{padding-bottom:calc(122px + env(safe-area-inset-bottom))}
-  .bar-in{padding:10px 16px;gap:10px}
-  .plant,.transport,.linkbtn.desk{display:none}
+  body{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+  .bar-in{padding:8px 16px;gap:8px}
+  .plant,.transport,.linkbtn.desk,.btn-sim.desk{display:none}
+  .iconbtn{display:inline-flex}
   .bar .seg{margin-left:auto}
-  .seg button{padding:6px 9px;font-size:13px}
-  main{padding:18px 16px 24px}
+  .seg button{padding:6px 9px;font-size:13.5px}
+  .banner-in{padding:8px 16px}
+  main{padding:16px 16px 24px}
   .stats{grid-template-columns:repeat(4,minmax(0,1fr))}
-  .stat{padding-left:10px} .stat b{font-size:21px} .stat span{font-size:11.5px;line-height:1.25;display:block}
+  .stat{padding-left:10px} .stat b{font-size:21px} .stat span{font-size:12px;line-height:1.25;display:block}
   .grid{margin-top:4px;gap:0}
   .col{gap:0;display:contents}
-  [data-tab]{display:none;padding-top:22px}
+  [data-tab]{display:none;padding-top:20px}
   body[data-view=today] [data-tab~=today],body[data-view=orders] [data-tab~=orders],
   body[data-view=stock] [data-tab~=stock],body[data-view=signals] [data-tab~=signals]{display:block}
   body:not([data-view=today]) .lede{display:none}
-  body:not([data-view=today]) [data-tab]:first-of-type{padding-top:4px}
+  body:not([data-view=today]) [data-tab]{padding-top:4px}
+  body:not([data-view=today]) [data-tab] ~ [data-tab]{padding-top:24px}
   .rw-axis,.rw-row{grid-template-columns:96px minmax(0,1fr) 44px}
-  .rw-id small{font-size:11.5px} .rw-id .qty{display:none}
-  .legend{gap:6px 14px;font-size:12px}
-  .mob-transport .clock,.tbtn{white-space:nowrap}
-  .ev-link{display:block}
+  .grid-lines{inset:0 44px 0 96px}
+  .rw-id small{font-size:12px} .rw-id .qty{display:none}
+  .legend{gap:6px 14px}
   .stock .hide-m{display:none}
   .cover .t{width:52px}
+  .d-actions{flex-wrap:nowrap}
+  .d-actions .btn{padding:0 12px}
+  .tryicon .lbl{display:none}
+  .tryicon{width:34px;height:34px;justify-content:center;border:1px solid var(--rule);border-radius:6px}
   .sheet{top:auto;left:0;right:0;bottom:0;width:100%;max-height:86vh;border-left:0;border-top:1px solid var(--rule);border-radius:14px 14px 0 0;transform:translateY(100%)}
-  .sheet header{padding:16px 18px}
+  .handle{display:block;width:36px;height:4px;border-radius:2px;background:var(--rule);margin:8px auto 0}
+  .sheet header{padding:10px 18px 12px}
   .sheet .in{padding:16px 18px calc(24px + env(safe-area-inset-bottom))}
-  .mob-transport{display:flex;position:fixed;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom));z-index:21;background:var(--paper);border-top:1px solid var(--rule);padding:8px 16px;align-items:center;gap:6px}
-  .mob-transport .clock{min-width:0;text-align:left;padding:0;margin-right:auto;font-size:13.5px}
+  .mob-transport{display:flex;position:fixed;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom));z-index:21;background:var(--paper);border-top:1px solid var(--rule);padding:6px 16px;align-items:center;gap:6px;height:48px}
+  .mob-transport .clock{padding:0;margin-right:auto;text-align:left}
+  .mob-transport .tbtn{height:32px}
   .tabs{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:22;background:var(--sheet);border-top:1px solid var(--rule);padding-bottom:env(safe-area-inset-bottom)}
-  .tabs button{height:58px;font-size:12.5px;color:var(--mute);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative}
+  .tabs button{height:58px;font-size:12px;color:var(--mute);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative}
   .tabs button[aria-selected=true]{color:var(--ink);font-weight:600}
   .tabs button[aria-selected=true]::before{content:"";position:absolute;top:0;left:30%;right:30%;height:2px;background:var(--ink)}
-  .tabs .badge{position:absolute;top:7px;left:calc(50% + 7px);min-width:17px;height:17px;border-radius:9px;background:var(--late);color:#fff;font-size:10.5px;line-height:17px;font-family:var(--mono);padding:0 4px}
+  .tabs .badge{position:absolute;top:7px;left:calc(50% + 7px);min-width:17px;height:17px;border-radius:9px;background:var(--late);color:var(--on-late);font-size:12px;line-height:17px;font-family:var(--mono);padding:0 4px}
   .tabs svg{width:20px;height:20px}
-  .toast{bottom:calc(132px + env(safe-area-inset-bottom))}
+  .toast{top:auto;right:16px;left:16px;max-width:none;bottom:calc(116px + env(safe-area-inset-bottom));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transform:translateY(8px)}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -274,7 +376,7 @@ mark{background:var(--risk-soft);color:inherit;padding:0 2px;border-radius:2px;b
   <div class="mark"><i aria-hidden="true"></i>Sentinel</div>
   <div class="plant">Demo plant · 8 products · 24 materials · 6 suppliers</div>
   <div class="transport">
-    <span class="clock" id="clock">Day –</span>
+    <span class="clock" id="clock">–</span>
     <button class="tbtn play" id="play" aria-label="Play"><svg viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5v11l9-5.5z"/></svg></button>
     <button class="tbtn" data-adv="0.25" title="Advance 6 hours">+6h</button>
     <button class="tbtn" data-adv="1" title="Advance one day">+1 day</button>
@@ -282,9 +384,11 @@ mark{background:var(--risk-soft);color:inherit;padding:0 2px;border-radius:2px;b
   <div class="seg" role="group" aria-label="View as">
     <button data-role="planner" aria-pressed="true">Planner</button><button data-role="buyer" aria-pressed="false">Buyer</button><button data-role="manager" aria-pressed="false">Manager</button>
   </div>
-  <button class="linkbtn desk" id="simBtn">Simulate a problem</button>
+  <button class="btn-sim desk" id="simBtn"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M9.5 1 3 9h4l-1 6 6.5-8h-4z"/></svg>Simulate a problem</button>
   <button class="linkbtn desk" id="evBtn">Evidence</button>
+  <button class="iconbtn" id="evBtnM" aria-label="Evidence"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 14h12M4 11V7m4 4V3m4 8V6"/></svg></button>
 </div></div>
+<div class="banner" id="banner" role="alert"><div class="banner-in"><i></i><span id="bannerT"></span></div></div>
 
 <main>
   <section class="lede">
@@ -292,6 +396,7 @@ mark{background:var(--risk-soft);color:inherit;padding:0 2px;border-radius:2px;b
       <p class="kicker" id="kicker">Loading…</p>
       <h1 class="headline" id="headline">&nbsp;</h1>
       <p class="sub" id="sub"></p>
+      <div class="chips" id="chips"></div>
     </div>
     <div class="stats" id="stats"></div>
   </section>
@@ -300,13 +405,21 @@ mark{background:var(--risk-soft);color:inherit;padding:0 2px;border-radius:2px;b
     <div class="col">
       <section data-tab="orders">
         <div class="sec-h"><h2>Order runway</h2><span class="aside">today → projected ship date</span></div>
+        <div id="calm"></div>
         <div class="legend" style="margin-bottom:10px">
-          <span><i style="width:18px;height:6px;background:var(--bar)"></i>waiting for material</span>
-          <span><i style="width:18px;height:6px;background:repeating-linear-gradient(90deg,var(--bar) 0 3px,transparent 3px 5px)"></i>in production</span>
+          <span><i style="width:18px;height:8px;border-radius:2px;background:var(--bar)"></i>waiting for material</span>
+          <span><i style="width:18px;height:8px;background:repeating-linear-gradient(90deg,var(--bar) 0 3px,transparent 3px 5px)"></i>in production</span>
           <span><i style="width:2px;height:12px;background:var(--ok)"></i>customer date</span>
-          <span><i style="width:14px;height:8px;background:var(--late)"></i>past the customer date</span>
+          <span><i style="width:14px;height:8px;border-radius:2px;background:var(--late)"></i>past the customer date</span>
         </div>
-        <div class="runway" id="runway"></div>
+        <div class="runway" id="runway"><div class="rw-axis" id="rwAxis"></div><div class="rw-body" id="rwBody"><div class="grid-lines" id="gridLines"></div></div><div id="rwFoot"></div></div>
+      </section>
+
+      <section data-tab="signals">
+        <div class="sec-h"><h2>Signals</h2><span class="aside" id="sigCount"></span></div>
+        <div class="feeds" id="feeds"></div>
+        <div id="signals"></div>
+        <p class="quality" id="quality"></p>
       </section>
 
       <section data-tab="stock">
@@ -322,11 +435,12 @@ mark{background:var(--risk-soft);color:inherit;padding:0 2px;border-radius:2px;b
     <div class="col">
       <section data-tab="today">
         <div class="sec-h"><h2 id="decTitle">Needs a decision</h2></div>
+        <div id="receipt"></div>
         <div id="decisions"></div>
       </section>
 
-      <section data-tab="today">
-        <div class="sec-h"><h2 id="msgTitle">Supplier messages</h2><button class="linkbtn" id="tryBtn" style="margin-left:auto">Write one yourself</button></div>
+      <section data-tab="today" id="msgSec">
+        <div class="sec-h"><h2 id="msgTitle">Supplier messages</h2><button class="linkbtn tryicon" id="tryBtn" aria-label="Write a supplier message yourself"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5L6 12.5H3.5V10z"/></svg><span class="lbl">Write one yourself</span></button></div>
         <div id="asks"></div>
         <div class="msgs" id="msgs"></div>
       </section>
@@ -334,14 +448,6 @@ mark{background:var(--risk-soft);color:inherit;padding:0 2px;border-radius:2px;b
       <section data-tab="today">
         <div class="sec-h"><h2 id="noteTitle">Briefing</h2></div>
         <div class="note" id="note"></div>
-        <button class="rw-more ev-link" id="evBtnM" style="margin-top:22px;border-top:1px solid var(--rule)">How we know it works: results from 30 simulated plants →</button>
-      </section>
-
-      <section data-tab="signals">
-        <div class="sec-h"><h2>Signals</h2><span class="aside" id="sigCount"></span></div>
-        <div class="feeds" id="feeds"></div>
-        <div id="signals"></div>
-        <p class="quality" id="quality"></p>
       </section>
 
       <section data-tab="signals">
@@ -358,8 +464,8 @@ mark{background:var(--risk-soft);color:inherit;padding:0 2px;border-radius:2px;b
 </main>
 
 <div class="mob-transport">
-  <span class="clock" id="clockM">Day –</span>
-  <button class="tbtn" id="simBtnM">Simulate</button>
+  <span class="clock" id="clockM">–</span>
+  <button class="tbtn" id="simBtnM"><svg viewBox="0 0 16 16" fill="currentColor" style="color:var(--late)"><path d="M9.5 1 3 9h4l-1 6 6.5-8h-4z"/></svg>Simulate</button>
   <button class="tbtn" data-adv="1" aria-label="Advance one day">+1d</button>
   <button class="tbtn play" id="playM" aria-label="Play"><svg viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5v11l9-5.5z"/></svg></button>
 </div>
@@ -372,18 +478,20 @@ mark{background:var(--risk-soft);color:inherit;padding:0 2px;border-radius:2px;b
 
 <div class="scrim" id="scrim"></div>
 <aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT">
+  <div class="handle" id="handle"></div>
   <header><h3 id="sheetT"></h3><button class="x" id="sheetX" aria-label="Close">×</button></header>
   <div class="in" id="sheetB"></div>
 </aside>
-<div class="toast" id="toast" role="status"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const fmt = n => Number(n).toLocaleString("en-IN", {maximumFractionDigits: 1});
-const money = n => "₹" + Number(n).toLocaleString("en-IN", {maximumFractionDigits: 0});
+const fmt = n => Number(n).toLocaleString("en-US", {maximumFractionDigits: 1});
+const money = n => "₹" + Number(n).toLocaleString("en-US", {maximumFractionDigits: 0});
 const plural = (n, w, ws) => `${n} ${n === 1 ? w : (ws || w + "s")}`;
-let role = "planner", S = null, playing = null, busy = false, showAll = false, prevRisk = {}, evidence = null;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let role = "planner", S = null, playing = null, busy = false, showAll = false, prevRisk = {}, evidence = null, selOrder = null, seenAsks = new Set(), firstRender = true;
 
 async function api(path, opts = {}) {
   const r = await fetch(path, {headers: {"Content-Type": "application/json", "X-Role": role}, ...opts});
@@ -391,10 +499,17 @@ async function api(path, opts = {}) {
   if (!r.ok) throw new Error(j.detail || r.statusText);
   return j;
 }
-function toast(msg, ms = 3800) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), ms); }
-function clockText(now) { const d = Math.floor(now), h = Math.floor((now - d) * 24); return `Day ${d} · ${String(h).padStart(2, "0")}:00`; }
+function toast(msg, kind = "ok", ms = 4200) {
+  const t = $("#toast"); t.className = "toast " + kind; t.textContent = String(msg).replace(/([”"])\.$/, "$1");
+  requestAnimationFrame(() => t.classList.add("on")); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), ms);
+}
 const DAY0 = Date.UTC(2026, 10, 2);   // simulation day 0 = Monday 2 Nov 2026
-function dateOf(day) { const d = new Date(DAY0 + day * 864e5); return d.toLocaleDateString("en-GB", {weekday: "short", day: "numeric", month: "short", timeZone: "UTC"}).replace(",", ""); }
+function dateOf(day, opts = {weekday: "short", day: "numeric", month: "short"}) { return new Date(DAY0 + Math.floor(day) * 864e5).toLocaleDateString("en-GB", {...opts, timeZone: "UTC"}).replace(",", ""); }
+const shortDate = d => dateOf(d, {weekday: "short", day: "numeric"});
+const hourOf = now => String(Math.floor((now - Math.floor(now)) * 24)).padStart(2, "0") + ":00";
+function clockHTML(now) { return `<b>${dateOf(now)}</b> ${hourOf(now)}<span>day ${Math.floor(now)}</span>`; }
+function whenText(t) { return `${dateOf(t)} ${hourOf(t)}`; }
+const matName = id => ((S && S.materials.find(m => m.id === id)) || {}).name || id;
 function marked(text, cues) {
   let h = esc(text);
   for (const c of cues || []) {
@@ -404,41 +519,55 @@ function marked(text, cues) {
   }
   return h;
 }
-const matName = id => ((S && S.materials.find(m => m.id === id)) || {}).name || id;
+function countTo(el, to, render) {
+  const from = +(el.dataset.v ?? to); el.dataset.v = to;
+  if (reduced || from === to) { el.innerHTML = render(to); return; }
+  const t0 = performance.now(), dur = 650;
+  const step = t => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.innerHTML = render(Math.round(from + (to - from) * e)); if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+const FEEDNAME = {erp: "orders (ERP)", wms: "warehouse", supplier: "supplier"};
 
-/* ------------------------------------------------ headline */
+/* ------------------------------------------------ headline + banner */
 function lede(s) {
   const k = s.kpis, late = s.orders.filter(o => o.risk === "late" && o.status === "open");
   const prop = s.proposals[0], feeds = k.feeds_down;
-  $("#kicker").textContent = `${dateOf(Math.floor(s.now))} · ${clockText(s.now)} · ${plural(k.open_orders, "open order")}`;
+  $("#kicker").textContent = `${dateOf(s.now)} · ${hourOf(s.now)} · ${plural(k.open_orders, "open order")}`;
   let h, sub;
   if (feeds.length) {
-    h = `The <em>${feeds.map(f => ({erp: "orders", wms: "warehouse", supplier: "supplier"}[f] || f)).join(" and ")} feed</em> has gone quiet.`;
+    h = `The <em>${feeds.map(f => FEEDNAME[f] || f).join(" and ")} feed</em> has gone quiet.`;
     sub = `Figures that depend on it may be out of date, so treat them with care. ${k.late ? plural(k.late, "order") + " currently projected late." : "No order is projected late yet."}`;
   } else if (k.late) {
-    h = `<em>${plural(k.late, "order")}</em> will miss ${k.late === 1 ? "its" : "their"} customer date.`;
+    h = `<em><span id="hn">${k.late}</span> ${k.late === 1 ? "order" : "orders"}</em> will miss ${k.late === 1 ? "its" : "their"} customer date.`;
     const cause = causeLine(late);
     if (prop && prop.effect.late_after < prop.effect.late_before) {
       const fixed = prop.effect.late_before - prop.effect.late_after;
       sub = `${cause} ${fixed >= k.late ? (k.late === 1 ? "One decision puts it back on time." : "One decision brings all of them back on time.") : `One decision brings ${fixed} back on time.`}`;
     } else sub = cause || "Production has already started on these, so the delay can be managed but not avoided.";
   } else if (k.at_risk) {
-    h = `Everything ships on time, but <span style="color:var(--risk)">${plural(k.at_risk, "order")}</span> ${k.at_risk === 1 ? "has" : "have"} less than two days to spare.`;
+    h = `Everything ships on time, but <span class="amber">${plural(k.at_risk, "order")}</span> ${k.at_risk === 1 ? "has" : "have"} less than two days to spare.`;
     sub = "Nothing to decide yet. Sentinel raises it the moment a projection crosses a customer date.";
   } else {
     h = `<span class="calm">Every open order</span> is on track to ship by its customer date.`;
     sub = "Sentinel re-plans each time an event arrives: a new order, a delivery, a stock count, a note from a supplier.";
   }
-  const asks = (s.questions || []).filter(q => q.status === "pending").length;
-  if (asks && !feeds.length) sub = `${sub} ${asks === 1 ? "One supplier message is" : asks + " supplier messages are"} unclear, so Sentinel plans for the latest possible day and has a question ready.`;
-  $("#headline").innerHTML = h;
+  const hd = $("#headline"), was = hd.dataset.late;
+  hd.innerHTML = h; hd.dataset.late = k.late;
+  if (k.late && was != null && +was !== k.late && $("#hn")) { $("#hn").dataset.v = +was || 0; countTo($("#hn"), k.late, v => v); }
   $("#sub").textContent = sub;
-  $("#stats").innerHTML = [
-    [k.late, "projected late", k.late ? "late-t" : ""],
-    [k.at_risk, "at risk", k.at_risk ? "risk-t" : ""],
-    [Math.round(k.on_track_pct) + "%", "on track", k.on_track_pct < 85 ? "risk-t" : ""],
-    [k.stockouts, "stock-outs ahead", k.stockouts ? "late-t" : ""],
-  ].map(([v, l, c]) => `<div class="stat"><b class="${c}">${v}</b><span>${l}</span></div>`).join("");
+  const asks = (s.questions || []).filter(q => q.status === "pending").length;
+  $("#chips").innerHTML = (asks ? `<button class="chipbtn" data-jump="msgSec"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 3h12v8H6l-4 3z"/></svg>${asks === 1 ? "1 unclear supplier date" : asks + " unclear supplier dates"} →</button>` : "");
+  const stats = [[k.late, "projected late", k.late ? "late-t" : "", v => v], [k.at_risk, "at risk", k.at_risk ? "risk-t" : "", v => v],
+                 [Math.round(k.on_track_pct), "on track", k.on_track_pct < 85 ? "risk-t" : "", v => v + "%"], [k.stockouts, "stock-outs ahead", k.stockouts ? "late-t" : "", v => v]];
+  if (!$("#stats").children.length) $("#stats").innerHTML = stats.map((_, i) => `<div class="stat"><b id="st${i}"></b><span></span></div>`).join("");
+  stats.forEach(([v, l, c, r], i) => { const b = $("#st" + i); b.className = c; b.nextElementSibling.textContent = l; countTo(b, v, r); });
+  // feed banner
+  const bn = $("#banner");
+  if (feeds.length) {
+    const src = feeds[0], last = s.feeds[src], hrs = Math.round((s.now - last) * 24);
+    $("#bannerT").textContent = `The ${FEEDNAME[src] || src} feed has been silent for ${hrs} hours (since ${whenText(last)}). Figures that depend on it may be stale.`;
+    bn.classList.add("on");
+  } else bn.classList.remove("on");
 }
 function causeLine(late) {
   if (!late.length) return "";
@@ -454,123 +583,180 @@ function causeLine(late) {
   return top[1] === late.length ? `All of them are waiting for ${top[0]}.` : `${top[1]} of them are waiting for ${top[0]}.`;
 }
 
-/* ------------------------------------------------ runway */
+/* ------------------------------------------------ runway (keyed rows, animated) */
 function runway(s) {
-  const rows = s.orders, now = s.now, t0 = Math.floor(now), span = 22, t1 = t0 + span;
-  const X = d => Math.max(0, Math.min(100, (d - t0) / span * 100));
-  const step = innerWidth < 720 ? 7 : 4, ticks = [];
-  for (let d = t0 + step; d < t1 - step * 0.6; d += step) ticks.push(d);
+  const rows = s.orders, now = s.now, t0 = Math.floor(now);
   const shown = showAll ? rows : rows.slice(0, innerWidth < 720 ? 14 : 18);
-  const html = [`<div class="rw-axis"><span>Order</span><div class="ticks">${ticks.map(d => `<span style="left:${X(d)}%">day ${d}</span>`).join("")}</div><span style="text-align:right">Slack</span></div>`];
-  for (const o of shown) {
+  const far = Math.max(...shown.map(o => Math.max(o.projected_ship, o.crd)), t0 + 8);
+  const span = Math.min(30, Math.max(10, far - t0 + 2)), t1 = t0 + span;
+  const X = d => Math.max(0, Math.min(100, (d - t0) / span * 100));
+  const step = span > 20 ? 7 : span > 12 ? 4 : 2, ticks = [];
+  for (let d = t0 + step; d < t1 - step * 0.5; d += step) ticks.push(d);
+  $("#rwAxis").innerHTML = `<span>Order</span><div class="ticks"><span class="today" style="left:${X(now)}%">Today</span>${ticks.map(d => `<span style="left:${X(d)}%">${shortDate(d)}</span>`).join("")}</div><span style="text-align:right">Slack</span>`;
+  $("#gridLines").innerHTML = ticks.map(d => `<i style="left:${X(d)}%"></i>`).join("") + `<i class="now" style="left:${X(now)}%"></i>`;
+  const body = $("#rwBody"), keep = new Set(shown.map(o => o.id));
+  [...body.querySelectorAll(".rw-row")].forEach(el => { if (!keep.has(el.dataset.o)) el.remove(); });
+  let newlyLate = 0;
+  shown.forEach(o => {
+    let el = body.querySelector(`.rw-row[data-o="${CSS.escape(o.id)}"]`);
+    if (!el) {
+      el = document.createElement("button"); el.className = "rw-row"; el.dataset.o = o.id;
+      el.innerHTML = `<span class="rw-id"></span><span class="track"><span class="seg-bar"></span><span class="seg-over"></span><span class="crd"></span></span><span class="rw-slack"></span>`;
+    }
+    body.appendChild(el);
     const prod = o.status === "in_production";
-    const start = prod ? Math.max(t0, Math.floor(o.started)) : now;
+    const start = prod ? Math.max(now, o.started) : now;
     const end = o.projected_ship, miss = end > o.crd, okEnd = miss ? o.crd : end;
     const cls = o.risk === "late" ? "late" : o.risk === "at_risk" ? "risk" : "";
-    const changed = prevRisk[o.id] && prevRisk[o.id] !== o.risk ? " flash" : "";
-    html.push(`<button class="rw-row ${cls}${changed}" data-o="${esc(o.id)}" aria-label="${esc(o.id)}, ${esc(o.product_name)}, ships day ${end}, customer date day ${o.crd}">
-      <span class="rw-id">${esc(o.id)}<small>${esc(o.product_name)}<span class="qty"> · ${o.qty}</span></small></span>
-      <span class="track"><span class="now" style="left:${X(now)}%"></span>
-        <span class="seg-bar${prod ? " prod" : ""}" style="left:${X(start)}%;width:${Math.max(.6, X(okEnd) - X(start))}%"></span>
-        ${miss ? `<span class="seg-over" style="left:${X(o.crd)}%;width:${Math.max(.8, X(end) - X(o.crd))}%"></span>` : ""}
-        <span class="crd${miss ? " miss" : ""}" style="left:calc(${X(o.crd)}% - 1px)"></span></span>
-      <span class="rw-slack ${o.slack < 0 ? "late-t" : o.slack < 2 ? "risk-t" : "mute"}">${o.slack > 0 ? "+" : ""}${o.slack}d</span></button>`);
-  }
-  if (rows.length > shown.length || showAll) html.push(`<button class="rw-more" id="rwMore">${showAll ? "Show fewer" : `Show all ${rows.length} orders`}</button>`);
-  $("#runway").innerHTML = html.join("");
+    el.classList.remove("late", "risk"); if (cls) el.classList.add(cls);
+    el.classList.toggle("sel", o.id === selOrder);
+    el.setAttribute("aria-label", `${o.id}, ${o.product_name}, ships ${dateOf(end)}, customer date ${dateOf(o.crd)}`);
+    el.querySelector(".rw-id").innerHTML = `${esc(o.id)}<small>${esc(o.product_name)}<span class="qty"> · ${o.qty}</span></small>`;
+    const bar = el.querySelector(".seg-bar"), over = el.querySelector(".seg-over"), crd = el.querySelector(".crd");
+    bar.className = "seg-bar" + (prod ? " prod" : "");
+    bar.style.left = X(start) + "%"; bar.style.width = Math.max(.6, X(okEnd) - X(start)) + "%";
+    over.style.left = X(o.crd) + "%"; over.style.width = miss ? Math.max(.8, X(end) - X(o.crd)) + "%" : "0%";
+    crd.className = "crd" + (miss ? " miss" : ""); crd.style.left = `calc(${X(o.crd)}% - 1px)`;
+    const sl = el.querySelector(".rw-slack");
+    sl.className = "rw-slack " + (o.slack < 0 ? "late-t" : o.slack < 2 ? "risk-t" : "mute");
+    sl.textContent = `${o.slack > 0 ? "+" : ""}${o.slack}d`;
+    const was = prevRisk[o.id];
+    if (!firstRender && was && was !== o.risk && !reduced) {
+      el.classList.remove("flash-late", "flash-ok"); void el.offsetWidth;
+      if (o.risk === "late") { el.style.animationDelay = (newlyLate++ * 70) + "ms"; el.classList.add("flash-late"); }
+      else if (was === "late") { el.style.animationDelay = "0ms"; el.classList.add("flash-ok"); }
+    }
+  });
+  $("#rwFoot").innerHTML = rows.length > shown.length || showAll ? `<button class="rw-more" id="rwMore">${showAll ? "Show fewer" : `Show all ${rows.length} orders`}</button>` : "";
   prevRisk = Object.fromEntries(rows.map(o => [o.id, o.risk]));
+  const k = s.kpis;
+  $("#calm").innerHTML = !k.late && !k.at_risk && !k.feeds_down.length ? `<div class="calm-band"><b>All clear.</b> Every order ships with at least two days to spare.<button data-open="sim">Try: simulate a problem</button></div>` : "";
 }
 
-/* ------------------------------------------------ decisions + note */
+/* ------------------------------------------------ decisions */
 function decisions(s) {
-  const canDecide = s.role !== "manager", n = s.proposals.length;
+  const n = s.proposals.length;
+  if (s.role === "manager") return managerView(s);
   $("#decTitle").textContent = n ? (n === 1 ? "One decision" : `${n} decisions`) : "Nothing to decide";
-  if (!n) {
-    $("#decisions").innerHTML = `<p class="empty">Sentinel only asks when a purchase would bring a late order back on time, and it tests each one against the plan before showing it here.</p>`;
-    return;
-  }
-  $("#decisions").innerHTML = s.proposals.map(p => {
+  if (!n) { $("#decisions").innerHTML = `<p class="empty">Sentinel only asks when a purchase would bring a late order back on time, and it tests each one against the plan before showing it here.</p>`; return; }
+  $("#decisions").innerHTML = s.proposals.map((p, i) => {
     const e = p.effect;
-    const why = p.kind === "slow_po" ? `${esc(p.slow_po)} won't arrive until day ${Math.ceil(p.slow_po_eta)}` : `${fmt(p.short)} ${esc(p.unit)} short, with nothing on order`;
-    return `<article class="decision">
+    const why = p.kind === "slow_po" ? `${esc(p.slow_po)} won't arrive until ${dateOf(Math.ceil(p.slow_po_eta))}` : `${fmt(p.short)} ${esc(p.unit)} short, with nothing on order`;
+    const stale = (p.stale_feeds || []).length ? `<p class="d-warn">The ${p.stale_feeds.map(f => FEEDNAME[f] || f).join(" and ")} feed is silent, so this rests on figures that may be stale. Check before approving.</p>` : "";
+    const email = s.role === "buyer" ? `<pre class="d-email">${esc(p.email)}</pre>` : "";
+    return `<article class="decision${i ? " alt" : ""}" data-affects="${esc((e.orders_saved || []).join(" "))}" data-mat="${esc(p.material)}">
+      <span class="d-tag${i ? " alt" : ""}">${i ? "Also helps" : (n > 1 ? "Recommended" : "Suggested fix")}</span>
       <p class="d-what">${p.expedite ? "Rush-order" : "Order"} ${fmt(p.qty)} ${esc(p.unit)} of ${esc(p.material_name)} from ${esc(p.supplier_name)}</p>
-      <p class="d-meta">${why}. ${p.expedite ? "Expedited, arrives" : "Arrives"} day ${p.expected_day} · ${money(p.cost)}</p>
+      <p class="d-meta">${why}. ${p.expedite ? "Expedited, arrives" : "Arrives"} ${dateOf(p.expected_day)} · ${money(p.cost)}</p>
       <div class="d-effect">
         <div><b>${e.late_before} → <span class="${e.late_after ? "" : "ok-t"}">${e.late_after}</span></b><span>orders late</span></div>
         <div><b>${e.late_days_before} → <span class="${e.late_days_after ? "" : "ok-t"}">${e.late_days_after}</span></b><span>days late in total</span></div>
-      </div>
+      </div>${email}
       <div class="d-actions">
-        <button class="btn go" data-ap="${esc(p.id)}" ${canDecide ? "" : "disabled"}>Approve purchase</button>
-        <button class="btn" data-rj="${esc(p.id)}" ${canDecide ? "" : "disabled"}>Not now</button>
-        <button class="btn quiet" data-em="${esc(p.id)}">Supplier email</button>
-      </div>
-      ${(p.stale_feeds || []).length ? `<p class="note-role" style="color:var(--late)">The ${p.stale_feeds.map(f => ({erp: "orders", wms: "warehouse", supplier: "supplier"}[f] || f)).join(" and ")} feed is silent, so this proposal may rest on stale figures. Check before approving.</p>` : ""}
-      ${canDecide ? "" : `<p class="note-role">Managers see every decision, but only planners and buyers can approve a purchase.</p>`}
+        <button class="btn go" data-ap="${esc(p.id)}">Approve purchase</button>
+        <button class="btn" data-rj="${esc(p.id)}">Not now</button>
+        ${s.role === "buyer" ? "" : `<button class="btn quiet" data-em="${esc(p.id)}">Supplier email</button>`}
+      </div>${stale}
+      ${i === 0 && n > 1 ? `<p class="note-role">Approve this first: Sentinel re-plans at once and re-tests the others.</p>` : ""}
     </article>`;
   }).join("");
 }
+function managerView(s) {
+  const appr = s.decisions.filter(d => d.decision === "approved");
+  const spent = appr.reduce((a, d) => a + (d.cost || 0), 0), saved = appr.reduce((a, d) => a + Math.max(0, (d.late_before || 0) - (d.late_after || 0)), 0);
+  $("#decTitle").textContent = "This week at a glance";
+  $("#decisions").innerHTML = `<div class="mgr">
+      <div class="mgr-row"><span>Purchases approved</span><b>${appr.length}</b></div>
+      <div class="mgr-row"><span>Spent on them</span><b>${money(spent)}</b></div>
+      <div class="mgr-row"><span>Late orders avoided by them</span><b class="ok-t">${saved}</b></div>
+      <div class="mgr-row"><span>Orders on track right now</span><b>${Math.round(s.kpis.on_track_pct)}%</b></div>
+    </div>
+    ${s.proposals.map(p => `<div class="pending"><span>${p.expedite ? "Rush" : "Order"} ${fmt(p.qty)} ${esc(p.unit)} of ${esc(p.material_name)} · ${money(p.cost)} · ${p.effect.late_before} → ${p.effect.late_after} late</span><span class="chip wait">Awaiting planner</span></div>`).join("")}
+    <p class="note-role">Managers see every decision; planners and buyers make them.</p>`;
+}
+function showReceipt(r, before, after) {
+  const el = $("#receipt");
+  el.innerHTML = `<div class="receipt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3 3 7-7"/></svg><div><b>${esc(r.po)} placed · ${before} → ${after} late</b><span>${fmt(r.qty)} ${esc(r.unit)} of ${esc(r.material_name)} for ${money(r.cost)}. The supplier email waits for the buyer.</span></div></div>`;
+  clearTimeout(el._h);
+  el._h = setTimeout(() => { const c = el.firstElementChild; if (c) { c.classList.add("out"); setTimeout(() => el.innerHTML = "", 500); } }, 5200);
+}
+
+/* ------------------------------------------------ supplier messages */
 function messages(s) {
   const can = s.role !== "manager";
   const pend = (s.questions || []).filter(q => q.status === "pending");
   const sent = (s.questions || []).filter(q => q.status === "sent");
   $("#msgTitle").textContent = pend.length ? (pend.length === 1 ? "One unclear supplier message" : `${pend.length} unclear supplier messages`) : "Supplier messages";
   $("#asks").innerHTML = pend.map(q => {
-    const r = q.read, opts = r.readings && r.readings.length <= 4 ? r.readings.map(d => `${dateOf(d)}`).join(" or ") : `any day from ${q.lo_label} to ${q.hi_label}`;
-    return `<article class="ask">
-      <p class="from">${esc(q.supplier)} about ${esc(q.po)} (${esc(q.material_name)}) · ${dateOf(Math.floor(q.sent_ts))}</p>
+    const r = q.read, opts = r.readings && r.readings.length <= 4 ? r.readings.map(d => dateOf(d)).join(" or ") : `any day from ${dateOf(r.lo)} to ${dateOf(r.hi)}`;
+    const fresh = !seenAsks.has(q.id) && !firstRender; seenAsks.add(q.id);
+    const span = Math.max(1, r.hi - r.lo), pts = (r.readings && r.readings.length <= 4) ? r.readings : null;
+    const rangeBar = pts ? pts.map(d => `<b style="left:calc(${(d - r.lo) / span * 100}% - 1px)"></b>`).join("") : `<i style="left:0;right:0"></i><b style="left:calc(100% - 2px)"></b>`;
+    return `<article class="ask${fresh ? " fresh" : ""}">
+      <p class="from">${esc(q.supplier)} about ${esc(q.po)} (${esc(q.material_name)}) · ${dateOf(q.sent_ts)}</p>
       <p class="quote">${marked(q.message, r.cues)}</p>
-      <dl class="reading"><dt>Could mean</dt><dd>${esc(opts)}</dd><dt>Planning for</dt><dd><b>${dateOf(r.hi)}</b> <span class="mute">(day ${r.hi}), the latest reading, so nothing is late by surprise</span></dd></dl>
+      <div class="reading"><div style="grid-column:1/-1"><div class="range">${rangeBar}</div><div class="range-l"><span>${dateOf(r.lo)}</span><span>${dateOf(r.hi)}</span></div></div>
+        <dt>Could mean</dt><dd>${esc(opts)}</dd><dt>Planning for</dt><dd><b>${dateOf(r.hi)}</b> <span class="mute">the latest reading, so nothing is late by surprise</span></dd></div>
       <p class="draft"><b>Question drafted for the supplier</b>${esc(q.question)}</p>
-      <div class="d-actions">
-        <button class="btn go" data-qs="${esc(q.id)}" ${can ? "" : "disabled"}>Send question</button>
-        <button class="btn" data-qd="${esc(q.id)}" ${can ? "" : "disabled"}>I phoned them</button>
-        <button class="btn quiet" data-qx="${esc(q.id)}" ${can ? "" : "disabled"}>Dismiss</button>
-      </div>
-      ${can ? "" : `<p class="note-role">Managers can read this, but only planners and buyers can contact a supplier.</p>`}
+      ${can ? `<div class="d-actions">
+        <button class="btn go" data-qs="${esc(q.id)}">Send question</button>
+        <button class="btn" data-qd="${esc(q.id)}">I phoned them</button>
+        <button class="btn quiet" data-qx="${esc(q.id)}" aria-label="Dismiss">Dismiss</button>
+      </div>` : `<p class="note-role"><span class="chip wait">Awaiting planner</span></p>`}
     </article>`;
-  }).join("") + sent.map(q => `<p class="empty" style="margin:10px 0 0">Asked ${esc(q.supplier)} about ${esc(q.po)}; waiting for the answer.</p>`).join("");
+  }).join("") + sent.map(q => `<p class="empty" style="margin:10px 0 0">Asked ${esc(q.supplier)} about ${esc(q.po)}. Waiting for the answer.</p>`).join("");
   const ms = (s.messages || []).filter(m => !(m.open_question && pend.some(q => q.event_id === m.event_id)));
-  $("#msgs").innerHTML = ms.slice(0, 6).map(m => {
-    const r = m.read, chip = m.open_question ? "ambiguous" : r.status;
-    const label = {clear: "Clear", ambiguous: "Unclear", none: "No date"}[r.status];
-    return `<div class="msg"><span><span class="mono mute" style="font-size:12px">${esc(m.po)}</span> <q>${marked(m.text, r.status === "ambiguous" ? r.cues : [])}</q></span><span class="chip ${chip}">${label}</span><small>${esc(r.explanation)}</small></div>`;
+  $("#msgs").innerHTML = ms.slice(0, 5).map(m => {
+    const r = m.read, label = {clear: "Clear", ambiguous: "Unclear", none: "No date"}[r.status];
+    return `<div class="msg"><span><span class="mono mute" style="font-size:12px">${esc(m.po)}</span> <q>${marked(m.text, r.status === "ambiguous" ? r.cues : [])}</q></span><span class="chip ${r.status}">${label}</span><small>${esc(r.explanation.replace(/ \(day[^)]*\)/g, ""))}</small></div>`;
   }).join("") || `<p class="empty" style="padding-top:10px">No messages from suppliers yet. When one writes, Sentinel reads it here.</p>`;
 }
+
+/* ------------------------------------------------ briefing */
 function note(s) {
   const b = s.briefing;
   $("#noteTitle").textContent = {planner: "Briefing for the planner", buyer: "Briefing for the buyer", manager: "Briefing for the manager"}[s.role];
+  const strong = t => esc(t).replace(/\b((?:SO|PO)\d{3,})\b/g, "<strong>$1</strong>").replace(/\b((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) \d{1,2} [A-Z][a-z]{2})\b/g, "<strong>$1</strong>");
+  let lines = b.text.split("\n");
+  if (s.role !== "manager" && lines.length > 1) lines = lines.slice(1);     // the stats line repeats the figures above
   const out = []; let list = [];
-  const flush = () => { if (list.length) { out.push(`<ul>${list.join("")}</ul>`); list = []; } };
-  for (const l of b.text.split("\n")) {
-    if (l.startsWith("- ")) list.push(`<li>${esc(l.slice(2))}</li>`);
-    else { flush(); out.push(`<p>${esc(l)}</p>`); }
+  const flush = () => {
+    if (!list.length) return;
+    const extra = list.length - 3;
+    out.push(`<ul>${list.slice(0, 3).join("")}${extra > 0 ? `<li class="hidden-more" hidden>${list.slice(3).join("</li><li>")}</li>` : ""}</ul>` + (extra > 0 ? `<button class="more" data-more>Show ${extra} more</button>` : ""));
+    list = [];
+  };
+  for (const l of lines) {
+    if (l.startsWith("- ")) list.push(`<li>${strong(l.slice(2))}</li>`);
+    else { flush(); out.push(`<p>${strong(l)}</p>`); }
   }
   flush();
   const g = b.grounding;
-  out.push(`<div class="checked${g.ok ? "" : " bad"}">${g.ok ? `All ${g.numbers} figures above were checked against the data` : `${g.ungrounded.length} figure(s) could not be traced to the data`}</div>`);
+  out.push(`<div class="checked${g.ok ? "" : " bad"}">${g.ok ? `All ${g.numbers} figures and dates above were checked against the data` : `${g.ungrounded.length} figure(s) could not be traced to the data`}</div>`);
   $("#note").innerHTML = out.join("");
 }
 
 /* ------------------------------------------------ stock, signals, suppliers, log */
 function stock(s) {
+  const stale = s.kpis.feeds_down.includes("wms");
   $("#stock").innerHTML = s.materials.map(m => {
     const cov = m.days_of_cover ?? 0, w = Math.min(100, cov / 20 * 100), lt = Math.min(100, m.lead_days / 20 * 100);
-    return `<tr><td>${esc(m.name)}<small>${m.id}</small>${m.uncovered > 0 ? `<div class="short">Short ${fmt(m.uncovered)} from day ${m.stockout_day}</div>` : ""}</td>
-      <td>${fmt(m.on_hand)}</td><td class="hide-m">${fmt(m.incoming)}</td><td class="hide-m">${fmt(m.allocated)}</td>
+    return `<tr><td>${esc(m.name)}<small>${m.id}</small>${m.uncovered > 0 ? `<div class="short">Short ${fmt(m.uncovered)} from ${dateOf(m.stockout_day)}</div>` : ""}</td>
+      <td class="${stale ? "stale" : ""}" ${stale ? 'title="Warehouse feed is silent: may be stale"' : ""}>${fmt(m.on_hand)}</td><td class="hide-m">${fmt(m.incoming)}</td><td class="hide-m">${fmt(m.allocated)}</td>
       <td class="${m.net < 0 ? "neg" : ""}">${fmt(m.net)}</td>
       <td><span class="cover"><span>${fmt(cov)}</span><span class="t" title="Lead time ${m.lead_days} days"><span class="f" style="width:${w}%"></span><span class="lt" style="left:${lt}%"></span></span></span></td></tr>`;
   }).join("");
   $("#rule").innerHTML = `<b style="color:var(--ink);font-weight:500">How stock is shared.</b> ${esc(s.rule)} The ochre tick on each cover bar marks the supplier's lead time: cover to the left of it means a new order would arrive too late.`;
 }
-function signalHTML(a) { return `<div class="sig ${a.severity}"><span class="dot"></span><div><p>${esc(a.message)}</p><small class="mono">since ${clockText(a.first_seen)}</small></div></div>`; }
+function signalHTML(a) { return `<div class="sig ${a.severity}"><span class="dot"></span><div><p>${esc(a.message)}</p><small>since ${whenText(a.first_seen)}</small></div></div>`; }
 function signals(s) {
   const now = s.now;
   $("#feeds").innerHTML = Object.entries(s.feeds).map(([src, t]) => {
     const silent = t == null ? null : now - t, down = silent != null && silent > 0.75;
     const name = {erp: "Orders (ERP)", wms: "Warehouse (WMS)", supplier: "Supplier portal"}[src];
-    return `<span class="feed${down ? " down" : ""}"><i></i>${name} <span class="mute">${silent == null ? "no data" : down ? `silent ${Math.round(silent * 24)}h` : "live"}</span></span>`;
+    return `<span class="feed${down ? " down" : ""}"><i></i>${name} <span class="mute">${silent == null ? "no data" : down ? `silent ${Math.round(silent * 24)} h` : "live"}</span></span>`;
   }).join("");
-  const al = s.alerts.filter(a => !a.kind.startsWith("order_")), limit = 7;
+  const al = s.alerts.filter(a => !a.kind.startsWith("order_")), limit = 6;
   $("#sigCount").textContent = al.length ? plural(al.length, "signal") : "";
   $("#signals").innerHTML = al.slice(0, limit).map(signalHTML).join("")
     + (al.length > limit ? `<button class="sig-more" id="sigAll">See all ${al.length} signals</button>` : "")
@@ -579,73 +765,94 @@ function signals(s) {
   $("#quality").textContent = `${fmt(q.received)} events received. ${fmt(q.duplicates)} duplicates were ignored and ${fmt(q.quarantined)} malformed events set aside, so neither changed a single figure.`;
   $("#sups").innerHTML = `<div class="sup h"><span style="text-align:left">Supplier</span><span>On time</span><span>Avg late</span></div>` +
     s.suppliers.map(x => `<div class="sup"><div>${esc(x.name)} <span class="mute" style="font-size:12px">${plural(x.delivered, "delivery", "deliveries")}</span></div><span>${x.on_time_rate == null ? "–" : Math.round(x.on_time_rate * 100) + "%"}</span><span class="${(x.avg_delay_days || 0) >= 1 ? "risk-t" : ""}">${x.avg_delay_days == null ? "–" : x.avg_delay_days + "d"}</span></div>`).join("");
-  const logTxt = d => d.question ? `${d.decision === "sent" ? "Sent question about" : "Dismissed question about"} ${d.po} as ${d.by}`
-    : d.proposal ? `${d.decision === "approved" ? "Approved" : "Declined"} ${d.proposal} as ${d.by}${d.po ? `, created ${d.po}` : ""}`
-    : `${d.po}: ${d.note} (by ${d.by})`;
-  const log = [...s.decisions.map(d => ({t: d.t, txt: logTxt(d)})),
-               ...s.injections.map(i => ({t: i.t, txt: `Simulated: ${i.detail}`}))].sort((a, b) => b.t - a.t);
-  $("#log").innerHTML = log.map(l => `<div><span class="mono">${clockText(l.t)}</span>${esc(l.txt)}</div>`).join("") || `<p class="empty">Approvals and simulated problems are listed here.</p>`;
+  const logTxt = d => d.question ? `${d.decision === "sent" ? "Sent a question about" : "Dismissed the question about"} ${d.po} (${d.by})`
+    : d.proposal ? `${d.decision === "approved" ? "Approved" : "Declined"} ${d.qty ? `${fmt(d.qty)} ${d.unit} of ${d.material_name}` : d.proposal}${d.po ? `, created ${d.po}` : ""} (${d.by})`
+    : `${d.po}: date set by hand to ${(d.note || "").replace(/^expected day set to \d+ \((.*)\)$/, "$1")} (${d.by})`;
+  const log = [...s.decisions.map(d => ({t: d.t, txt: logTxt(d)})), ...s.injections.map(i => ({t: i.t, txt: `Simulated: ${i.detail}`}))].sort((a, b) => b.t - a.t);
+  $("#log").innerHTML = log.map(l => `<div><span class="mono">${whenText(l.t)}</span>${esc(l.txt)}</div>`).join("") || `<p class="empty">Approvals and simulated problems are listed here.</p>`;
 }
 function badges(s) {
   const set = (id, n) => { const b = $(id); b.hidden = !n; b.textContent = n; };
-  set("#bToday", s.proposals.length + (s.questions || []).filter(q => q.status === "pending").length); set("#bOrders", s.kpis.late);
+  set("#bToday", (s.role === "manager" ? 0 : s.proposals.length) + (s.questions || []).filter(q => q.status === "pending").length); set("#bOrders", s.kpis.late);
   set("#bSig", s.alerts.filter(a => a.severity === "high" && !a.kind.startsWith("order_")).length);
 }
 function render(s) {
   S = s;
-  $("#clock").textContent = $("#clockM").textContent = clockText(s.now);
+  $("#clock").innerHTML = clockHTML(s.now); $("#clockM").innerHTML = `<b>${dateOf(s.now)}</b> ${hourOf(s.now)}`;
   lede(s); runway(s); decisions(s); messages(s); note(s); stock(s); signals(s); badges(s);
+  firstRender = false;
 }
 
 /* ------------------------------------------------ sheet */
 let lastFocus = null;
-function openSheet(title, html) { lastFocus = document.activeElement; $("#sheetT").textContent = title; $("#sheetB").innerHTML = html; $("#sheetB").scrollTop = 0; $("#scrim").classList.add("on"); $("#sheet").classList.add("on"); $("#sheetX").focus(); }
-function closeSheet() { $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on"); if (lastFocus) lastFocus.focus(); }
+function openSheet(title, html) { $("#toast").classList.remove("on"); lastFocus = document.activeElement; $("#sheetT").textContent = title; $("#sheetB").innerHTML = html; $("#sheetB").scrollTop = 0; $("#scrim").classList.add("on"); const sh = $("#sheet"); sh.style.transform = ""; sh.classList.add("on"); $("#sheetX").focus(); }
+function closeSheet() { $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on"); $("#sheet").style.transform = ""; if (selOrder) { selOrder = null; $$(".rw-row.sel").forEach(r => r.classList.remove("sel")); } if (lastFocus) lastFocus.focus(); }
 $("#scrim").onclick = closeSheet; $("#sheetX").onclick = closeSheet;
 addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); if (e.key === " " && e.target === document.body) { e.preventDefault(); togglePlay(); } });
+(() => {   // swipe the bottom sheet down to close (phone)
+  let y0 = null; const sh = $("#sheet");
+  sh.addEventListener("touchstart", e => { if (innerWidth <= 720 && ($("#sheetB").scrollTop <= 0)) y0 = e.touches[0].clientY; }, {passive: true});
+  sh.addEventListener("touchmove", e => { if (y0 == null) return; const dy = e.touches[0].clientY - y0; if (dy > 0) { sh.style.transition = "none"; sh.style.transform = `translateY(${dy}px)`; } }, {passive: true});
+  sh.addEventListener("touchend", e => { if (y0 == null) return; const dy = e.changedTouches[0].clientY - y0; sh.style.transition = ""; y0 = null; if (dy > 90) closeSheet(); else sh.style.transform = ""; });
+})();
 
 async function explain(oid) {
   const o = S.orders.find(x => x.id === oid);
+  selOrder = oid; $$(".rw-row").forEach(r => r.classList.toggle("sel", r.dataset.o === oid));
   const r = await api(`/api/orders/${encodeURIComponent(oid)}/explain`);
   const facts = r.facts.filter(f => f.id && f.id.startsWith("need:"));
   const status = o.status === "in_production" ? "In production" : o.risk === "late" ? `${plural(-o.slack, "day")} late` : o.risk === "at_risk" ? `${plural(o.slack, "day")} to spare` : "On track";
+  const t0 = Math.floor(S.now), far = Math.max(o.projected_ship, o.crd, ...facts.flatMap(f => f.draws.map(d => Math.ceil(d.eta)))) + 1, span = Math.max(4, far - t0);
+  const X = d => Math.max(0, Math.min(100, (d - t0) / span * 100));
+  const culprit = (o.reasons || []).find(x => x.kind !== "stock");
   const lines = facts.map(f => {
     const mid = f.id.slice(5), m = S.materials.find(x => x.id === mid) || {name: mid, unit: ""};
-    const src = f.draws.length ? f.draws.map(d => `${fmt(d.qty)} from ${d.lot === "stock" ? "stock" : d.lot + ` (due day ${Math.ceil(d.eta)})`}`).join(", ") : "nothing available yet";
-    return `<div class="mat-line"><b>${esc(m.name)}</b> <span class="mute mono" style="font-size:12px">${mid}</span><p>Needs ${fmt(f.need)} ${esc(m.unit)}: ${esc(src)}${f.short ? `. <span class="late-t">Short ${fmt(f.short)}, so a new order is needed.</span>` : "."}</p></div>`;
+    const isC = culprit && culprit.material === mid;
+    const src = f.draws.length ? f.draws.map(d => `${fmt(d.qty)} from ${d.lot === "stock" ? "stock" : d.lot + ` (${dateOf(Math.ceil(d.eta))})`}`).join(", ") : "nothing available yet";
+    const dots = f.draws.map(d => `<i class="${Math.ceil(d.eta) + 2 > o.crd ? "bad" : ""}" style="left:${X(Math.ceil(d.eta))}%" title="${esc(d.lot)} · ${dateOf(Math.ceil(d.eta))}"></i>`).join("");
+    return `<div class="mat-line${isC ? " culprit" : ""}"><b>${esc(m.name)}</b> <span class="mute mono" style="font-size:12px">${mid}</span>
+      <div class="tl"><span class="crdl${o.slack < 0 ? " miss" : ""}" style="left:${X(o.crd)}%" title="Customer date"></span>${dots}</div>
+      <p>Needs ${fmt(f.need)} ${esc(m.unit)}: ${esc(src)}${f.short ? `. <span class="late-t">Short ${fmt(f.short)}, so a new order is needed.</span>` : "."}</p></div>`;
   }).join("");
-  openSheet(`${oid} · ${o.product_name}`, `
-    <dl class="kv"><dt>Quantity</dt><dd>${o.qty}</dd><dt>Customer date</dt><dd>day ${o.crd}</dd><dt>Projected ship</dt><dd class="${o.slack < 0 ? "late-t" : ""}">day ${o.projected_ship}</dd><dt>Status</dt><dd>${status}</dd></dl>
-    <p style="margin:0 0 6px;font-weight:500">Where its materials come from</p>${lines || (o.started != null ? `<p class="mute" style="margin:0">Its materials were used when production started on day ${Math.floor(o.started)}.</p>` : `<p class="mute" style="margin:0">No material detail for this order.</p>`)}
+  const because = o.risk === "late" && culprit ? `<p class="because">Late because <em>${esc(matName(culprit.material))}</em>${culprit.po ? ` on ${esc(culprit.po)}` : ""} ${culprit.kind === "no_supply" ? "has nothing on order" : `arrives ${dateOf(Math.ceil(culprit.eta))}`}.</p>` : "";
+  const fix = culprit && S.proposals.find(p => p.material === culprit.material);
+  openSheet(`${oid} · ${o.product_name}`, `${because}
+    <dl class="kv"><dt>Quantity</dt><dd>${o.qty}</dd><dt>Customer date</dt><dd>${dateOf(o.crd)}</dd><dt>Projected ship</dt><dd class="${o.slack < 0 ? "late-t" : ""}">${dateOf(o.projected_ship)}</dd><dt>Status</dt><dd>${status}</dd></dl>
+    ${fix && S.role !== "manager" ? `<button class="btn go" data-fix="${esc(fix.id)}" style="margin:0 0 16px">See the fix →</button>` : ""}
+    <p style="margin:0 0 4px;font-weight:500">Where its materials come from</p><p class="mute" style="margin:0 0 6px;font-size:12px">Dots are arrivals; the line is the customer date.</p>${lines || (o.started != null ? `<p class="mute" style="margin:0">Its materials were used when production started on ${dateOf(o.started)}.</p>` : `<p class="mute" style="margin:0">No material detail for this order.</p>`)}
     <p class="rule-note" style="margin-top:18px">${esc(S.rule)}</p>
-    <div class="checked${r.grounding.ok ? "" : " bad"}" style="margin-top:12px">${r.grounding.numbers} figures checked against the data</div>`);
+    <div class="checked${r.grounding.ok ? "" : " bad"}" style="margin-top:12px">${r.grounding.numbers} figures and dates checked against the data</div>`);
 }
 
 const SCENARIOS = [
-  ["vague", "A supplier writes something vague", "The delivery most orders wait on slips, and the supplier says so the way people do: “next week”, “2-4 days late”, “next Friday”."],
-  ["supplier_delay", "A supplier slips a week", "The delivery that most orders are waiting on moves back seven days. The supplier does warn you."],
-  ["spike", "Demand spike", "Tomorrow one product gets a burst of eight to fourteen extra orders."],
-  ["outage", "Warehouse feed goes down", "The WMS stops sending for 30 hours. Its events arrive late, all at once."],
-  ["shrink", "Stock quietly disappears", "40% of one material goes missing. Nobody knows until the next cycle count."],
-  ["junk", "Bad data arrives", "Five malformed events hit the feed: negative quantities, materials that don't exist."],
+  ["supplier_delay", "⚡", "A supplier slips a week", "The delivery most orders are waiting on moves back seven days.", "the headline turns red, a fix appears"],
+  ["vague", "✎", "A supplier writes something vague", "“Next week”, “2-4 days late”, “next Friday”.", "Sentinel shows what it could mean and drafts one question"],
+  ["spike", "↗", "Demand spike", "Tomorrow one product gets a burst of eight to fourteen extra orders.", "a spike signal, at-risk orders"],
+  ["outage", "⏻", "Warehouse feed goes down", "The WMS stops sending. Sentinel waits 18 hours of silence, then warns.", "a red banner, stale stock figures marked"],
+  ["shrink", "−", "Stock quietly disappears", "40% of one material goes missing. Nobody knows until the next count.", "a discrepancy signal when it is counted"],
+  ["junk", "⌫", "Bad data arrives", "Five malformed events: negative quantities, materials that don't exist.", "they are set aside; no figure changes"],
 ];
 function simulate() {
-  openSheet("Simulate a problem", `<p class="mute" style="margin:0 0 14px;font-size:13.5px">Pick one, then watch the headline and the runway. Advancing time shows what happens next.</p>` +
-    SCENARIOS.map(([k, t, d]) => `<button class="scen" data-inj="${k}"><b>${t}</b><span>${d}</span></button>`).join("") +
-    `<button class="scen" data-reset="1"><b>Start over</b><span>Reset the plant to day 4 with a calm order book.</span></button>`);
+  openSheet("Simulate a problem", `<p class="mute" style="margin:0 0 14px;font-size:13.5px">Pick one, then watch the headline and the runway. This is your own copy of the plant.</p>` +
+    SCENARIOS.map(([k, ic, t, d, ex]) => `<button class="scen" data-inj="${k}"><span class="ic" aria-hidden="true">${ic}</span><b>${t}</b><span>${d} <em>Expect: ${ex}.</em></span></button>`).join("") +
+    `<button class="scen" data-reset="1"><span class="ic" aria-hidden="true">↺</span><b>Start over</b><span>Reset the plant to ${dateOf(4)} with a calm order book.</span></button>`);
 }
 async function showEvidence() {
   try { evidence = evidence || await api("/api/evidence"); } catch { openSheet("Evidence", `<p class="empty">This build has no evaluation results.</p>`); return; }
-  const e = evidence, pct = x => Math.round(x * 100) + "%", r = e.rules || {};
-  const rx = r.rule_expedite, s4 = r.baseline_safety4;
+  const e = evidence, pct = x => Math.round(x * 100) + "%", r = e.rules || {}, rx = r.rule_expedite, s4 = r.baseline_safety4;
+  const dots = (e.plants || []).map(d => `<i class="${d > 0 ? "win" : d < 0 ? "loss" : ""}" title="${d > 0 ? "+" : ""}${d} pts"></i>`).join("");
+  const wins = (e.plants || []).filter(d => d > 0).length;
   openSheet("Evidence", `
-    <p class="mute" style="margin:0 0 14px;font-size:13.5px">${e.seeds} simulated plants, ${e.days} days each, ${fmt(e.orders)} orders. The simulator knows how every order really turned out; Sentinel only sees the event feed. Every plant gets the same demand in every comparison.</p>
-    <div class="ev-row"><p class="ev-big">${e.on_time.baseline.toFixed(1)}% → <span class="ok-t">${e.on_time.agent.toFixed(1)}%</span></p><p>Orders shipped by their customer date: the plant's existing planner, then with Sentinel's proposals approved. Better in ${e.on_time.seeds_better} of ${e.seeds} plants (p ${e.on_time.p < 0.001 ? "< 0.001" : "= " + e.on_time.p.toFixed(3)}), for ${e.on_time.spend_pct >= 0 ? "+" : ""}${e.on_time.spend_pct.toFixed(2)}% purchase spend.${rx && s4 ? ` Simple rules get close (${rx.on_time.toFixed(1)}% by rush-reordering every late PO, ${s4.on_time.toFixed(1)}% with more safety stock) but spend ${rx.spend_pct.toFixed(0)}% and ${s4.spend_pct.toFixed(1)}% more and hold ${rx.stock_pct.toFixed(0)}% and ${s4.stock_pct.toFixed(1)}% more stock.` : ""}</p></div>
-    <div class="ev-row"><span class="num">${pct(e.detection.recall7)} · ${pct(e.detection.precision7)}</span><p>of the orders that really missed were flagged a week ahead, and that share of a week-ahead flags was right. Flagging every unstarted order is right only ${pct(e.detection.naive_precision7)} of the time. Median warning: ${e.detection.lead_median} days.</p></div>
-    <div class="ev-row"><span class="num">${e.numbers.mismatches} errors</span><p>in ${fmt(e.numbers.checks)} stock figures checked against a separately written calculator, with ${fmt(e.numbers.dups)} duplicate and ${fmt(e.numbers.junk)} malformed events in the feed. ${e.numbers.replay} of ${e.numbers.replay_total} full replays gave identical results.</p></div>
-    <div class="ev-row"><span class="num">${e.agent.false_count ?? "–"}% · ${e.agent.unknown_id ?? "–"}% · ${e.agent.number_changed ?? "–"}% · ${e.agent.numbers_swapped ?? "–"}%</span><p>of planted errors the grounding check rejects: a false count, a made-up order ID, a changed number, two numbers swapped. The last one mostly slips through.</p></div>
-    ${e.ambiguity ? `<div class="ev-row"><span class="num">${esc(e.ambiguity.big)}</span><p>${esc(e.ambiguity.text)}</p></div>` : ""}
-    <p class="method">What this does not show: the plant is a simulator and the approvals were simulated, so no real planner has used Sentinel yet. About one 'late' flag in four is a false alarm. The method, the baselines and every failure are in the project's results/RESULTS.md and results/AMBIGUITY.md.</p>`);
+    <p class="mute" style="margin:0 0 14px;font-size:13.5px">${e.seeds} simulated plants, ${e.days} days each, ${fmt(e.orders)} orders, the same orders in every comparison. The simulator knows how every order really turned out; Sentinel only sees the event feed.</p>
+    <div class="ev-row"><p class="ev-label">Orders on time</p><p class="ev-big">${e.on_time.baseline.toFixed(1)}% → <span class="ok-t">${e.on_time.agent.toFixed(1)}%</span></p>
+      <div class="plants" aria-label="${wins} of ${e.seeds} plants did better">${dots}</div>
+      <p>One dot per plant: green where Sentinel did better than the plant's existing planner (${wins} of ${e.seeds}, p ${e.on_time.p < 0.001 ? "< 0.001" : "= " + e.on_time.p.toFixed(3)}). Purchase spend ${e.on_time.spend_pct >= 0 ? "+" : ""}${e.on_time.spend_pct.toFixed(2)}%.</p></div>
+    ${rx && s4 ? `<div class="ev-row"><p class="ev-label">Against simple rules</p><p class="ev-mid">Same on-time, ${rx.spend_pct.toFixed(0)}% less spend</p><p>Rush-reordering every late PO reaches ${rx.on_time.toFixed(1)}% but spends ${rx.spend_pct.toFixed(0)}% more and holds ${rx.stock_pct.toFixed(0)}% more stock. Four days of extra safety stock reaches ${s4.on_time.toFixed(1)}% for ${s4.spend_pct.toFixed(1)}% more spend.</p></div>` : ""}
+    <div class="ev-row"><p class="ev-label">A week ahead</p><p class="ev-mid">${pct(e.detection.precision7)} of warnings right</p><p>${pct(e.detection.recall7)} of the orders that really missed were flagged seven days before their date. Flagging every unstarted order is right only ${pct(e.detection.naive_precision7)} of the time. Median warning: ${e.detection.lead_median} days.</p></div>
+    <div class="ev-row"><p class="ev-label">Stock figures</p><p class="ev-mid">0 errors in ${fmt(e.numbers.checks)}</p><p>Checked against a separately written calculator, with ${fmt(e.numbers.dups)} duplicate and ${fmt(e.numbers.junk)} malformed events in the feed. ${e.numbers.replay} of ${e.numbers.replay_total} full replays identical.</p></div>
+    <div class="ev-row"><p class="ev-label">The AI's words</p><p class="ev-mid">${e.agent.false_count ?? "–"}% of false claims stopped</p><p>The grounding check stopped ${e.agent.unknown_id ?? "–"}% of made-up order IDs and ${e.agent.number_changed ?? "–"}% of changed numbers, but only ${e.agent.numbers_swapped ?? "–"}% of swapped numbers.</p></div>
+    ${e.ambiguity ? `<div class="ev-row"><p class="ev-label">Vague supplier messages</p><p class="ev-mid">${esc(e.ambiguity.big)}</p><p>${esc(e.ambiguity.text)}</p></div>` : ""}
+    <p class="method">What this does not show: the plant is a simulator and the approvals were simulated, so no real planner has used Sentinel yet. About one 'late' flag in four is a false alarm. The method, the baselines and every failure are in results/RESULTS.md and results/AMBIGUITY.md.</p>`);
 }
 
 /* ------------------------------------------------ supplier messages: try it, phone date */
@@ -653,7 +860,7 @@ const EXAMPLES = ["Sorry sir, material will reach next week", "Running 2-3 days 
   "Will dispatch on Monday", "Delivery on Thursday 27 Nov", "Delayed, will update the new date", "Arriving tomorrow", "Invoice attached"];
 function tryIt() {
   const pos = (S.pos || []).slice().sort((a, b) => a.id < b.id ? 1 : -1);
-  if (!pos.length) { toast("No open purchase orders right now. Advance a day and try again."); return; }
+  if (!pos.length) { toast("No open purchase orders right now. Advance a day and try again.", "warn"); return; }
   openSheet("Write a supplier message", `<div class="try">
     <p class="mute" style="margin:0;font-size:13.5px">Type what a supplier might send, the way people really write. Sentinel reads it as you type; nothing changes until you send it.</p>
     <label for="tPo">About purchase order</label>
@@ -661,7 +868,7 @@ function tryIt() {
     <label for="tTxt">Message</label>
     <textarea id="tTxt" maxlength="500" placeholder="e.g. Sorry sir, delivery next week"></textarea>
     <div class="examples">${EXAMPLES.map(x => `<button type="button" data-ex="${esc(x)}">${esc(x)}</button>`).join("")}</div>
-    <div class="preview" id="tPrev"><span class="mute">Sentinel's reading appears here.</span></div>
+    <div class="preview" id="tPrev" aria-live="polite"><span class="mute">Sentinel's reading appears here.</span></div>
     <button class="btn go" id="tSend" disabled>Send as the supplier</button>
   </div>`);
   const run = async () => {
@@ -670,19 +877,20 @@ function tryIt() {
     if (!text) { $("#tPrev").innerHTML = `<span class="mute">Sentinel's reading appears here.</span>`; return; }
     const r = await api("/api/read", {method: "POST", body: JSON.stringify({po: $("#tPo").value, text})});
     const label = {clear: "Clear", ambiguous: "Unclear", none: "No date"}[r.status];
-    $("#tPrev").innerHTML = `<span class="chip ${r.status}">${label}</span> <span style="margin-left:6px">${esc(r.explanation)}</span>
-      <div class="mute" style="font-size:12.5px;margin-top:6px">Today is ${esc(r.today_label)}; this PO was due ${esc(r.due_label)}.</div>
+    $("#tPrev").innerHTML = `<span class="chip ${r.status}">${label}</span> <span style="margin-left:6px">${esc(r.explanation.replace(/ \(day[^)]*\)/g, ""))}</span>
+      <div class="mute" style="font-size:12px;margin-top:6px">Today is ${esc(r.today_label)}; this PO was due ${esc(r.due_label)}.</div>
       ${r.question ? `<p class="draft" style="margin:10px 0 0"><b>Question Sentinel would draft</b>${esc(r.question)}</p>` : ""}`;
   };
-  let h; const later = () => { clearTimeout(h); h = setTimeout(() => run().catch(e => toast(e.message)), 220); };
+  let h; const later = () => { clearTimeout(h); h = setTimeout(() => run().catch(e => toast(e.message, "err")), 220); };
   $("#tTxt").oninput = later; $("#tPo").onchange = later;
   $$("[data-ex]").forEach(b => b.onclick = () => { $("#tTxt").value = b.dataset.ex; later(); });
   $("#tSend").onclick = async () => {
     try {
       const r = await api("/api/messages", {method: "POST", body: JSON.stringify({po: $("#tPo").value, text: $("#tTxt").value.trim()})});
       closeSheet(); await refresh();
-      toast(r.read.status === "ambiguous" ? "Unclear, so Sentinel plans for the latest day and has a question ready for you to approve." : r.read.explanation, 5200);
-    } catch (e) { toast(e.message); }
+      if (r.read.status === "ambiguous") { toast("Unclear, so Sentinel plans for the latest day and has a question ready.", "warn"); jump("msgSec"); }
+      else toast(r.read.explanation.replace(/ \(day[^)]*\)/g, ""));
+    } catch (e) { toast(e.message, "err"); }
   };
   setTimeout(() => $("#tTxt").focus(), 250);
 }
@@ -692,13 +900,14 @@ function phoneDate(qid) {
   openSheet("What did the supplier say?", `<p class="mute" style="margin:0 0 6px;font-size:13.5px">${esc(q.supplier)} about ${esc(q.po)}: “${esc(q.message)}”</p>
     <p style="margin:12px 0 0;font-weight:500">Pick the day they confirmed</p>
     <div class="days">${days.map(d => `<button data-pd="${d}" data-pp="${esc(q.po)}">${dateOf(d)}</button>`).join("")}</div>
-    <p class="mute" style="font-size:13px;margin:0">Another day? <input type="date" id="pdOther" style="font:inherit;color:inherit;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:4px 6px"> <button class="btn" id="pdGo" data-pp="${esc(q.po)}" style="height:32px">Set</button></p>`);
+    <p class="mute" style="font-size:13.5px;margin:0">Another day? <input type="date" id="pdOther" style="font:inherit;color:inherit;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:4px 6px"> <button class="btn" id="pdGo" style="height:32px">Set</button></p>`);
   $("#pdGo").onclick = () => { const v = $("#pdOther").value; if (!v) return; setDay(q.po, Math.round((Date.parse(v) - DAY0) / 864e5)); };
 }
 async function setDay(po, day) {
-  try { await api(`/api/pos/${encodeURIComponent(po)}/date`, {method: "POST", body: JSON.stringify({day})}); closeSheet(); await refresh(); toast(`${po} now planned for ${dateOf(day)}. The question is closed.`); }
-  catch (e) { toast(e.message); }
+  try { await api(`/api/pos/${encodeURIComponent(po)}/date`, {method: "POST", body: JSON.stringify({day})}); closeSheet(); await refresh(); toast(`${po} is now planned for ${dateOf(day)}. The question is closed.`); }
+  catch (e) { toast(e.message, "err"); }
 }
+function jump(id) { const el = document.getElementById(id); if (!el) return; if (innerWidth <= 720) { document.body.dataset.view = "today"; $$("[data-go]").forEach(x => x.setAttribute("aria-selected", x.dataset.go === "today")); } el.scrollIntoView({behavior: reduced ? "auto" : "smooth", block: "start"}); }
 $("#tryBtn").onclick = tryIt;
 
 /* ------------------------------------------------ actions */
@@ -706,7 +915,7 @@ async function refresh() { render(await api(`/api/state?role=${role}`)); }
 async function advance(days) {
   if (busy) return; busy = true;
   try { await api("/api/advance", {method: "POST", body: JSON.stringify({days})}); await refresh(); }
-  catch (e) { toast(e.message); stopPlay(); } finally { busy = false; }
+  catch (e) { toast(e.message, "err"); stopPlay(); } finally { busy = false; }
 }
 const playIcon = '<svg viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5v11l9-5.5z"/></svg>', pauseIcon = '<svg viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5h3v11H3zM8 1.5h3v11H8z"/></svg>';
 function stopPlay() { clearInterval(playing); playing = null; $("#play").innerHTML = $("#playM").innerHTML = playIcon; $("#play").ariaLabel = $("#playM").ariaLabel = "Play"; }
@@ -717,36 +926,50 @@ $$("[data-role]").forEach(b => b.onclick = () => { role = b.dataset.role; $$("[d
 $("#simBtn").onclick = $("#simBtnM").onclick = simulate;
 $("#evBtn").onclick = $("#evBtnM").onclick = showEvidence;
 $$("[data-go]").forEach(b => b.onclick = () => { document.body.dataset.view = b.dataset.go; $$("[data-go]").forEach(x => x.setAttribute("aria-selected", x === b)); scrollTo({top: 0}); });
+document.addEventListener("mouseover", e => {
+  const card = e.target.closest(".decision");
+  $$(".rw-row.hl").forEach(r => r.classList.remove("hl"));
+  if (card && card.dataset.affects) card.dataset.affects.split(" ").forEach(id => { const r = document.querySelector(`.rw-row[data-o="${CSS.escape(id)}"]`); if (r) r.classList.add("hl"); });
+});
 
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-o],[data-ap],[data-rj],[data-em],[data-inj],[data-reset],[data-qs],[data-qx],[data-qd],[data-pd],#rwMore,#sigAll");
+  const t = e.target.closest("[data-o],[data-ap],[data-rj],[data-em],[data-inj],[data-reset],[data-qs],[data-qx],[data-qd],[data-pd],[data-jump],[data-open],[data-fix],[data-more],#rwMore,#sigAll");
   if (!t) return;
   try {
     if (t.id === "rwMore") { showAll = !showAll; runway(S); }
+    else if (t.dataset.more !== undefined) { t.previousElementSibling.querySelectorAll("[hidden]").forEach(x => x.hidden = false); t.remove(); }
+    else if (t.dataset.jump) jump(t.dataset.jump);
+    else if (t.dataset.open === "sim") simulate();
+    else if (t.dataset.fix) { closeSheet(); jump("decTitle"); const c = document.querySelector(`[data-ap="${CSS.escape(t.dataset.fix)}"]`); if (c) { const card = c.closest(".decision"); card.animate([{boxShadow: "0 0 0 4px var(--ok-soft)"}, {boxShadow: "0 0 0 0 transparent"}], {duration: 1400}); } }
     else if (t.dataset.qs || t.dataset.qx) {
       const id = t.dataset.qs || t.dataset.qx, send = !!t.dataset.qs; t.disabled = true;
       await api(`/api/questions/${encodeURIComponent(id)}/${send ? "send" : "dismiss"}`, {method: "POST", body: "{}"});
       await refresh();
-      toast(send ? "Question sent. Keep planning for the latest day until the supplier answers; advance a few hours to see the reply." : "Dismissed. Sentinel keeps planning for the latest day.", 5200);
+      toast(send ? "Question sent. Advance a few hours to see the supplier's answer." : "Dismissed. Sentinel keeps planning for the latest day.", send ? "ok" : "warn");
     }
     else if (t.dataset.qd) phoneDate(t.dataset.qd);
     else if (t.dataset.pd) await setDay(t.dataset.pp, +t.dataset.pd);
-    else if (t.id === "sigAll") openSheet("All signals", S.alerts.filter(a => !a.kind.startsWith("order_")).map(signalHTML).join(""));
-    else if (t.dataset.o) await explain(t.dataset.o);
-    else if (t.dataset.em) { const p = S.proposals.find(x => x.id === t.dataset.em); openSheet("Email to the supplier", `<p class="mute" style="margin:0 0 12px;font-size:13.5px">A draft only. Sentinel never sends email; once a purchase is approved, the buyer sends it.</p><pre style="white-space:pre-wrap;font:13.5px/1.6 var(--mono);margin:0">${esc(p.email)}</pre>`); }
+    else if (t.closest(".rw-row")) await explain(t.closest(".rw-row").dataset.o);
+    else if (t.dataset.em) { const p = S.proposals.find(x => x.id === t.dataset.em); openSheet("Email to the supplier", `<p class="mute" style="margin:0 0 12px;font-size:13.5px">A draft only. Sentinel never sends email; once a purchase is approved, the buyer sends it.</p><pre class="d-email">${esc(p.email)}</pre>`); }
     else if (t.dataset.ap || t.dataset.rj) {
       const id = t.dataset.ap || t.dataset.rj, approve = !!t.dataset.ap, before = S.kpis.late;
       t.disabled = true;
+      const card = t.closest(".decision"); if (approve && card && !reduced) { card.style.opacity = ".4"; card.style.transform = "scale(.98)"; }
       const r = await api(`/api/proposals/${encodeURIComponent(id)}/${approve ? "approve" : "reject"}`, {method: "POST", body: "{}"});
       await refresh();
-      toast(approve ? `${r.po} placed. Late orders: ${before} → ${S.kpis.late}. The email now waits for the buyer.` : "Set aside. Sentinel will ask again if things get worse.");
+      if (approve) showReceipt(r, before, S.kpis.late); else toast("Set aside. Sentinel will ask again if things get worse.", "warn");
     }
-    else if (t.dataset.inj) { closeSheet(); const r = await api(`/api/inject/${t.dataset.inj}`, {method: "POST"}); await refresh(); toast(r.detail + ".", 5000); }
-    else if (t.dataset.reset) { closeSheet(); stopPlay(); await api("/api/reset", {method: "POST", body: JSON.stringify({seed: 7})}); showAll = false; prevRisk = {}; await refresh(); toast("The plant is back to day 4."); }
-  } catch (err) { toast(err.message); }
+    else if (t.dataset.inj) {
+      closeSheet(); const r = await api(`/api/inject/${t.dataset.inj}`, {method: "POST"}); await refresh();
+      toast(r.detail, t.dataset.inj === "junk" ? "ok" : "warn", 6000);
+      if (t.dataset.inj === "vague") jump("msgSec");
+    }
+    else if (t.dataset.reset) { closeSheet(); stopPlay(); await api("/api/reset", {method: "POST", body: JSON.stringify({seed: 7})}); showAll = false; prevRisk = {}; firstRender = true; seenAsks = new Set(); await refresh(); toast(`The plant is back to ${dateOf(4)}.`); }
+  } catch (err) { toast(err.message, "err"); }
 });
 let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => S && runway(S), 150); });
-refresh().catch(e => { $("#headline").textContent = "Sentinel could not reach its server."; $("#sub").textContent = e.message; });
+refresh().then(() => { try { if (!sessionStorage.getItem("simHint")) { $("#simBtn").classList.add("pulse"); sessionStorage.setItem("simHint", "1"); } } catch {} })
+  .catch(e => { $("#headline").textContent = "Sentinel could not reach its server."; $("#sub").textContent = e.message; });
 </script>
 </body>
 </html>

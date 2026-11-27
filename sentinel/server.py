@@ -135,7 +135,7 @@ class Session:
         if send:
             when = self.world.answer_question(q["po"], self.clock)
             rec["note"] = ("question sent to the supplier after approval" +
-                           (f"; in this demo the supplier replies around day {when:.2f}" if when else ""))
+                           (f"; in this demo the supplier replies within hours" if when else ""))
         self.decisions.append(rec)
         self.refresh()
         return rec
@@ -176,7 +176,9 @@ class Session:
         p["status"] = "approved" if approve else "rejected"
         p["decided_at"] = self.clock
         p["decided_by"] = role
-        rec = {"t": round(self.clock, 2), "proposal": pid, "decision": p["status"], "by": role, "note": note}
+        rec = {"t": round(self.clock, 2), "proposal": pid, "decision": p["status"], "by": role, "note": note,
+               "cost": p["cost"], "late_before": p["effect"]["late_before"], "late_after": p["effect"]["late_after"],
+               "material_name": p["material_name"], "qty": p["qty"], "unit": p["unit"]}
         if approve:
             po = self.world.create_po(p["material"], p["qty"], self.clock, expedite=p["expedite"], source="erp")
             p["po_id"] = po
@@ -196,7 +198,7 @@ class Session:
         if kind == "spike":
             prod = r.choice(list(w.cat.products))
             w.spike_days[d + 1] = prod
-            info["detail"] = f"{w.cat.products[prod].name} gets a burst of orders tomorrow (day {d + 1})"
+            info["detail"] = f"{w.cat.products[prod].name} gets a burst of orders tomorrow ({ambiguity.fmt(d + 1)})"
         elif kind == "supplier_delay":
             open_pos = [(pid, p) for pid, p in w.pos.items() if not p["received"] and p["actual"] > self.clock + 1]
             if not open_pos:
@@ -211,7 +213,9 @@ class Session:
             p["actual"] += 7
             w.truth.pos[pid]["actual"] = p["actual"]
             w._emit("po_date_changed", self.clock + 0.01, "supplier", prompt=True, po_id=pid, expected=p["actual"])
-            info["detail"] = f"{pid} ({w.cat.materials[p['material']].name}) slips 7 days to day {p['actual']}"
+            info["detail"] = (f"{pid} ({w.cat.materials[p['material']].name}) slips a week, to "
+                              f"{ambiguity.fmt(p['actual'])}")
+            info["po"] = pid
         elif kind == "vague":
             open_pos = [(pid, p) for pid, p in w.pos.items() if not p["received"] and p["actual"] > self.clock + 1]
             if not open_pos:
@@ -244,7 +248,9 @@ class Session:
             import heapq
             heapq.heapify(keep)
             w._pending = keep
-            info["detail"] = f"Warehouse (WMS) feed goes silent for 30 hours from day {start:.2f}"
+            info["detail"] = (f"The warehouse feed went quiet at {ambiguity.fmt(start)} {int(24 * (start % 1)):02d}:00. "
+                              f"Sentinel waits 18 hours of silence, then raises the alert")
+            info["skip"] = 0.8      # jump to the moment the alert fires, so the demo shows it
         elif kind == "shrink":
             m = max(w.cat.materials, key=lambda m: w.physical[m] * w.cat.materials[m].unit_cost)
             q = math.floor(w.physical[m] * 0.4)
@@ -263,6 +269,8 @@ class Session:
         self.injections.append(info)
         self.world.deliver_until(self.clock + 0.02)
         self.clock += 0.02
+        if info.get("skip"):
+            self.advance(info.pop("skip"))
         self.refresh()
         return info
 
@@ -303,6 +311,8 @@ class Session:
                                  if q["status"] in ("pending", "sent") or self.clock - q.get("closed_at", 0) < 2),
                                 key=lambda q: (q["status"] != "pending", -q["created"]))[:10],
             "today_label": ambiguity.fmt(math.floor(self.clock)),
+            "active_outage": next(({"source": src, "start": a, "end": b} for (src, a, b) in [w.outage]
+                                   if w.outage and a <= self.clock <= b + 0.3), None) if (w := self.world) else None,
             "rule": ("Open orders are served by earliest Customer Request Date (ties: earliest created). "
                      "Each takes stock on hand first, then incoming POs by risk-adjusted arrival. Production "
                      f"starts when every material is covered and takes {PROD_DAYS} days."),
@@ -445,6 +455,8 @@ def evidence():
                     "replay": R["E3_replay"]["identical"], "replay_total": R["E3_replay"]["replays"],
                     "dups": R["E3_feed_faults"]["dups"], "junk": R["E3_feed_faults"]["junk"]},
         "agent": {k: round(100 * v["strict"] / max(v["n"], 1)) for k, v in mut.items()},
+        "plants": [round(a["on_time_pct"] - b["on_time_pct"], 2) for a, b in
+                   zip(R["E5_per_seed"]["agent"], R["E5_per_seed"]["baseline"])],
     }
 
 

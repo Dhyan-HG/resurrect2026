@@ -1,6 +1,6 @@
 # E6 – Supplier messages in plain language
 
-Reproduce: `python -m evaluation.run_ambiguity --seeds 30` (5.2 s). Definitions of clear / ambiguous / no date: [docs/AMBIGUITY.md](../docs/AMBIGUITY.md).
+Reproduce: `python -m evaluation.run_ambiguity --seeds 30` (5.0 s). Definitions of clear / ambiguous / no date: [docs/AMBIGUITY.md](../docs/AMBIGUITY.md).
 
 **Success means:** ambiguous messages are caught (nobody plans on a guess), clear ones are not questioned, the range Sentinel plans for contains the real date, and fewer orders ship late than when the same messages are read by a plain date parser. **The trade-off is stated, not hidden:** planning for the latest reading means Sentinel is rarely too early but often too late until the supplier answers.
 

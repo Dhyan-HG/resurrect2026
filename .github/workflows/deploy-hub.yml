@@ -1,0 +1,38 @@
+# Deploys every push to main to the hub server, which serves chatu.in (Sentinel).
+# HUB_DEPLOY_KEY can only run /opt/hub/deploy.sh there: a failed build leaves the old version live.
+name: Deploy to hub
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-hub
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy
+        env:
+          HUB_DEPLOY_KEY: ${{ secrets.HUB_DEPLOY_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$HUB_DEPLOY_KEY" > ~/.ssh/hub && chmod 600 ~/.ssh/hub
+          # pinned host key, so the deploy cannot be pointed at another server
+          echo '13.205.72.121 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3vAS5i532fJgwAbpP8mMbLDq9xkOPY8jYGeTZ9de1a' > ~/.ssh/known_hosts
+          git archive --format=tar HEAD \
+            | ssh -i ~/.ssh/hub -o StrictHostKeyChecking=yes -o BatchMode=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=10 ubuntu@13.205.72.121 "sentinel $GITHUB_SHA"
+
+      - name: Check the live site
+        run: |
+          for i in $(seq 1 10); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' https://chatu.in/api/state) && [ "$code" = 200 ] && { echo "live: $code"; exit 0; }
+            sleep 3
+          done
+          echo "live site check failed (last status $code)"; exit 1

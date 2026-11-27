@@ -95,10 +95,18 @@ def test_overdue_po_pushes_eta():
 
 
 def test_grounding_check_catches_invented_numbers():
-    facts = [{"id": "k", "late": 3, "net": -12.5}]
-    assert agent.grounding_check("3 orders late, net -12.5 on M07", facts)["ok"]
-    bad = agent.grounding_check("3 orders late, 7 more next week", facts)
+    facts = [{"id": "kpi", "late": 3, "at_risk": 1},
+             {"id": "mat:M07", "net": -12.5, "on_hand": 4},
+             {"id": "order:SO0001", "crd": 10, "projected_ship": 14, "days_late": 4}]
+    g = agent.grounding_check
+    assert g("3 orders projected late, 1 at risk.\nM07 net is -12.5.\nSO0001 ships day 14, 4 days late.", facts)["ok"]
+    bad = g("3 orders projected late, 7 more next week", facts)
     assert not bad["ok"] and bad["ungrounded"] == [7.0]
+    assert not g("SO0001 ships day 3.", facts)["ok"]              # 3 is a plant-wide number, not SO0001's
+    assert not g("SO0099 ships day 14.", facts)["ok"]             # no such order
+    assert not g("Nothing is late today.", facts)["ok"]          # 3 are
+    assert not g("1 order projected late, 3 at risk.", facts)["ok"]   # swapped counts
+    assert agent.grounding_check_loose("1 order projected late, 3 at risk.", facts)["ok"]   # the old check missed it
 
 
 def test_proposals_need_approval_and_help():

@@ -1,6 +1,6 @@
 """Score the supplier-message reader on the hand-labelled held-out set.
 
-    python -m evaluation.heldout_check          # summary + every failure
+    python -m evaluation.score_messages          # summary + every failure
 """
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from sentinel.ambiguity import interpret, naive_guess, to_day  # noqa: E402
 
-PATH = Path(__file__).with_name("ambiguity_heldout.json")
+PATH = Path(__file__).with_name("ambiguity_dev.json")
 
 
 def day(s):
@@ -34,10 +34,12 @@ def score(items=None) -> dict:
         else:
             ours_plan = r["plan_day"]
         naive_plan = g if g is not None else D
+        mid_plan = (r["lo"] + r["hi"] + 1) // 2 if r["status"] == "ambiguous" else ours_plan
         truth_plan = meant if meant is not None else D
         rows.append({"text": it["text"], "label": it["label"], "type": it.get("type"),
                      "status": r["status"], "rtype": r["type"], "lo": r["lo"], "hi": r["hi"],
                      "meant": meant, "range": rng, "ours_plan": ours_plan, "naive_plan": naive_plan,
+                     "mid_plan": mid_plan,
                      "truth_plan": truth_plan, "explanation": r["explanation"]})
     amb = [x for x in rows if x["label"] == "ambiguous"]
     clear = [x for x in rows if x["label"] == "clear"]
@@ -55,6 +57,12 @@ def score(items=None) -> dict:
     range_exact = sum(x["status"] == "ambiguous" and [x["lo"], x["hi"]] == x["range"] for x in amb)
     dated = [x for x in rows if x["meant"] is not None]
     ours_under = sum(x["ours_plan"] < x["truth_plan"] for x in dated)
+    plans = {}
+    for k, f in (("sentinel", "ours_plan"), ("earliest", "naive_plan"), ("middle", "mid_plan")):
+        errs = [x[f] - x["truth_plan"] for x in dated]
+        plans[k] = {"too_early": sum(e < 0 for e in errs), "too_late": sum(e > 0 for e in errs),
+                    "exact": sum(e == 0 for e in errs),
+                    "mean_abs_err": sum(abs(e) for e in errs) / len(errs) if errs else 0.0}
     naive_under = sum(x["naive_plan"] < x["truth_plan"] for x in dated)
     naive_exact_amb = sum(x["naive_plan"] == x["meant"] for x in amb)
     ours_exact_clear = clear_ok
@@ -68,6 +76,7 @@ def score(items=None) -> dict:
             "asked_when_clear": fp, "clear_correct": clear_ok, "none_correct": none_ok,
             "ambiguous_range_covers_meant": cover, "ambiguous_range_exact": range_exact,
             "planned_too_early": {"sentinel": ours_under, "naive": naive_under, "n": len(dated)},
+            "plans": plans, "n_dated": len(dated),
             "exact_on_clear": {"sentinel": ours_exact_clear, "naive": naive_exact_clear},
             "naive_right_on_ambiguous": naive_exact_amb,
             "fully_correct": len(rows) - len(fails), "failures": fails}

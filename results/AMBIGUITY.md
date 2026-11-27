@@ -1,19 +1,40 @@
 # E6 – Supplier messages in plain language
 
-Reproduce: `python -m evaluation.run_ambiguity --seeds 30` (3.6 s). Definitions of clear / ambiguous / no date: [docs/AMBIGUITY.md](../docs/AMBIGUITY.md).
+Reproduce: `python -m evaluation.run_ambiguity --seeds 30` (5.1 s). Definitions of clear / ambiguous / no date: [docs/AMBIGUITY.md](../docs/AMBIGUITY.md).
 
-**Success means:** every ambiguous message is caught (so nobody plans on a guess), clear messages are not questioned, the range Sentinel plans for contains the real date, and fewer orders ship late than when the same messages are read by a plain date parser.
+**Success means:** ambiguous messages are caught (nobody plans on a guess), clear ones are not questioned, the range Sentinel plans for contains the real date, and fewer orders ship late than when the same messages are read by a plain date parser. **The trade-off is stated, not hidden:** planning for the latest reading means Sentinel is rarely too early but often too late until the supplier answers.
 
 ## A. Hand-labelled messages
 
-| Set | Who wrote it | n (ambiguous / clear / none) | Fully right | Ambiguity precision / recall | Asked when clear | Range contains the real date | Planned too early: Sentinel vs plain parser |
-|---|---|---|---|---|---|---|---|
-| development | us, while building the reader (not evidence) | 119 (51 / 62 / 6) | **119/119** | 1.00 / 1.00 | 0 | 51/51 | 0 vs 41 of 113 |
-| blind 1 – first run | separate author, saw only the definitions | 120 (52 / 55 / 13) | **101/120** | 0.88 / 0.88 | 6 | 46/52 | 5 vs 42 of 107 |
-| blind 1 – now | separate author, saw only the definitions | 120 (52 / 55 / 13) | **120/120** | 1.00 / 1.00 | 0 | 52/52 | 0 vs 38 of 107 |
-| blind 2 – first run | a second separate author | 120 (51 / 54 / 15) | **110/120** | 0.91 / 0.96 | 5 | 49/51 | 1 vs 42 of 100 |
+| Set | Written by | n (amb / clear / none) | Fully right | Ambiguity precision / recall | Asked when clear | Range contains the real date |
+|---|---|---|---|---|---|---|
+| development | us, while building the reader (not evidence) | 119 (51 / 62 / 6) | **119/119** | 1.00 / 1.00 | 0 | 51/51 |
+| audit | the independent code auditor; used to test fixes (not blind) | 70 (21 / 45 / 4) | **69/70** | 1.00 / 0.95 | 0 | 20/21 |
+| blind 1 – first run | separate AI agent, saw only the definitions | 120 (52 / 55 / 13) | **101/120** | 0.88 / 0.88 | 6 | 46/52 |
+| blind 1 – now | separate AI agent, saw only the definitions | 120 (52 / 55 / 13) | **119/120** | 1.00 / 0.98 | 0 | 51/52 |
+| blind 2 – first run | a second separate AI agent | 120 (51 / 54 / 15) | **110/120** | 0.91 / 0.96 | 5 | 49/51 |
+| blind 2 – now | a second separate AI agent | 120 (51 / 54 / 15) | **120/120** | 1.00 / 1.00 | 0 | 51/51 |
 
-The **first run** on a blind set is the honest accuracy figure: it was scored once, before any change. Rules were then fixed for the failures it exposed, so later rows on that set are no longer blind. The plain parser is the same date reader without the ambiguity step: it takes the earliest reading and never asks.
+The **first run** on a blind set is the honest accuracy figure. Rules were fixed after blind sets 1 and 2 and after the auditor's set, so their later rows are no longer blind. Blind set 3 was written after those fixes and committed to git before it was scored (commit recorded in `results/ambiguity_blind3_first_run.json`). Note: after review the numeric-date rule changed (dd/mm first, see docs/AMBIGUITY.md); one item in blind 1 and one in the audit set were labelled under the old rule and now count as failures.
+
+**What each way of reading would plan for**, against the date the supplier meant (messages with a known date; first run where there is one):
+
+| Set | Reader | Too early | Exact | Too late | Mean error (days) |
+|---|---|---|---|---|---|
+| development | Sentinel (latest reading) | 0 | 74 | 39 | 1.05 |
+| development | Plain parser (earliest reading) | 41 | 72 | 0 | 0.73 |
+| development | Middle of the range | 4 | 82 | 27 | 0.45 |
+| audit | Sentinel (latest reading) | 0 | 49 | 17 | 0.79 |
+| audit | Plain parser (earliest reading) | 19 | 47 | 0 | 0.70 |
+| audit | Middle of the range | 3 | 54 | 9 | 0.24 |
+| blind 1 | Sentinel (latest reading) | 0 | 65 | 42 | 1.67 |
+| blind 1 | Plain parser (earliest reading) | 37 | 69 | 1 | 1.16 |
+| blind 1 | Middle of the range | 3 | 78 | 26 | 1.11 |
+| blind 2 | Sentinel (latest reading) | 0 | 68 | 32 | 0.68 |
+| blind 2 | Plain parser (earliest reading) | 41 | 59 | 0 | 0.73 |
+| blind 2 | Middle of the range | 6 | 80 | 14 | 0.32 |
+
+On clear messages all three agree. On ambiguous ones the plain parser is too early about as often as Sentinel is too late, and the middle of the range has the smallest average error. Sentinel accepts the larger error on purpose: being too early makes an order miss its date by surprise, being too late only makes the planner act sooner than needed, and the question to the supplier then removes the error.
 
 <details><summary>blind 1: the 19 first-run failures</summary>
 
@@ -54,50 +75,57 @@ The **first run** on a blind set is the honest accuracy figure: it was scored on
 
 </details>
 
-## B. Every message the simulated suppliers wrote
+## B. Every message the simulated suppliers wrote (a sanity check)
 
-2525 messages across 30 plants (1022 delay notices, 862 'on track' notes, 641 answers to questions). Ambiguous: **642/642** caught, range contains the real date in **642/642**. Clear: **1883/1883** read exactly, 0 questioned needlessly. By type: approximate 110/110, dispatch_vs_arrival 43/43, missing_date 103/103, next_weekday 96/96, range 131/131, vague_period 159/159.
-
-*Caveat:* the simulated suppliers' phrasing was written by the same team as the reader, so B shows the machinery works at scale; A's blind sets are the accuracy evidence.
+2549 messages across 30 plants (1020 delay notices, 926 'on track' notes, 603 answers to questions). Ambiguous: 606/606 caught, range contains the real date in 606/606. Clear: 1943/1943 read exactly. **This is close to 100% by construction:** the simulated suppliers only use phrasings from the same definitions the reader implements. It shows the plumbing works at scale, not that the reader is accurate; section A is the accuracy evidence.
 
 ## C. Does it change what ships on time?
 
-Same 30 plants and faults as E5 (60 days each); every delay notice is written as text (60 % vaguely when a truthful vague phrasing exists), 20 % of on-time POs get an 'on track' note. The agent's purchase proposals are approved in every arm; only the handling of supplier text differs.
+Same 30 plants, faults and demand in every arm (60 days each); every delay notice is written as text (60 % vaguely when a truthful vague phrasing exists), 20 % of on-time POs get an 'on track' note. The agent's purchase proposals are approved in every arm; only the handling of supplier text differs. 'Planned too early / too late' is measured on the arrival day the engine actually plans with, on every day a delayed PO is open after its notice.
 
-| How supplier text is handled | On-time % | Days late (total) | Stock-out material-days | PO spend | PO-days planned too early | Mean error of PO date (days) | Questions sent |
-|---|---|---|---|---|---|---|---|
-| Reference: supplier sends an exact date (no text) | 96.32 | 15.4 | 8.2 | 785027 | 1.4% | 0.06 | 0.0 |
-| Ignore the text | 94.60 | 25.4 | 13.8 | 790449 | 100.0% | 4.80 | 0.0 |
-| Plain parser: earliest reading, never asks | 95.65 | 19.9 | 11.2 | 794457 | 54.5% | 1.96 | 0.0 |
-| Sentinel: latest reading, no questions | 96.38 | 15.3 | 8.1 | 791503 | 1.6% | 0.90 | 0.0 |
-| **Sentinel: latest reading + approved question** | 96.52 | 14.6 | 7.4 | 793795 | 1.4% | 0.18 | 21.4 |
+| How supplier text is handled | On-time % | Days late (total) | Stock-out material-days | PO spend | Planned too early | Planned too late | Mean error of planned arrival (days) | Questions sent |
+|---|---|---|---|---|---|---|---|---|
+| Reference: supplier sends an exact date (no text) | 96.66 | 13.6 | 8.4 | 766004 | 1.4% | 0.2% | 0.05 | 0.0 |
+| Ignore the text | 94.96 | 22.8 | 12.5 | 764457 | 63.7% | 19.8% | 2.12 | 0.0 |
+| Plain parser: earliest reading, never asks | 96.11 | 18.7 | 10.2 | 765188 | 39.0% | 7.7% | 1.07 | 0.0 |
+| Middle of the range, never asks | 96.21 | 17.8 | 9.9 | 766004 | 21.9% | 17.1% | 0.74 | 0.0 |
+| Sentinel: latest reading, no questions | 96.62 | 15.2 | 8.9 | 766229 | 1.3% | 38.3% | 0.85 | 0.0 |
+| **Sentinel: latest reading + approved question** | 96.72 | 14.1 | 8.4 | 765770 | 1.4% | 5.4% | 0.18 | 20.1 |
 
 | Sentinel (latest + ask) vs | Metric | Mean difference [95% CI] | p | Seeds better / worse |
 |---|---|---|---|---|
-| Plain parser: earliest reading, never asks | on_time_pct | +0.87 [+0.07, +1.70] | 0.0454 | 20 / 6 |
-| Plain parser: earliest reading, never asks | late_days_total | -5.23 [-11.40, -0.33] | 0.0604 | 16 / 6 |
-| Plain parser: earliest reading, never asks | stockout_material_days | -3.87 [-6.10, -1.87] | 0.0008 | 18 / 7 |
-| Plain parser: earliest reading, never asks | po_spend | -661.80 [-27612.42, +25242.92] | 0.9635 | 12 / 15 |
-| Plain parser: earliest reading, never asks | po_days_planned_too_early | -0.53 [-0.56, -0.50] | 0.0000 | 30 / 0 |
-| Ignore the text | on_time_pct | +1.92 [+1.00, +2.94] | 0.0006 | 22 / 6 |
-| Ignore the text | late_days_total | -10.80 [-17.60, -5.13] | 0.0003 | 22 / 6 |
-| Ignore the text | stockout_material_days | -6.47 [-9.07, -4.13] | 0.0000 | 24 / 2 |
-| Ignore the text | po_spend | +3345.65 [-17429.86, +21591.78] | 0.7443 | 11 / 17 |
-| Ignore the text | po_days_planned_too_early | -0.99 [-0.99, -0.98] | 0.0000 | 30 / 0 |
-| Sentinel: latest reading, no questions | on_time_pct | +0.14 [-0.56, +0.82] | 0.6996 | 13 / 11 |
-| Sentinel: latest reading, no questions | late_days_total | -0.63 [-3.17, +2.20] | 0.6912 | 13 / 9 |
-| Sentinel: latest reading, no questions | stockout_material_days | -0.73 [-1.93, +0.57] | 0.2994 | 16 / 8 |
-| Sentinel: latest reading, no questions | po_spend | +2291.76 [-18063.33, +22473.26] | 0.8287 | 13 / 14 |
-| Sentinel: latest reading, no questions | po_days_planned_too_early | -0.00 [-0.00, +0.00] | 0.3206 | 16 / 10 |
+| Plain parser: earliest reading, never asks | on_time_pct | +0.61 [+0.05, +1.19] | 0.0495 | 17 / 4 |
+| Plain parser: earliest reading, never asks | late_days_total | -4.57 [-8.83, -0.87] | 0.0285 | 19 / 4 |
+| Plain parser: earliest reading, never asks | stockout_material_days | -1.80 [-3.07, -0.50] | 0.0137 | 15 / 6 |
+| Plain parser: earliest reading, never asks | po_spend | +581.99 [-439.70, +1634.41] | 0.2812 | 10 / 18 |
+| Plain parser: earliest reading, never asks | po_days_planned_too_early | -0.38 [-0.41, -0.35] | 0.0000 | 30 / 0 |
+| Plain parser: earliest reading, never asks | po_abs_err | -0.90 [-1.00, -0.80] | 0.0000 | 30 / 0 |
+| Middle of the range, never asks | on_time_pct | +0.51 [-0.03, +1.05] | 0.0782 | 15 / 5 |
+| Middle of the range, never asks | late_days_total | -3.63 [-7.60, -0.10] | 0.0680 | 16 / 7 |
+| Middle of the range, never asks | stockout_material_days | -1.53 [-2.87, -0.27] | 0.0342 | 15 / 7 |
+| Middle of the range, never asks | po_spend | -233.08 [-1640.63, +915.86] | 0.7815 | 14 / 13 |
+| Middle of the range, never asks | po_days_planned_too_early | -0.21 [-0.23, -0.18] | 0.0000 | 30 / 0 |
+| Middle of the range, never asks | po_abs_err | -0.57 [-0.66, -0.48] | 0.0000 | 30 / 0 |
+| Ignore the text | on_time_pct | +1.76 [+1.03, +2.59] | 0.0001 | 22 / 4 |
+| Ignore the text | late_days_total | -8.67 [-13.03, -4.57] | 0.0005 | 21 / 5 |
+| Ignore the text | stockout_material_days | -4.13 [-5.80, -2.57] | 0.0001 | 22 / 4 |
+| Ignore the text | po_spend | +1313.75 [-341.91, +3000.27] | 0.1429 | 8 / 21 |
+| Ignore the text | po_days_planned_too_early | -0.62 [-0.64, -0.61] | 0.0000 | 30 / 0 |
+| Ignore the text | po_abs_err | -1.94 [-2.03, -1.85] | 0.0000 | 30 / 0 |
+| Sentinel: latest reading, no questions | on_time_pct | +0.10 [-0.38, +0.64] | 0.7154 | 10 / 11 |
+| Sentinel: latest reading, no questions | late_days_total | -1.03 [-4.97, +2.87] | 0.6421 | 12 / 12 |
+| Sentinel: latest reading, no questions | stockout_material_days | -0.53 [-1.90, +0.73] | 0.4684 | 11 / 10 |
+| Sentinel: latest reading, no questions | po_spend | -458.28 [-2010.22, +831.95] | 0.5465 | 14 / 13 |
+| Sentinel: latest reading, no questions | po_days_planned_too_early | +0.00 [-0.00, +0.00] | 0.4448 | 10 / 17 |
+| Sentinel: latest reading, no questions | po_abs_err | -0.67 [-0.76, -0.59] | 0.0000 | 30 / 0 |
 
-**Reading the table.** When suppliers write dates vaguely, a plain date parser plans too early on 54.5% of the days a delayed PO is open, and on-time falls to 95.65% (exact dates: 96.32%). Sentinel plans for the latest reading and keeps 96.52%: +0.87 points vs the plain parser (95% CI +0.07 to +1.70, p = 0.045, better in 20 of 30 plants). The gain is modest because only delayed POs with a vague notice are affected. Asking the supplier makes the planned date about 5x more accurate (0.90 → 0.18 days of error), but on top of planning for the latest reading it does **not** measurably change on-time (+0.14 points, p = 0.70). Its value is a correct date for the planner, not extra on-time orders in this simulator.
+**Reading the table.** With vague supplier text, Sentinel ships 96.72% on time vs 96.11% for the earliest-reading parser (+0.61 points, 95% CI +0.05 to +1.19, p = 0.050) and 96.21% for the middle-of-range parser (+0.51, p = 0.078); with exact dates from the supplier it is 96.66%. Asking the supplier, on top of planning for the latest reading, makes the planned arrival more accurate (0.85 → 0.18 days of error) but changes on-time by +0.10 points (p = 0.72): its value is a correct date for the planner, not extra on-time orders in this simulator.
 
-
-In the simulator a supplier answers an approved question in 7.2 hours on average (drawn from 4-11 h); real suppliers may be slower, which would shrink the gain of asking towards the 'latest reading, no questions' row.
+In the simulator a supplier answers an approved question in 7.1 hours on average (drawn from 4-11 h); real suppliers may be slower.
 
 ## Limits
 
-- English only, rule-based, a fixed list of phrases (see docs/AMBIGUITY.md). Blind sets are 120 messages each; a few hundred messages cannot cover how every supplier writes.
-- Blind authors were separate AI agents given only the definitions page, not real suppliers. Real messages would be messier.
-- Outcome results come from our simulator, where suppliers always tell the truth and answer questions. A supplier who is wrong about their own date is not modelled.
-- Planning for the latest reading is deliberately cautious: when the true date is early in the range, Sentinel may expedite or warn when it did not need to.
+- English only, rule-based, a fixed list of phrases (docs/AMBIGUITY.md). A few hundred labelled messages cannot cover how every supplier writes.
+- Blind authors were separate AI agents given only the definitions page, not real suppliers, and one labeller per message: we did not measure agreement between labellers, so the definitions themselves are ours.
+- Uncertainty is expressed as a range of days, not a probability.
+- Outcome results come from our simulator, where suppliers tell the truth and answer questions.

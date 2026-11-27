@@ -39,6 +39,7 @@ class EngineOptions:
     # How plain-language supplier messages move a PO's expected date:
     #   "worst"  - clear: that date; ambiguous: the latest reading, and ask (default)
     #   "guess"  - take the earliest reading silently (a plain date parser)
+    #   "mid"    - take the middle of the range silently
     #   "ignore" - do not read free text at all (structured events only)
     text_policy: str = "worst"
 
@@ -128,6 +129,13 @@ def rebuild(store: EventStore, now: float, text_policy: str = "worst") -> BookSt
                 continue
             if text_policy == "guess":
                 new = ambiguity.naive_guess(ev["text"], ts, p["orig_expected"])
+            elif text_policy == "mid":       # baseline: middle of the range, never asks
+                if read["status"] == "ambiguous":
+                    new = (read["lo"] + read["hi"] + 1) // 2
+                elif read["status"] == "clear":
+                    new = None if read["no_change"] else read["day"]
+                else:
+                    new = None
             elif read["status"] == "ambiguous":
                 new = read["plan_day"]
                 p["unclear"] = {"event_id": ev["event_id"], "ts": ts, "text": ev["text"], **read}
@@ -326,6 +334,16 @@ def static_flags(state: BookState, cat: Catalog) -> dict[str, bool]:
 
 
 # ---------------------------------------------------------------- alerts
+def feeds_down(store: EventStore, now: float) -> list[tuple[str, float]]:
+    """Sources with no event at all (heartbeats included) for longer than FEED_TIMEOUT."""
+    out = []
+    for src in FEED_SOURCES:
+        last = store.last_seen.get(src)
+        if last is not None and now - last > FEED_TIMEOUT:
+            out.append((src, last))
+    return out
+
+
 def alerts(state: BookState, proj: dict, store: EventStore, cat: Catalog) -> list[dict]:
     now = state.now
     out: list[dict] = []
@@ -334,12 +352,10 @@ def alerts(state: BookState, proj: dict, store: EventStore, cat: Catalog) -> lis
         out.append({"key": key, "kind": kind, "severity": severity, "message": msg, "data": data})
 
     # Feed health: no events at all (heartbeats included) from a source.
-    for src in FEED_SOURCES:
-        last = store.last_seen.get(src)
-        if last is not None and now - last > FEED_TIMEOUT:
-            add(f"feed_down:{src}", "feed_down", "high",
-                f"{src.upper()} feed silent for {now - last:.1f} days (last event day {last:.2f}). "
-                f"Numbers that depend on it may be stale.", source=src, silent_days=round(now - last, 2))
+    for src, last in feeds_down(store, now):
+        add(f"feed_down:{src}", "feed_down", "high",
+            f"{src.upper()} feed silent for {now - last:.1f} days (last event day {last:.2f}). "
+            f"Numbers that depend on it may be stale.", source=src, silent_days=round(now - last, 2))
 
     for o in sorted(proj["orders"], key=lambda o: o["slack"]):
         if o["status"] not in ("open", "in_production"):

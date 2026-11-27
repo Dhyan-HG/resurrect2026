@@ -83,8 +83,27 @@ def test_replay_stays_identical_with_text_messages():
 
 
 def test_development_set_labels_are_consistent():
-    items = json.loads((Path(__file__).resolve().parents[1] / "evaluation" / "ambiguity_heldout.json")
+    items = json.loads((Path(__file__).resolve().parents[1] / "evaluation" / "ambiguity_dev.json")
                        .read_text(encoding="utf-8"))["items"]
     for it in items:
         if it["label"] == "ambiguous":
             assert it["range"][0] <= it["meant"] <= it["range"][1], it["text"]
+
+
+def test_review_cases():
+    """Cases raised by the independent reviewers (27 Nov)."""
+    r = lambda t: interpret(t, 16.5, 18, "PO0001")          # sent Wed 18 Nov, due Fri 20 Nov
+    assert r("Material will reach by 11.30 am tomorrow")["day"] == 17       # a time, not 30 Nov
+    assert r("Balance 2.5 MT will come tomorrow")["day"] == 17              # a quantity, not 5 Feb
+    assert r("The 12 Nov consignment is now rescheduled to 30 Nov")["day"] == 28   # past date ignored
+    assert r("We cannot deliver on 20th, will deliver on 23rd")["day"] == 21
+    assert r("Originally due 20 Nov, now revised to 27 Nov")["day"] == 25
+    assert r("Delivery on 31 Nov")["type"] == "conflict"                    # no such date
+    assert r("in a fortnight")["day"] == 30
+    assert r("2 days earlier than planned")["day"] == 16
+    assert r("Monday after next")["day"] == 28
+    assert r("Material will not reach before 5 Dec")["type"] == "open_ended"
+    assert r("Delivery on 2026-11-24")["day"] == 22 and r("ETA: 24-11-2026")["day"] == 22
+    assert r("Will dispatch on Friday and reach early next week")["lo"] == 21
+    assert r("Payment of last invoice pending, please clear by 25th")["status"] == "none"
+    assert r("delayed by 9999999 days")["status"] in ("ambiguous", "none")   # never crashes

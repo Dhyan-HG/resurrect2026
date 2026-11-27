@@ -154,10 +154,9 @@ def catalog_names(cat: Catalog) -> list[str]:
     return sorted(set(names), key=len, reverse=True)
 
 
-def grounding_check(text: str, facts: list[dict], ignore: list[str] | None = None) -> dict:
-    """Every number written in the text must appear in the facts.
-    IDs such as M07, SO0042 or PO0012 are not counted as numbers, and names
-    in `ignore` (catalog names like "Bearing 6202") are removed first."""
+def grounding_check_loose(text: str, facts: list[dict], ignore: list[str] | None = None) -> dict:
+    """The first, weak check (kept for comparison in the evaluation): every number in the text
+    must appear *somewhere* in the facts."""
     for name in ignore or []:
         text = text.replace(name, " ")
     allowed: set = set()
@@ -165,6 +164,95 @@ def grounding_check(text: str, facts: list[dict], ignore: list[str] | None = Non
     found = [float(x) for x in NUM_RE.findall(text)]
     bad = [x for x in found if round(x, 1) not in allowed and round(abs(x), 1) not in allowed]
     return {"numbers": len(found), "ungrounded": bad, "ok": not bad}
+
+
+ENTITY_RE = re.compile(r"\b(SO\d{3,}|PO\d{3,}|M\d{2})\b")
+GLOBAL_FACTS = ("kpi", "proposals", "rule")
+WORDNUM = {"no": 0, "zero": 0, "none": 0, "nothing": 0, "one": 1}
+COUNT_CLAIMS = [   # (pattern, kpi field); group 1 is the number claimed
+    (re.compile(r"\b(\d+|no|one|zero)\s+(?:orders?\s+)?(?:are\s+|is\s+)?(?:projected|forecast)\s+(?:to\s+(?:be|ship)\s+)?late\b", re.I), "late"),
+    (re.compile(r"\b(\d+|no|one|zero)\s+orders?\s+(?:are\s+|is\s+|will\s+be\s+)?late\b", re.I), "late"),
+    (re.compile(r"\b(\d+|no|one|zero)\s+(?:orders?\s+)?(?:are\s+|is\s+)?at risk\b", re.I), "at_risk"),
+    (re.compile(r"\b(nothing|no order|no orders|none of the orders)\b[^.\n]{0,30}\blate\b", re.I), "late"),
+    (re.compile(r"\b(every|all)\s+(?:open\s+)?orders?\s+(?:is|are)\s+on\s+(?:track|time)", re.I), "late"),
+]
+
+
+def _strings(obj, out: set):
+    if isinstance(obj, str):
+        out.add(obj)
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            _strings(v, out)
+    elif isinstance(obj, (list, tuple)):
+        for v in obj:
+            _strings(v, out)
+
+
+def grounding_check(text: str, facts: list[dict], ignore: list[str] | None = None,
+                    names: dict[str, str] | None = None) -> dict:
+    """Checks a briefing line by line against the facts it was built from.
+
+    - A number in a line that names an order, PO or material (by ID or by name) must be one of
+      *that* entity's facts; a number in a line that names none must be a plant-wide fact.
+    - Every order or PO ID mentioned must exist in the facts.
+    - Count claims ("3 orders projected late", "nothing is late", "every order is on track")
+      must equal the actual counts.
+    Catalog names in `ignore` are removed before numbers are read; `names` maps a material or
+    supplier name to its ID so "M6 nuts" binds the line to M06."""
+    names = names or {}
+    kpi = next((f for f in facts if f.get("id") == "kpi"), {})
+    rel = []
+    for f in facts:
+        st: set = set()
+        _strings(f, st)
+        fid = str(f.get("id", ""))
+        if ":" in fid:
+            st.add(fid.split(":", 1)[1])
+        rel.append((f, st))
+    glob = [f for f in facts if f.get("id") in GLOBAL_FACTS or str(f.get("id", "")).startswith(("group:", "feed:"))]
+    found_n, bad, unknown, false = 0, [], [], []
+    for line in text.split("\n"):
+        ents = set(ENTITY_RE.findall(line))
+        bare = line
+        for name in sorted(names, key=len, reverse=True):
+            if name in bare:
+                ents.add(names[name])
+        for name in ignore or []:
+            bare = bare.replace(name, " ")
+        for e in ENTITY_RE.findall(line):
+            if not any(e in st for _, st in rel):
+                unknown.append(e)
+        if ents:
+            pool = [f for f, st in rel if ents & st] + [f for f in facts if f.get("id") == "rule"]
+        else:
+            pool = glob
+        allowed: set = set()
+        _flatten_numbers(pool, allowed)
+        for x in NUM_RE.findall(bare):
+            v = float(x)
+            found_n += 1
+            if round(v, 1) not in allowed and round(abs(v), 1) not in allowed:
+                bad.append(v)
+        for pat, field in COUNT_CLAIMS:
+            for m in pat.finditer(line):
+                g = m.group(1).lower()
+                if pat.pattern.startswith("\\b(every|all)"):
+                    claimed = 0
+                else:
+                    claimed = WORDNUM.get(g, None)
+                    if claimed is None:
+                        claimed = int(g) if g.isdigit() else None
+                if claimed is not None and field in kpi and claimed != kpi[field]:
+                    false.append(m.group(0))
+    ok = not bad and not unknown and not false
+    return {"numbers": found_n, "ungrounded": bad, "unknown_ids": unknown, "false_claims": false, "ok": ok}
+
+
+def entity_names(cat: Catalog) -> dict[str, str]:
+    out = {m.name: mid for mid, m in cat.materials.items()}
+    out.update({s.name: sid for sid, s in cat.suppliers.items()})
+    return out
 
 
 def briefing(role: str, snap: dict, proposals: list[dict], cat: Catalog) -> dict:
@@ -218,7 +306,8 @@ def briefing(role: str, snap: dict, proposals: list[dict], cat: Catalog) -> dict
             lines.append(f"- {d['po']} ({cat.materials[d['material']].name}) was due on day {d['expected']:g} "
                          f"and has not arrived.")
         for p in proposals[:5]:
-            fact(f"prop:{p['id']}", qty=p["qty"], cost=p["cost"], expected_day=p["expected_day"])
+            fact(f"prop:{p['id']}", material=p["material"], qty=p["qty"], cost=p["cost"],
+                 expected_day=p["expected_day"])
             lines.append(f"- To approve: {p['qty']} {p['unit']} of {p['material_name']} from {p['supplier_name']}"
                          f"{', expedited' if p['expedite'] else ''}, arriving day {p['expected_day']}, "
                          f"cost {p['cost']:g}.")
@@ -250,7 +339,7 @@ def briefing(role: str, snap: dict, proposals: list[dict], cat: Catalog) -> dict
                              f"{pl(-o['slack'], 'day')} after its customer date (day {o['crd']}). {why}")
             else:
                 lo, hi = min(-o["slack"] for o in members), max(-o["slack"] for o in members)
-                fact(f"group:{gi}", orders=len(members))
+                fact(f"group:{gi}", orders=len(members), members=[o["id"] for o in members])
                 span = pl(lo, "day") if lo == hi else f"{lo} to {hi} days"
                 ids = ", ".join(o["id"] for o in members)
                 lines.append(f"- {len(members)} orders ({ids}) are {span} late. {why}")
@@ -276,14 +365,16 @@ def briefing(role: str, snap: dict, proposals: list[dict], cat: Catalog) -> dict
         if proposals:
             p = proposals[0]
             e = p["effect"]
-            fact(f"prop:{p['id']}", qty=p["qty"], late_before=e["late_before"], late_after=e["late_after"],
+            fact(f"prop:{p['id']}", material=p["material"], qty=p["qty"], late_before=e["late_before"],
+                 late_after=e["late_after"],
                  late_days_before=e["late_days_before"], late_days_after=e["late_days_after"])
             lines.append(f"Suggested: {'rush-order' if p['expedite'] else 'order'} {p['qty']} {p['unit']} of "
                          f"{p['material_name']}. Late orders would go from {e['late_before']} to {e['late_after']}.")
     text = "\n".join(lines)
     ignore = catalog_names(cat)
     out = {"role": role, "text": text, "facts": facts, "claims": claims, "mode": "template",
-           "grounding": grounding_check(text, facts, ignore), "ignore": ignore}
+           "grounding": grounding_check(text, facts, ignore, entity_names(cat)), "ignore": ignore,
+           "names": entity_names(cat)}
     if os.environ.get("SENTINEL_LLM") == "1":
         out = _llm_rewrite(out)
     return out
@@ -321,7 +412,8 @@ def explain_order(snap: dict, oid: str, cat: Catalog) -> dict:
                  f"covered and takes {PROD_DAYS} days.")
     facts.append({"id": "rule", "prod_days": PROD_DAYS})
     text = "\n".join(lines)
-    return {"text": text, "facts": facts, "grounding": grounding_check(text, facts, catalog_names(cat))}
+    return {"text": text, "facts": facts,
+            "grounding": grounding_check(text, facts, catalog_names(cat), entity_names(cat))}
 
 
 def _llm_rewrite(b: dict) -> dict:
@@ -343,7 +435,7 @@ def _llm_rewrite(b: dict) -> dict:
         if resp.stop_reason == "refusal":
             return {**b, "llm": "refused"}
         text = "".join(blk.text for blk in resp.content if blk.type == "text").strip()
-        g = grounding_check(text, b["facts"], b.get("ignore"))
+        g = grounding_check(text, b["facts"], b.get("ignore"), b.get("names"))
         if g["ok"] and text:
             return {**b, "text": text, "mode": "claude", "grounding": g}
         return {**b, "llm": "rejected: ungrounded numbers " + str(g["ungrounded"][:5])}

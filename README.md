@@ -7,17 +7,22 @@ the feed is messy, projects a ship date for every order against its Customer Req
 and raises alerts days before a miss. An agent explains each problem from the data and drafts
 purchase orders. **Nothing is ordered and no supplier email is sent until a planner approves.**
 
-## Results (30 seeded runs, 6,609 orders; full report in [results/RESULTS.md](results/RESULTS.md))
+## Results (30 seeded runs, 6,455 orders; full report in [results/RESULTS.md](results/RESULTS.md))
+
+Every comparison uses the same plants with **identical demand** in each arm. Where a number is a
+sanity check rather than evidence (it passes largely because of how the simulator is built), the
+report says so.
 
 | Question | Result |
 |---|---|
-| Are the numbers right? | **0 mismatches** in 172,800 checks against an independently written calculator; identical state under duplicates, junk and shuffled delivery (1,800/1,800) and on replay (90/90) |
-| Does it catch late orders? | **100% recall** 3 days before CRD (precision 0.75); median warning **8 days** ahead vs 0 for a static ERP check |
-| Does it catch feed problems? | 30/30 feed outages, 60/60 demand spikes, 89/89 hidden stock losses, 1,780/1,780 late supplier deliveries flagged before arrival |
-| Is the agent trustworthy? | 5,400/5,400 briefings grounded (0 invented numbers in 76,838); 21,668/21,668 material claims correct |
-| Do planners do better? | On-time **92.6% → 96.3%** (+3.8 pts, 95% CI +2.7 to +4.8, p < 0.001, 28/30 seeds); days late −63%; stock-out days −57%; **no significant change in spend or stock held** |
+| Do planners do better? | On-time **93.4% → 96.7%** (+3.2 pts, 95% CI +2.3 to +4.2, p < 0.001, better in 26/30 plants); days late −60%; stock-out days −51%; purchase spend **+0.75%** (significant). |
+| Is that better than simple rules? | Two rules without Sentinel reach a similar on-time rate: rush-reorder every late PO (96.5%) and 4 days of safety stock (96.1%). They spend **9%** and **1.5%** more than Sentinel and hold **23%** and **4.5%** more stock. Sentinel's gain is the same on-time with targeted purchases, not a higher ceiling. |
+| Does it warn early? | A **week** before the CRD: 65% of truly late orders flagged, 73% of flags right (flagging every unstarted order: 20% right). Median warning 8 days. At 3 days naive rules also reach 100% recall, so we do not lean on that number. Without supplier-delay learning flags are almost always right but fewer late orders are caught early. |
+| Are the numbers right? | **0 mismatches** in 129,600 checks of on hand / incoming / allocated against a separately written calculator; identical state under duplicates, junk and shuffled delivery (1,800/1,800) and on replay (90/90). If the shop floor uses a different rule than Sentinel assumes, detection at 3 days drops only slightly (F1 0.83 vs 0.84). |
+| Can the agent's words be trusted? | The grounding check rejects **100%** of planted false counts ("nothing is late") and made-up order IDs, **91%** of changed numbers, but only **29%** of swapped numbers. The optional Claude rewrite was not exercised in the evaluation. |
+| Other alerts | Feed outages 29/30 (median 20 h; the timeout is 18 h); demand spikes 60/60 (19 false alerts); hidden stock loss 77/86 found, median 9 days later (waits for a routine count). |
 
-Reproduce every number with one command (about a minute):
+Reproduce every number with one command (a few seconds):
 
 ```bash
 python -m evaluation.run_eval --seeds 30
@@ -36,9 +41,9 @@ Full report: [results/AMBIGUITY.md](results/AMBIGUITY.md).
 
 | Question | Result |
 |---|---|
-| Does it read messages it has never seen? | First run on **120 messages written blind** (author saw only the definitions, never the code): **110 fully right**; ambiguity precision 0.91, recall 0.96; 5 clear messages questioned needlessly. All failures are listed. (An earlier blind set scored 101/120 on its first run; rules were fixed after it, so it no longer counts.) |
-| Does it plan on a guess? | Planned date earlier than the real one: **1 of 100** messages vs **42 of 100** for a plain date parser |
-| Does it change outcomes? | 30 plants, every delay notice written as text: on-time **95.6% (plain parser) → 96.5%** (+0.9 pts, 95% CI +0.1 to +1.7, p = 0.045, 20/30 seeds); stock-out days −3.9 (p < 0.001). Same as when suppliers send exact dates (96.3%). Asking makes the planned date 5x more accurate but adds no on-time gain beyond planning for the latest day |
+| Does it read messages it has never seen? | BLIND3_LINE |
+| What does planning for the latest day cost? | Until the supplier answers, Sentinel is rarely **too early** but often **too late** (on the second blind set: 0 too early and 32 too late of 100 dated messages, vs 41 too early for a plain parser that takes the earliest reading; a middle-of-range reader has the smallest average error). Being late in the plan only makes the planner act sooner; being early makes an order miss by surprise. |
+| Does it change outcomes? | 30 plants, every delay notice written as text: on-time **96.1% (earliest-reading parser) → 96.7%** (+0.6 pts, p = 0.050) and +0.5 vs a middle-of-range parser (p = 0.08, not significant); the same as when suppliers send exact dates (96.7%). With the question answered, the planned arrival is within **0.18 days** on average, the most accurate of all approaches. Asking adds accuracy, not extra on-time orders. |
 
 ```bash
 python -m evaluation.run_ambiguity --seeds 30     # a few seconds
@@ -54,7 +59,7 @@ python -m venv .venv
 .venv/Scripts/pip install -r requirements.txt        # macOS/Linux: .venv/bin/pip
 .venv/Scripts/python -m uvicorn sentinel.server:app --port 8000
 # open http://localhost:8000
-.venv/Scripts/python -m pytest -q                    # 14 tests
+.venv/Scripts/python -m pytest -q                    # tests
 ```
 
 Optional: set `ANTHROPIC_API_KEY` and `SENTINEL_LLM=1` to let Claude (`claude-opus-5-5`) rewrite
@@ -87,7 +92,11 @@ order takes each material from stock on hand first, then from incoming purchase 
 risk-adjusted arrival. Production starts only when every material is covered, and takes 2 days.
 
 **Roles.** Planner (orders, risk, approve), Buyer (POs, suppliers, approve), Manager (KPIs; can
-see but cannot approve; the API returns 403).
+see but cannot approve; the API returns 403). In this demo the role is a switch in the page (an
+`X-Role` header), so anyone can act as a planner *in their own sandbox*: every visitor gets a
+separate plant (cookie session), writes are rate limited, and nothing leaves the server. A real
+deployment would take the role from the company's sign-in (SSO), and the approved supplier email
+would go to an outbox for the buyer; neither is built here.
 
 | Path | What |
 |---|---|
@@ -110,11 +119,14 @@ The judges asked for defined success, justified metrics, a baseline and reproduc
   behaviour and decides each order's real ship date. It plants known problems: late suppliers
   (some warn, some don't), demand spikes, hidden stock loss, duplicate, junk and shuffled events,
   and a feed outage. Sentinel only ever sees the event feed.
-- **Baselines:** (1) a static ERP check, net availability < 0; (2) an ablation that trusts
-  supplier dates; (3) no system, where the planner learns at the CRD; and for outcomes, the
-  company's existing reorder-point planner on the same seeds.
+- **Baselines:** for detection, naive rules (every unstarted order; stock on hand only), a
+  version that trusts every promised date, and Sentinel without delay learning; for outcomes,
+  the company's existing reorder-point planner, the same with 4 days of safety stock, and a
+  "rush-reorder any late PO" rule. A plant that does not follow Sentinel's allocation rule tests
+  what happens when the documented rule is wrong.
 - **Statistics:** detection CIs bootstrap over seeds (orders inside a run are correlated); outcome
-  differences are paired by seed, with bootstrap CIs and a sign-flip permutation test.
+  differences are paired by seed (identical demand in every arm), with bootstrap CIs and a
+  sign-flip permutation test.
 - **Limitations** are listed at the end of [results/RESULTS.md](results/RESULTS.md). The main one:
   the plant is our simulator, and no real planner has used the tool yet.
 

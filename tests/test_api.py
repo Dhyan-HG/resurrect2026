@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from sentinel import server
 
 client = TestClient(server.app)
+server.WRITE_LIMIT = 10 ** 6     # the rate limit has its own test below
 
 
 def sess():
@@ -103,3 +104,13 @@ def test_each_visitor_has_their_own_plant():
     other.post("/api/advance", json={"days": 5})
     assert other.get("/api/state").json()["day"] == 9
     assert client.get("/api/state").json()["day"] == 4
+
+
+def test_writes_are_rate_limited():
+    c = TestClient(server.app)
+    old, server.WRITE_LIMIT = server.WRITE_LIMIT, 5
+    try:
+        codes = [c.post("/api/advance", json={"days": 0.01}).status_code for _ in range(8)]
+    finally:
+        server.WRITE_LIMIT = old
+    assert codes[:5] == [200] * 5 and 429 in codes[5:]

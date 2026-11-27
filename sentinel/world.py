@@ -63,8 +63,12 @@ class Truth:
 
 class World:
     def __init__(self, seed: int = 1, days: int = 60, faults: Faults | None = None,
-                 catalog: Catalog | None = None, safety_days: float = 1.0, cover_days: float = 6.0):
+                 catalog: Catalog | None = None, safety_days: float = 1.0, cover_days: float = 6.0,
+                 plant_rule: str = "crd"):
         self.seed = seed
+        # How the real shop floor picks the next order to build. "crd" = Sentinel's documented rule;
+        # "fifo" = oldest order first (to test what happens when the plant does not follow the rule).
+        self.plant_rule = plant_rule
         self.safety_days = safety_days   # baseline planner: reorder point = lead + safety days of forecast
         self.cover_days = cover_days     # ...and orders up to lead + cover days
         self.days = days
@@ -73,6 +77,9 @@ class World:
         self.rng = random.Random(seed)
         self.frng = random.Random(seed * 31 + 7)   # feed-fault randomness, separate stream
         self.trng = random.Random(seed * 97 + 13)  # supplier wording, separate stream
+        # Supplier lateness has its own stream, so placing a PO never changes the demand that
+        # follows: every policy compared on a seed faces exactly the same orders.
+        self.srng = random.Random(seed * 53 + 29)
         self.physical = {m: float(mat.opening_stock) for m, mat in self.cat.materials.items()}
         self.orders: dict[str, dict] = {}
         self.pos: dict[str, dict] = {}
@@ -185,9 +192,9 @@ class World:
         rel = self.reliab[mat.supplier]
         delay = 0
         notified_at = None
-        if self.faults.supplier_delays and self.rng.random() < rel["p_late"] * (0.5 if expedite else 1.0):
-            delay = self.rng.randint(2, 7)
-            if self.rng.random() < rel["notify"]:
+        if self.faults.supplier_delays and self.srng.random() < rel["p_late"] * (0.5 if expedite else 1.0):
+            delay = self.srng.randint(1, 7)
+            if self.srng.random() < rel["notify"]:
                 notified_at = round(ts + max(0.3, 0.4 * (expected - ts)), 3)
         actual = expected + delay
         f = self.faults
@@ -254,11 +261,10 @@ class World:
             q = math.floor(self.physical[m] * r.uniform(0.25, 0.45))
             if q > 0:
                 self.physical[m] -= q
-                cd = d + r.randint(2, 5)
-                self.count_due.setdefault(cd, []).append(m)
-                self.truth.shrinks.append({"day": d, "material": m, "qty": q, "count_day": cd})
-        # cycle counts: scheduled ones + one routine count a day
-        counts = list(dict.fromkeys(self.count_due.pop(d, []) + [r.choice(list(self.cat.materials))]))
+                self.truth.shrinks.append({"day": d, "material": m, "qty": q})
+        # cycle counts: two routine counts a day, chosen without knowing where stock went
+        # missing (plus any count a demo action asked for)
+        counts = list(dict.fromkeys(self.count_due.pop(d, []) + r.sample(list(self.cat.materials), 2)))
         for m in counts:
             self._emit("stock_count", d + 0.4, "wms", material=m, counted=int(self.physical[m]))
         # new orders
@@ -287,8 +293,9 @@ class World:
                 self._emit("order_shipped", d + 0.8, "erp", order_id=o["id"])
         # production starts, by the documented rule (CRD priority, all-or-nothing)
         free = dict(self.physical)
-        waiting = sorted((o for o in self.orders.values() if o["started"] is None),
-                         key=lambda o: (o["crd"], o["created"], o["id"]))
+        key = (lambda o: (o["created"], o["id"])) if self.plant_rule == "fifo" else \
+            (lambda o: (o["crd"], o["created"], o["id"]))
+        waiting = sorted((o for o in self.orders.values() if o["started"] is None), key=key)
         blocked = set()
         for o in waiting:
             bom = self.cat.products[o["product"]].bom

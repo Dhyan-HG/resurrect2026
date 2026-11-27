@@ -63,10 +63,16 @@ RANGE_SEP = r"\s*(?:-|–|/|to|or)\s*"
 
 DELAY_WORDS = re.compile(r"\b(delay\w*|late|behind|postpon\w*|stuck|breakdown|strike|issue|problem|"
                          r"reschedul\w*|as soon as possible|soon|not confirmed|running late|on hold|"
-                         r"shortage)\b")
+                         r"shortage|waiting|awaiting|not yet)\b")
 # Dates in a clause about something other than the delivery (invoice, payment, meeting...) are not delivery dates.
 NON_DELIVERY = re.compile(r"\b(invoice\w*|payment\w*|pay|credit note|debit note|meeting|office|closed|bill|"
-                          r"quotation|quote|dated|holiday list|visit)\b")
+                          r"quotation|quote|dated|holiday list|visit|valid|validity|c-form|form|gst|tax|bank)\b")
+# Words that make a message about the goods at all (used to rule out invoice-only messages).
+GOODS = re.compile(r"\b(deliver\w*|reach\w*|arriv\w*|dispatch\w*|material|goods|consignment|shipment|lot|truck|"
+                   r"vehicle|lorry|supply|qty|quantity|eta|maal)\b")
+NEGATION = re.compile(r"\b(not|cannot|can't|cant|won't|wont|unable|no longer|never|isn't|aren't)\b")
+# A clause that reports a past event, e.g. "our machine broke down on Monday".
+PAST_EVENT = re.compile(r"\b(broke|broken|happened|occurred|went down|failed|was|were|had)\b")
 # A clause that reports something already done ("300 nos already delivered today").
 PAST = re.compile(r"\b(delivered|received|arrived|reached|supplied)\b")
 FUTURE = re.compile(r"\b(will|shall|going to|to be|be|by|expected|expect|plan\w*|balance|remaining|rest)\b")
@@ -78,8 +84,11 @@ DISPATCH = re.compile(r"\b(dispatch\w*|ship|ships|shipped|shipping|send|sent|lea
 ARRIVAL = re.compile(r"\b(deliver\w*|reach\w*|arriv\w*|receiv\w*|unload\w*|come|coming|land\w*)\b")
 COMMS = re.compile(r"\b(will|shall)\s+(update|inform|share|confirm|revert|call|let you know)\b|"
                    r"\bwill be (shared|informed|updated|confirmed|communicated)\b")
-EXCLUDE_BEFORE = re.compile(r"(instead of|not|not the|from|was due( on)?|originally( on)?|old date( was)?|"
-                            r"earlier date( was)?|dated)\s*$")
+EXCLUDE_BEFORE = re.compile(r"(instead of|not|not the|not on( the)?|from|dated|old date( was)?|earlier date( was)?|"
+                            r"(originally|earlier|previously|was)( due| scheduled| planned| committed)?( on| for)?|"
+                            r"(had|have) (informed|told|said|committed|promised|mentioned)( you)?( on| for| as)?)"
+                            r"\s*(the\s+)?$")
+UNITS_AFTER = r"(?!\s*(?:days?|weeks?|nos|units?|pcs|am|pm|a\.m|p\.m|hrs?|hours?|mt|kg|kgs|tons?|tonnes?|ltrs?|litres?|lakh|crore|%))"
 APPROX_BEFORE = re.compile(r"(around|about|approx\.?|approximately|roughly)\s*(by\s+|on\s+)?(the\s+)?$")
 
 TYPOS = [
@@ -133,7 +142,8 @@ def _num(tok: str) -> tuple[int, int]:
 
 
 def _year_for(month: int, day: int, S: int) -> date | None:
-    """Pick the year that puts (month, day) closest to the message day, not in the past."""
+    """The year that puts (month, day) closest to the message day; it may be in the past
+    ("the 12 Nov consignment"), which the reader then drops as a past date."""
     sd = to_date(S)
     best = None
     for y in (sd.year - 1, sd.year, sd.year + 1):
@@ -141,9 +151,21 @@ def _year_for(month: int, day: int, S: int) -> date | None:
             d = date(y, month, day)
         except ValueError:
             continue
-        if to_day(d) >= S - 3 and (best is None or d < best):
+        if best is None or abs(to_day(d) - S) < abs(to_day(best) - S):
             best = d
     return best
+
+
+def _invalid(month: int, day: int, S: int):
+    """A day that does not exist in that month ("31 Nov"): the last day of it or the 1st of the next."""
+    sd = to_date(S)
+    for y in (sd.year, sd.year + 1):
+        last = calendar.monthrange(y, month)[1]
+        if day > last:
+            a = to_day(date(y, month, last))
+            if a >= S - 3:
+                return [a, a + 1]
+    return None
 
 
 def _next_dom(dom: int, S: int) -> int | None:
@@ -211,6 +233,14 @@ def _extract(s: str, S: int, D: int) -> list[_M]:
                 if m is not None:
                     add(m)
 
+    # "2 days before Christmas"
+    def hol_rel(mt):
+        n = _num(mt.group(1))[0]
+        h = to_day(HOLIDAYS[mt.group(3)])
+        v = h - n if mt.group(2) == "before" else h + n
+        return _M(mt.start(), mt.end(), v, v, mt.group(0))
+    scan(r"\b(\d+|one|two|three|four|five)\s+days?\s+(before|after)\s+(christmas|diwali|new year)\b", hol_rel)
+
     # holidays: before / after / on
     def holiday(mt):
         rel, name = mt.group(1), mt.group(2)
@@ -253,32 +283,45 @@ def _extract(s: str, S: int, D: int) -> list[_M]:
     scan(r"(?:between\s+)?(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?(\s*(?:-|to|and|or|/)\s*)(?:the\s+)?(\d{1,2})"
          r"(?:st|nd|rd|th)?\s+(?:of\s+)?" + MONTH_RE, dm_range)
 
+    # full dates with a year: 2026-11-24, 24-11-2026, 24/11/2026, 24.11.2026 (read day first)
+    def full(mt, y, mo, d):
+        try:
+            v = to_day(date(int(mt.group(y)), int(mt.group(mo)), int(mt.group(d))))
+        except ValueError:
+            return None
+        return _M(mt.start(), mt.end(), v, v, mt.group(0), dt=v, type="past" if v < S else None)
+    scan(r"\b(20\d\d)-(\d{1,2})-(\d{1,2})\b", lambda mt: full(mt, 1, 2, 3))
+    scan(r"\b(\d{1,2})[-/.](\d{1,2})[-/.](20\d\d)\b", lambda mt: full(mt, 3, 2, 1))
+
     # explicit day + month
     def dm(mt, day_g, mon_g):
-        d = _year_for(MONTHS[mt.group(mon_g)], int(mt.group(day_g)), S)
+        mon, day = MONTHS[mt.group(mon_g)], int(mt.group(day_g))
+        d = _year_for(mon, day, S)
         if not d:
+            bad = _invalid(mon, day, S)
+            if bad:      # a date that does not exist: ask which of the two neighbours they meant
+                return _M(mt.start(), mt.end(), bad[0], bad[1], mt.group(0), True, "conflict", bad)
             return None
-        return _M(mt.start(), mt.end(), to_day(d), to_day(d), mt.group(0), dt=to_day(d))
+        v = to_day(d)
+        return _M(mt.start(), mt.end(), v, v, mt.group(0), dt=v, type="past" if v < S else None)
     scan(r"\b(\d{1,2})(?:st|nd|rd|th)?(?:\s+|\s*-\s*)(?:of\s+)?" + MONTH_RE + r"(?:\s*-?\s*20\d\d\b)?",
          lambda mt: dm(mt, 1, 2))
     scan(r"\b" + MONTH_RE + r"\s*(\d{1,2})(?:st|nd|rd|th)?\b", lambda mt: dm(mt, 2, 1))
 
-    # numeric dd/mm (and mm/dd if also plausible)
+    # numeric dd/mm. Read day first (Indian suppliers); month first only if day-first is
+    # impossible or in the past and month-first lands within the next 90 days.
     def numeric(mt):
-        a, b = int(mt.group(1)), int(mt.group(2))
-        cands = []
-        for day_, mon_ in ((a, b), (b, a)):
+        a, b, sep = int(mt.group(1)), int(mt.group(3)), mt.group(2)
+        if sep == "." and (len(mt.group(1)) == 1 or len(mt.group(3)) == 1):
+            return None                      # 2.5 (a quantity), 1.30 (a time)
+        for day_, mon_, window in ((a, b, 180), (b, a, 90)):
             if 1 <= mon_ <= 12 and 1 <= day_ <= 31:
                 d = _year_for(mon_, day_, S)
-                if d and S - 3 <= to_day(d) <= S + 90:
-                    cands.append(to_day(d))
-        cands = sorted(set(cands))
-        if not cands:
-            return None
-        if len(cands) == 1:
-            return _M(mt.start(), mt.end(), cands[0], cands[0], mt.group(0), dt=cands[0])
-        return _M(mt.start(), mt.end(), cands[0], cands[-1], mt.group(0), True, "format", cands)
-    scan(r"\b(\d{1,2})[/.](\d{1,2})(?:[/.](\d{2,4}))?\b(?!\s*(?:days?|weeks?|nos|units?|pcs))", numeric)
+                if d and S - 1 <= to_day(d) <= S + window:
+                    v = to_day(d)
+                    return _M(mt.start(), mt.end(), v, v, mt.group(0), dt=v)
+        return None
+    scan(r"\b(\d{1,2})([/.])(\d{1,2})\b" + UNITS_AFTER, numeric)
 
     # ordinal ranges without a month: "between 14th and 16th", "18th or 19th"
     def ord_range(mt):
@@ -298,15 +341,14 @@ def _extract(s: str, S: int, D: int) -> list[_M]:
         v = _next_dom(int(mt.group(1)), S)
         return None if v is None else _M(mt.start(), mt.end(), v, v, mt.group(0), dt=v)
     scan(r"(?:the\s+)?\b(\d{1,2})(?:st|nd|rd|th)\b(?!\s*(?:week|day))", ordinal)
-    scan(r"\b(?:on|by|for|reaching|reach)\s+(\d{1,2})\b(?!\s*(?:days?|weeks?|[/.:-]|\d|am|pm|units?|pcs|nos|kg))",
-         ordinal)
 
     # relative counts
     def rel(mt, anchor, n_g=2, n2_g=3, unit_g=4, approx_g=1):
         lo, hi = _num(mt.group(n_g))
         if n2_g and mt.group(n2_g):
             hi = _num(mt.group(n2_g))[1]
-        mult = 7 if mt.group(unit_g).startswith("week") else 1
+        u = mt.group(unit_g)
+        mult = 14 if u.startswith("fortnight") else 7 if u.startswith("week") else 1
         lo, hi = lo * mult, hi * mult
         approx = bool(approx_g and mt.group(approx_g))
         if approx:
@@ -318,29 +360,54 @@ def _extract(s: str, S: int, D: int) -> list[_M]:
         m.anchor = anchor
         return m
     scan(r"\b(?:delay(?:ed)?|late|behind|postponed|pushed|extended)\s+(?:by\s+|of\s+)?(about\s+|around\s+)?"
-         + N_RE + r"(?:" + RANGE_SEP + N_RE + r")?\s+(days?|weeks?)\b",
+         + N_RE + r"(?:" + RANGE_SEP + N_RE + r")?\s+(days?|weeks?|fortnights?)\b",
          lambda mt: rel(mt, "D"))
-    scan(r"\b(about\s+|around\s+)?" + N_RE + r"(?:" + RANGE_SEP + N_RE + r")?\s+(days?|weeks?)\s+"
+    scan(r"\b(about\s+|around\s+)?" + N_RE + r"(?:" + RANGE_SEP + N_RE + r")?\s+(days?|weeks?|fortnights?)\s+"
          r"(?:of\s+)?(?:delay\w*|late|behind)\b", lambda mt: rel(mt, "D"))
     scan(r"\b(?:in|after|within)\s+(?:the\s+)?(?:next\s+)?(about\s+|around\s+|approx\.?\s+)?" + N_RE
-         + r"(?:" + RANGE_SEP + N_RE + r")?\s+(days?|weeks?)\b", lambda mt: rel(mt, "S"))
-    scan(r"\b()" + N_RE + r"(?:" + RANGE_SEP + N_RE + r")?\s+more\s+(days?|weeks?)\b", lambda mt: rel(mt, "S"))
+         + r"(?:" + RANGE_SEP + N_RE + r")?\s+(days?|weeks?|fortnights?)\b", lambda mt: rel(mt, "S"))
+    scan(r"\b()" + N_RE + r"(?:" + RANGE_SEP + N_RE + r")?\s+more\s+(days?|weeks?|fortnights?)\b", lambda mt: rel(mt, "S"))
     # "a few days more", "1-2 weeks more", "need a couple of days", "about a week more"
     scan(r"\b(about\s+|around\s+|approx\.?\s+|roughly\s+)?" + N_RE + r"(?:" + RANGE_SEP + N_RE
-         + r")?\s+(days?|weeks?)\s+more\b", lambda mt: rel(mt, "S"))
+         + r")?\s+(days?|weeks?|fortnights?)\s+more\b", lambda mt: rel(mt, "S"))
     scan(r"\b(?:need|needs|take|takes|require|requires)\s+(?:another\s+)?(about\s+|around\s+)?" + N_RE
-         + r"(?:" + RANGE_SEP + N_RE + r")?\s+(days?|weeks?)\b", lambda mt: rel(mt, "S"))
+         + r"(?:" + RANGE_SEP + N_RE + r")?\s+(days?|weeks?|fortnights?)\b", lambda mt: rel(mt, "S"))
+    # "2 days earlier than planned", "a week ahead of schedule"
+    def early(mt):
+        lo, hi = _num(mt.group(1))
+        u = mt.group(2)
+        mult = 14 if u.startswith("fortnight") else 7 if u.startswith("week") else 1
+        m = _M(mt.start(), mt.end(), D - hi * mult, D - lo * mult, mt.group(0), hi > lo, "range" if hi > lo else None)
+        m.anchor = "D"
+        return m
+    scan(r"\b" + N_RE + r"\s+(days?|weeks?|fortnights?)\s+(?:early|earlier|ahead of (?:the )?schedule|"
+         r"before (?:the )?(?:schedule|due date|planned date|time))\b", early)
+    # "about a week from today"
+    scan(r"\b(about\s+|around\s+)?" + N_RE + r"(?:" + RANGE_SEP + N_RE + r")?\s+(days?|weeks?|fortnights?)\s+"
+         r"from\s+(?:today|now)\b", lambda mt: rel(mt, "S"))
+    scan(r"\b(?:in|within|after)\s+(?:a\s+)?fortnight\b",
+         lambda mt: _M(mt.start(), mt.end(), S + 14, S + 14, mt.group(0)))
     scan(r"\b(?:in\s+)?(?:the\s+)?(?:next|coming)\s+(?:few\s+)?days\b",
          lambda mt: _M(mt.start(), mt.end(), S + FEW[0], S + FEW[1], mt.group(0), True, "range"))
+
+    # a bare day number after "on"/"by" ("reach on 25"), once relative counts ("by 5 to 7 days") are taken
+    scan(r"\b(?:on|by|for|reaching|reach)\s+(\d{1,2})\b(?!\s*(?:[/.:-]|\d|to\s+\d|or\s+\d))" + UNITS_AFTER,
+         ordinal)
 
     # today / tomorrow / day after
     scan(r"\bday after tomorrow\b", lambda mt: _M(mt.start(), mt.end(), S + 2, S + 2, mt.group(0)))
     scan(r"\btomorrow\b", lambda mt: _M(mt.start(), mt.end(), S + 1, S + 1, mt.group(0)))
     scan(r"\b(today|tonight|this evening|this afternoon)\b", lambda mt: _M(mt.start(), mt.end(), S, S, mt.group(0)))
     scan(r"\bday after\b", lambda mt: _M(mt.start(), mt.end(), S + 2, S + 2, mt.group(0)))
+    scan(r"\byesterday\b", lambda mt: _M(mt.start(), mt.end(), S - 1, S - 1, mt.group(0), type="yesterday"))
 
     # weeks
     nw = _week_start(S, 1)
+    scan(r"\bweek after next\b", lambda mt: _M(mt.start(), mt.end(), nw + 7, nw + 13, mt.group(0), True,
+                                                "vague_period"))
+    scan(r"\b" + WD_RE + r"\s+after\s+next\b",
+         lambda mt: _M(mt.start(), mt.end(), _coming(WEEKDAYS.index(mt.group(1)), S) + 7,
+                       _coming(WEEKDAYS.index(mt.group(1)), S) + 7, mt.group(0), wd=WEEKDAYS.index(mt.group(1))))
     def next_week(mt):
         mod = (mt.group(1) or "").strip()
         lo, hi = nw, nw + 6
@@ -399,25 +466,33 @@ def _extract(s: str, S: int, D: int) -> list[_M]:
         return _M(mt.start(), mt.end(), lo, hi, mt.group(0), True, "vague_period")
     scan(r"\bnext month\b", next_month)
 
-    # weekdays (bound to "next week"/"this week" when the message names one)
-    week_ctx = None
-    for m in out:
-        if "next week" in m.cue:
-            week_ctx = nw
-        elif "this week" in m.cue:
-            week_ctx = tw
+    # weekdays; "next week Tuesday" / "Tuesday next week" binds the day to that week, but only
+    # when the two are written next to each other (or joined by "or" with another weekday)
+    weeks = [(m, nw if "next week" in m.cue else tw) for m in out
+             if m.cue.strip() in ("next week", "this week")]
+    bound: set = set()
+    GAP = re.compile(r"^(?:\s|,|of|on|the|or|/|and|(?:" + "|".join(WEEKDAYS) + r"))*$")
+
+    def week_for(a, b):
+        for m, base in weeks:
+            lo, hi = (m.end, a) if m.end <= a else (b, m.start)
+            if GAP.match(s[lo:hi] if lo <= hi else ""):
+                bound.add(id(m))
+                return base
+        return None
+
     def weekday(mt):
         mod, wd = (mt.group(1) or "").strip(), WEEKDAYS.index(mt.group(2))
-        if week_ctx is not None and mod not in ("next", "this", "coming"):
-            v = week_ctx + wd
+        base = week_for(mt.start(), mt.end()) if mod not in ("next", "this", "coming") else None
+        if base is not None:
+            v = base + wd
             return _M(mt.start(), mt.end(), v, v, mt.group(0), wd=wd)
         c = _coming(wd, S)
         if mod == "next":
             return _M(mt.start(), mt.end(), c, c + 7, mt.group(0), True, "next_weekday", [c, c + 7], wd=wd)
         return _M(mt.start(), mt.end(), c, c, mt.group(0), wd=wd)
     scan(r"\b(?:(this|next|coming|on|by)\s+)?" + WD_RE + r"\b", weekday)
-    if week_ctx is not None and any(m.wd is not None for m in out):
-        out = [m for m in out if not ("next week" in m.cue or "this week" in m.cue)]
+    out = [m for m in out if id(m) not in bound]
     out.sort(key=lambda m: m.start)
     return out
 
@@ -429,8 +504,12 @@ def _interpret(text: str, S: int, D: int) -> tuple:
     # a delivery date more than a year back or ten years ahead is not a delivery date
     ms = [m for m in ms if m.lo - S >= -400 and m.hi - S <= MAX_AHEAD]
 
-    # 1. drop dates that are named only to be replaced ("instead of 12 Nov", "not the 18th", "from 12th")
-    ms = [m for m in ms if not EXCLUDE_BEFORE.search(s[:m.start])]
+    if NON_DELIVERY.search(s) and not GOODS.search(s):      # invoice / payment / meeting only
+        return ("none", None, None, None, None, (), bool(HEDGE.search(s)), False)
+    # 1. drop dates that are named only to be replaced ("instead of 12 Nov", "not the 18th",
+    #    "originally due 20 Nov", "we had informed 20th"), and written dates already in the past
+    ms = [m for m in ms if m.anchor or not EXCLUDE_BEFORE.search(s[:m.start])]
+    ms = [m for m in ms if m.type != "past"]
 
     # 2. approximations: "around the 20th"
     for m in ms:
@@ -447,6 +526,24 @@ def _interpret(text: str, S: int, D: int) -> tuple:
     ms = [m for m in ms if not (COMMS.search(clause(m)) and not ARRIVAL.search(clause(m)))]
     ms = [m for m in ms if not (NON_DELIVERY.search(clause(m)) and not ARRIVAL.search(clause(m)))]
     ms = [m for m in ms if not (PAST.search(clause(m)) and not FUTURE.search(clause(m)))]
+    # past events ("broke down on Monday") and negated dates ("cannot deliver on 20th") give way
+    # to any other date in the message
+    def negated(m):
+        """'cannot deliver on 20th' (a negation just before the date, in its clause), or a clause
+        that negates something other than arriving ('the bandh on Thursday, the truck cannot move')."""
+        c = clause(m)
+        start = next((a for a, b in zip(bounds, bounds[1:]) if a <= m.start < b), 0)
+        if NEGATION.search(s[max(start, m.start - 30):m.start]):
+            return True
+        return bool(NEGATION.search(c) and not ARRIVAL.search(c))
+    keep = [m for m in ms if not (PAST_EVENT.search(clause(m)) and not FUTURE.search(clause(m))) and not negated(m)]
+    if keep and len(keep) < len(ms):
+        ms = keep
+    elif ms and not keep and all(negated(m) for m in ms):
+        for m in ms:                     # "will not reach before 5 Dec" / "won't reach tomorrow"
+            before = re.search(r"\bbefore\s*$", s[:m.start])
+            lo = m.lo if before else m.hi + 1
+            m.lo, m.hi, m.amb, m.type, m.readings = lo, lo + MISSING_WINDOW, True, "open_ended", None
     disp = [m for m in ms if DISPATCH.search(clause(m)) and not ARRIVAL.search(clause(m)) and m.anchor != "D"]
     if disp and len(disp) < len(ms):
         ms = [m for m in ms if m not in disp]
@@ -455,8 +552,10 @@ def _interpret(text: str, S: int, D: int) -> tuple:
     elif disp:
         for m in ms:
             m.hi += TRANSIT_DAYS
+            m.lo = max(m.lo, S)          # left yesterday: arriving today or later
             m.amb, m.type = True, "dispatch_vs_arrival"
             m.readings = None
+    ms = [m for m in ms if m.type != "yesterday"]
 
     # 4. weekday + written date that disagree
     for w in [m for m in ms if m.wd is not None and m.lo == m.hi]:

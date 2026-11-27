@@ -186,77 +186,100 @@ def briefing(role: str, snap: dict, proposals: list[dict], cat: Catalog) -> dict
     overdue = [a for a in snap["alerts"] if a["kind"] == "po_overdue"]
     feeds = [a for a in snap["alerts"] if a["kind"] == "feed_down"]
 
+    def pl(n, word, many=None):
+        return f"{n:g} {word if n == 1 else (many or word + 's')}"
+
     if feeds:
         for a in feeds:
+            src = {"erp": "orders (ERP)", "wms": "warehouse (WMS)", "supplier": "supplier"}.get(
+                a["data"]["source"], a["data"]["source"])
             fact(f"feed:{a['data']['source']}", silent_days=a["data"]["silent_days"])
-            lines.append(f"WARNING: the {a['data']['source'].upper()} feed has been silent for "
-                         f"{a['data']['silent_days']} days, so figures below may be stale.")
+            lines.append(f"The {src} feed has been silent for {a['data']['silent_days']} days, "
+                         f"so figures that depend on it may be out of date.")
 
     if role == "manager":
-        lines.append(f"Day {now}: {k['open_orders']} open orders, {k['on_track_pct']}% on track, "
-                     f"{k['late']} projected late and {k['at_risk']} at risk.")
-        lines.append(f"{k['stockouts']} material(s) heading for a stock-out; {k['overdue_pos']} purchase "
-                     f"order(s) overdue; {len(proposals)} purchase proposal(s) waiting for approval.")
+        lines.append(f"Day {now}. {pl(k['open_orders'], 'open order')}, {k['on_track_pct']}% on track: "
+                     f"{k['late']} projected late, {k['at_risk']} at risk.")
+        lines.append(f"{pl(k['stockouts'], 'material')} heading for a stock-out, "
+                     f"{pl(k['overdue_pos'], 'purchase order')} overdue, "
+                     f"{pl(len(proposals), 'purchase')} waiting for approval.")
         if proposals:
             spend = round(sum(p["cost"] for p in proposals), 2)
             saved = sum(len(p["effect"]["orders_saved"]) for p in proposals)
             fact("proposals", spend=spend, orders_saved=saved)
-            lines.append(f"Approving them would cost {spend} and bring {saved} late order(s) back on time.")
+            lines.append(f"Approving {'it' if len(proposals) == 1 else 'them'} would cost {spend:g} "
+                         f"and bring {pl(saved, 'late order')} back on time.")
     elif role == "buyer":
-        lines.append(f"Day {now}: {len(proposals)} purchase proposal(s) to review, {k['overdue_pos']} overdue PO(s).")
+        lines.append(f"Day {now}. {pl(len(proposals), 'purchase')} to review, "
+                     f"{pl(k['overdue_pos'], 'purchase order')} overdue.")
         for a in overdue[:5]:
             d = a["data"]
             fact(f"po:{d['po']}", expected=d["expected"])
-            lines.append(f"- PO {d['po']} ({d['material']}) was due day {d['expected']:g} and is overdue.")
+            lines.append(f"- {d['po']} ({cat.materials[d['material']].name}) was due on day {d['expected']:g} "
+                         f"and has not arrived.")
         for p in proposals[:5]:
             fact(f"prop:{p['id']}", qty=p["qty"], cost=p["cost"], expected_day=p["expected_day"])
-            lines.append(f"- Proposal {p['id']}: {p['qty']} {p['unit']} of {p['material_name']} from "
-                         f"{p['supplier_name']}{' (expedited)' if p['expedite'] else ''}, arriving day "
-                         f"{p['expected_day']}, cost {p['cost']}.")
+            lines.append(f"- To approve: {p['qty']} {p['unit']} of {p['material_name']} from {p['supplier_name']}"
+                         f"{', expedited' if p['expedite'] else ''}, arriving day {p['expected_day']}, "
+                         f"cost {p['cost']:g}.")
         worst = sorted(snap["suppliers"].values(), key=lambda s: -(s["avg_delay_days"] or 0))[:2]
         for s in worst:
             if s["avg_delay_days"]:
                 fact(f"sup:{s['id']}", avg_delay_days=s["avg_delay_days"], delivered=s["delivered"])
-                lines.append(f"- {s['name']} averages {s['avg_delay_days']} days late over "
-                             f"{s['delivered']} deliveries.")
+                lines.append(f"- {s['name']} has been {s['avg_delay_days']:g} days late on average "
+                             f"over {pl(s['delivered'], 'delivery', 'deliveries')}.")
     else:  # planner
-        lines.append(f"Day {now}: {k['late']} order(s) projected late, {k['at_risk']} at risk, "
-                     f"{k['stockouts']} stock-out(s) ahead.")
-        for o in late_orders[:5]:
-            fact(f"order:{o['id']}", crd=o["crd"], projected_ship=o["projected_ship"], days_late=-o["slack"],
-                 causes=[{k: v for k, v in r.items() if k in ("material", "kind", "po", "eta", "short")}
-                         for r in o["reasons"]])
-            claims.append({"kind": "order", "id": o["id"], "field": "crd", "value": o["crd"]})
-            why = _why(o, cat)
-            lines.append(f"- {o['id']} ({cat.products[o['product']].name}): CRD day {o['crd']}, projected "
-                         f"ship day {o['projected_ship']} ({-o['slack']} day(s) late). {why}")
+        lines.append(f"Day {now}. {pl(k['late'], 'order')} projected late, {k['at_risk']} at risk, "
+                     f"{pl(k['stockouts'], 'stock-out')} ahead.")
+        # Orders that share a cause are reported together, not one line each.
+        groups: dict = {}
+        for o in late_orders:
+            key = tuple((r["material"], r["kind"], r.get("po"), r.get("eta"))
+                        for r in o["reasons"] if r["kind"] != "stock")
+            groups.setdefault(key, []).append(o)
+        for gi, (key, members) in enumerate(list(groups.items())[:4]):
+            for o in members:
+                fact(f"order:{o['id']}", crd=o["crd"], projected_ship=o["projected_ship"], days_late=-o["slack"],
+                     causes=[{**{k2: v for k2, v in r.items() if k2 in ("material", "kind", "po", "eta", "short")},
+                              "usable_day": math.ceil(r["eta"])} for r in o["reasons"]])
+                claims.append({"kind": "order", "id": o["id"], "field": "crd", "value": o["crd"]})
+            why = _why(members[0], cat)
+            if len(members) == 1:
+                o = members[0]
+                lines.append(f"- {o['id']} ({cat.products[o['product']].name}) ships day {o['projected_ship']}, "
+                             f"{pl(-o['slack'], 'day')} after its customer date (day {o['crd']}). {why}")
+            else:
+                lo, hi = min(-o["slack"] for o in members), max(-o["slack"] for o in members)
+                fact(f"group:{gi}", orders=len(members))
+                span = pl(lo, "day") if lo == hi else f"{lo} to {hi} days"
+                ids = ", ".join(o["id"] for o in members)
+                lines.append(f"- {len(members)} orders ({ids}) are {span} late. {why}")
         for m in stockouts[:4]:
             fact(f"mat:{m['id']}", on_hand=m["on_hand"], incoming=m["incoming"], allocated=m["allocated"],
                  net=m["net"], short=m["uncovered"], stockout_day=m["stockout_day"])
             for f in ("on_hand", "incoming", "allocated", "net"):
                 claims.append({"kind": "material", "id": m["id"], "field": f, "value": m[f]})
-            lines.append(f"- {m['name']} ({m['id']}): on hand {m['on_hand']:g} + incoming {m['incoming']:g} "
-                         f"- allocated {m['allocated']:g} = net {m['net']:g}; short {m['uncovered']:g} "
-                         f"from day {m['stockout_day']}.")
+            lines.append(f"- {m['name']} runs short from day {m['stockout_day']}: {m['on_hand']:g} on hand "
+                         f"+ {m['incoming']:g} incoming - {m['allocated']:g} allocated = {m['net']:g}, "
+                         f"short {m['uncovered']:g}.")
         tight = sorted((m for m in snap["materials"] if m["uncovered"] <= 0 and m["days_of_cover"] is not None),
                        key=lambda m: m["days_of_cover"])[:3]
         if tight:
-            lines.append("Tightest materials:")
+            lines.append("Thinnest stock right now:")
         for m in tight:
             fact(f"mat:{m['id']}", on_hand=m["on_hand"], incoming=m["incoming"], allocated=m["allocated"],
                  net=m["net"], days_of_cover=m["days_of_cover"])
             for f in ("on_hand", "incoming", "allocated", "net"):
                 claims.append({"kind": "material", "id": m["id"], "field": f, "value": m[f]})
-            lines.append(f"- {m['name']} ({m['id']}): {m['on_hand']:g} on hand ({m['days_of_cover']:g} days of cover), "
+            lines.append(f"- {m['name']}: {m['on_hand']:g} on hand ({pl(m['days_of_cover'], 'day')} of cover), "
                          f"{m['incoming']:g} incoming, {m['allocated']:g} allocated, net {m['net']:g}.")
         if proposals:
             p = proposals[0]
             e = p["effect"]
             fact(f"prop:{p['id']}", qty=p["qty"], late_before=e["late_before"], late_after=e["late_after"],
                  late_days_before=e["late_days_before"], late_days_after=e["late_days_after"])
-            lines.append(f"Top action: approve {p['id']} ({p['qty']} {p['unit']} of {p['material_name']}"
-                         f"{', expedited' if p['expedite'] else ''}): late orders {e['late_before']} -> "
-                         f"{e['late_after']}, total days late {e['late_days_before']} -> {e['late_days_after']}.")
+            lines.append(f"Suggested: {'rush-order' if p['expedite'] else 'order'} {p['qty']} {p['unit']} of "
+                         f"{p['material_name']}. Late orders would go from {e['late_before']} to {e['late_after']}.")
     text = "\n".join(lines)
     ignore = catalog_names(cat)
     out = {"role": role, "text": text, "facts": facts, "claims": claims, "mode": "template",
@@ -271,9 +294,9 @@ def _why(o: dict, cat: Catalog) -> str:
     for r in o["reasons"]:
         name = cat.materials[r["material"]].name
         if r["kind"] == "no_supply":
-            parts.append(f"{name} is short {r['short']:g} with nothing on order")
+            parts.append(f"{name} is short by {r['short']:g}, with nothing on order")
         elif r["kind"] == "waiting_po":
-            parts.append(f"waiting for {name} on {r['po']} (expected day {r['eta']:g})")
+            parts.append(f"waiting for {name} on {r['po']}, now expected day {math.ceil(r['eta'])}")
     return ("Cause: " + "; ".join(parts) + ".") if parts else ""
 
 

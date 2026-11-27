@@ -179,12 +179,11 @@ class Session:
                        key=lambda p: -(p["effect"]["late_days_before"] - p["effect"]["late_days_after"]))
         brief = agent.briefing(role, s, props, self.world.cat)
         brief.pop("ignore", None)
-        orders = [o for o in s["orders"] if o["status"] in ("open", "in_production")]
-        orders.sort(key=lambda o: (o["slack"], o["crd"]))
         cat = self.world.cat
-        for o in orders:
-            o["product_name"] = cat.products[o["product"]].name
-            o.pop("draws", None)
+        # Copies: the snapshot's orders keep their material draws for /explain.
+        orders = [{**{k: v for k, v in o.items() if k != "draws"}, "product_name": cat.products[o["product"]].name}
+                  for o in s["orders"] if o["status"] in ("open", "in_production")]
+        orders.sort(key=lambda o: (o["slack"], o["crd"]))
         return {
             "now": self.clock, "day": math.floor(self.clock), "seed": self.seed, "role": role,
             "kpis": s["kpis"], "alerts": s["alerts"], "orders": orders[:150],
@@ -226,6 +225,49 @@ def index():
 def state(role: str = "planner"):
     with _lock:
         return JSONResponse(S.view(_role(role)))
+
+
+@app.get("/api/evidence")
+def evidence():
+    """Headline numbers from the last evaluation run (results/results.json)."""
+    import json
+    p = WEB.parent / "results" / "results.json"
+    if not p.exists():
+        raise HTTPException(404, "no evaluation results in this build")
+    R = json.loads(p.read_text(encoding="utf-8"))
+    d3 = R["E1_detection"]["ours@3"]
+    st3 = R["E1_detection"]["static@3"]
+    cmp = R["E5_vs_baseline"]["agent"]
+    pm = R["E5_policy_means"]
+    return {
+        "seeds": R["seeds"], "days": R["days"], "orders": R["dataset"]["orders_scored"],
+        "late_orders": R["dataset"]["late_orders"],
+        "on_time": {"baseline": pm["baseline"]["on_time_pct"], "agent": pm["agent"]["on_time_pct"],
+                    "half": pm["agent_half_approved"]["on_time_pct"],
+                    "diff": cmp["on_time_pct"]["mean_diff"], "ci": cmp["on_time_pct"]["ci95"],
+                    "p": cmp["on_time_pct"]["p_value"], "seeds_better": cmp["on_time_pct"]["seeds_better"]},
+        "late_days": {"baseline": pm["baseline"]["late_days_total"], "agent": pm["agent"]["late_days_total"]},
+        "stockout_days": {"baseline": pm["baseline"]["stockout_material_days"],
+                          "agent": pm["agent"]["stockout_material_days"]},
+        "spend": {"diff": cmp["po_spend"]["mean_diff"], "p": cmp["po_spend"]["p_value"],
+                  "baseline": pm["baseline"]["po_spend"]},
+        "detection": {"recall": d3["recall"], "precision": d3["precision"], "static_recall": st3["recall"],
+                      "lead_median": R["E1_lead_time"]["ours"]["median_days"],
+                      "lead_static": R["E1_lead_time"]["static"]["median_days"]},
+        "numbers": {"checks": R["E3_numbers"]["materials_checked"] * 4, "mismatches": R["E3_numbers"]["mismatches"],
+                    "faulty_identical": R["E3_faulty_vs_clean"]["identical"],
+                    "faulty_total": R["E3_faulty_vs_clean"]["snapshots"],
+                    "replay": R["E3_replay"]["identical"], "replay_total": R["E3_replay"]["replays"],
+                    "dups": R["E3_feed_faults"]["dups"], "junk": R["E3_feed_faults"]["junk"]},
+        "agent": {"briefings": R["E4_agent"]["briefings"], "grounded": R["E4_agent"]["grounded"],
+                  "numbers": R["E4_agent"]["numbers"], "claims_ok": R["E4_agent"]["material_ok"],
+                  "claims": R["E4_agent"]["material_claims"]},
+        "alerts": {"outages": R["E2_feed"]["outages"], "outages_found": R["E2_feed"]["detected"],
+                   "spikes": R["E2_spikes"]["spikes"], "spikes_found": R["E2_spikes"]["detected"],
+                   "shrink": R["E2_discrepancies"]["planted"], "shrink_found": R["E2_discrepancies"]["detected"],
+                   "delays": R["E2_supplier_delays"]["delayed_pos"],
+                   "delays_warned": R["E2_supplier_delays"]["warned_before_arrival"]},
+    }
 
 
 @app.post("/api/advance")

@@ -48,8 +48,8 @@ On-time orders that were *ever* flagged late at some point: Sentinel 5.8%, ablat
 
 ## E4 – Can the agent be trusted?
 
-- 5400 role briefings generated; **5400** passed the grounding check (0 ungrounded numbers out of 83628).
-- Material claims (on hand / incoming / allocated / net) checked against the reference: **21668/21668** correct. Order CRD claims vs ground truth: **3607/3607** correct.
+- 5400 role briefings generated; **5400** passed the grounding check (0 ungrounded numbers out of 76838).
+- Material claims (on hand / incoming / allocated / net) checked against the reference: **21668/21668** correct. Order CRD claims vs ground truth: **5314/5314** correct.
 - Every purchase proposal waits for a human; in E5 the 'human' is simulated.
 
 ## E5 – Do planners do better with the agent?

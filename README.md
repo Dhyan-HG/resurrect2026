@@ -14,7 +14,7 @@ purchase orders. **Nothing is ordered and no supplier email is sent until a plan
 | Are the numbers right? | **0 mismatches** in 172,800 checks against an independently written calculator; identical state under duplicates, junk and shuffled delivery (1,800/1,800) and on replay (90/90) |
 | Does it catch late orders? | **100% recall** 3 days before CRD (precision 0.75); median warning **8 days** ahead vs 0 for a static ERP check |
 | Does it catch feed problems? | 30/30 feed outages, 60/60 demand spikes, 89/89 hidden stock losses, 1,780/1,780 late supplier deliveries flagged before arrival |
-| Is the agent trustworthy? | 5,400/5,400 briefings grounded (0 invented numbers in 83,628); 21,668/21,668 material claims correct |
+| Is the agent trustworthy? | 5,400/5,400 briefings grounded (0 invented numbers in 76,838); 21,668/21,668 material claims correct |
 | Do planners do better? | On-time **92.6% → 96.3%** (+3.8 pts, 95% CI +2.7 to +4.8, p < 0.001, 28/30 seeds); days late −63%; stock-out days −57%; **no significant change in spend or stock held** |
 
 Reproduce every number with one command (about a minute):

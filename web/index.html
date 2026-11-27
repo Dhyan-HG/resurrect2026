@@ -2,131 +2,353 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sentinel – Inventory Intelligence</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2efe8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141513" media="(prefers-color-scheme: dark)">
+<title>Sentinel</title>
+<meta name="description" content="Sentinel warns a plant's planners days before an order misses its customer date, and proposes the fix for a person to approve.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f4f6f9;--panel:#fff;--ink:#14202e;--muted:#5d6b7c;--line:#e3e8ef;
-  --red:#d64545;--red-bg:#fdecec;--amber:#c98a12;--amber-bg:#fdf4e1;--green:#1f9d63;--green-bg:#e6f6ee;
-  --blue:#2563c9;--blue-bg:#e8f0fc;--chip:#eef2f7;--shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+  --paper:#f2efe8; --sheet:#faf8f3; --ink:#1c1d1b; --ink-2:#4a4a45; --mute:#7b7a72; --rule:#dcd7cb; --rule-2:#e8e4da;
+  --late:#c23b12; --late-soft:#f6dfd3; --risk:#a8700f; --risk-soft:#f3e6c8; --ok:#3d6b4c; --ok-soft:#dcebdf;
+  --track:#e6e1d5; --bar:#2b2c29; --focus:#1f5fbf;
+  --serif:"Fraunces",Georgia,serif; --sans:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#0d131b;--panel:#151e29;--ink:#e6edf5;--muted:#93a1b3;--line:#253243;
-  --red:#f07171;--red-bg:#3a1d22;--amber:#f0b44c;--amber-bg:#3a2d16;--green:#4cc98d;--green-bg:#163327;
-  --blue:#6ea2ff;--blue-bg:#172a47;--chip:#1d2836;--shadow:none}}
+  --paper:#141513; --sheet:#1b1c1a; --ink:#ebe9e2; --ink-2:#c4c2b9; --mute:#8d8b82; --rule:#2f302c; --rule-2:#262724;
+  --late:#f0784a; --late-soft:#3a2219; --risk:#ddb05a; --risk-soft:#342a17; --ok:#86bd95; --ok-soft:#1d2c22;
+  --track:#2a2b28; --bar:#d9d6cc; --focus:#7aa7ff;
+}}
 *{box-sizing:border-box}
-html,body{overflow-x:hidden}
-body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.brand{font-weight:800;font-size:18px;letter-spacing:.2px;margin-right:6px}
-.brand span{color:var(--green)}
-.clock{font-variant-numeric:tabular-nums;font-weight:700;background:var(--chip);padding:5px 10px;border-radius:8px}
-button,select{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 11px;border-radius:8px;cursor:pointer}
-button:hover{border-color:var(--blue)}
-button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
-button.ok{background:var(--green);border-color:var(--green);color:#fff}
-button.no{color:var(--red)}
-button:disabled{opacity:.45;cursor:not-allowed}
-.spacer{flex:1}
-.inject{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.inject b{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-main{padding:16px 18px;display:grid;gap:14px;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);max-width:1500px;margin:0 auto}
-.kpis{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
-.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow)}
-.kpi .v{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
-.kpi .l{color:var(--muted);font-size:12px}
-.kpi.bad .v{color:var(--red)} .kpi.warn .v{color:var(--amber)} .kpi.good .v{color:var(--green)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
-.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0;padding:11px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
-.card h2 .n{background:var(--chip);color:var(--ink);border-radius:10px;padding:0 7px;font-size:12px}
-.body{padding:12px 14px}
-.col{display:flex;flex-direction:column;gap:14px;min-width:0}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;padding:6px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
-td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-tr.click{cursor:pointer} tr.click:hover td{background:var(--chip)}
-.scroll{max-height:360px;overflow:auto;-webkit-overflow-scrolling:touch}
-.scroll table{min-width:560px}
-.num{text-align:right;font-variant-numeric:tabular-nums}
-.badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;white-space:nowrap}
-.late,.high{background:var(--red-bg);color:var(--red)} .at_risk,.medium{background:var(--amber-bg);color:var(--amber)}
-.ok-b,.low{background:var(--green-bg);color:var(--green)} .info{background:var(--blue-bg);color:var(--blue)}
-.brief{white-space:pre-wrap;font-size:13.5px}
-.grounded{font-size:12px;color:var(--green);margin-top:8px}
-.grounded.bad{color:var(--red)}
-.prop{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}
-.prop .t{font-weight:700}
-.prop .m{color:var(--muted);font-size:12.5px;margin:3px 0 8px}
-.effect{font-size:13px;margin-bottom:8px}
-.effect b{color:var(--green)}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.alert{padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;display:flex;gap:8px}
-.alert:last-child{border:0}
-.alert .when{color:var(--muted);font-size:11.5px;white-space:nowrap}
-.feeds{display:flex;gap:6px;flex-wrap:wrap}
-.muted{color:var(--muted)}
-.empty{color:var(--muted);font-size:13px;padding:6px 0}
-svg text{fill:var(--muted);font-size:10px}
-dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);max-width:640px;width:92vw;padding:0}
-dialog .body{white-space:pre-wrap;font-size:13.5px}
-dialog h3{margin:0;padding:12px 14px;border-bottom:1px solid var(--line);font-size:15px}
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:20;max-width:90vw}
-.toast.show{opacity:.95}
-.rule{font-size:12px;color:var(--muted);padding:8px 14px;border-top:1px solid var(--line)}
-@media (max-width:1000px){main{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:600px){main{padding:12px 16px}header{padding:10px 16px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi .v{font-size:20px}.inject b{width:100%}}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 var(--sans);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:3px}
+.mono{font-family:var(--mono)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.mute{color:var(--mute)}
+.late-t{color:var(--late)} .risk-t{color:var(--risk)} .ok-t{color:var(--ok)}
+
+/* ---------- top bar ---------- */
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--rule)}
+.bar-in{max-width:1320px;margin:0 auto;padding:10px 28px;display:flex;align-items:center;gap:18px}
+.mark{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.01em;font-size:16px}
+.mark i{width:18px;height:18px;border:2px solid var(--ink);border-radius:2px;position:relative;display:block}
+.mark i::after{content:"";position:absolute;left:3px;right:3px;top:6px;height:2px;background:var(--late)}
+.plant{color:var(--mute);font-size:13px;border-left:1px solid var(--rule);padding-left:14px}
+.transport{display:flex;align-items:center;gap:4px;margin-left:auto}
+.clock{font-family:var(--mono);font-size:14px;padding:0 10px;min-width:118px;text-align:right}
+.tbtn{height:34px;min-width:34px;padding:0 10px;border:1px solid var(--rule);border-radius:6px;font-size:13.5px;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--sheet)}
+.tbtn:hover{border-color:var(--ink-2)}
+.tbtn.play{background:var(--ink);color:var(--paper);border-color:var(--ink);min-width:40px}
+.tbtn svg{width:14px;height:14px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--sheet)}
+.seg button{padding:6px 12px;font-size:13.5px;color:var(--ink-2)}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+.linkbtn{font-size:13.5px;color:var(--ink-2);padding:6px 4px;border-bottom:1px solid transparent}
+.linkbtn:hover{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* ---------- page ---------- */
+main{max-width:1320px;margin:0 auto;padding:26px 28px 80px}
+.lede{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:40px;align-items:end;padding-bottom:24px;border-bottom:1px solid var(--rule)}
+.kicker{font-size:13px;color:var(--mute);margin:0 0 8px}
+.headline{font-family:var(--serif);font-weight:500;font-size:clamp(26px,3.3vw,40px);line-height:1.12;letter-spacing:-.015em;margin:0;font-variation-settings:"opsz" 100}
+.headline em{font-style:normal;color:var(--late)}
+.headline .calm{color:var(--ok)}
+.sub{margin:12px 0 0;color:var(--ink-2);max-width:60ch}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-left:1px solid var(--rule)}
+.stat{padding:2px 0 2px 16px}
+.stat b{display:block;font-family:var(--mono);font-weight:500;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--mute)}
+.grid{display:grid;grid-template-columns:minmax(0,1.62fr) minmax(0,1fr);gap:40px;margin-top:26px}
+.col{min-width:0;display:flex;flex-direction:column;gap:34px}
+.sec-h{display:flex;align-items:baseline;gap:12px;margin:0 0 12px}
+.sec-h h2{font-family:var(--serif);font-weight:500;font-size:21px;letter-spacing:-.01em;margin:0;font-variation-settings:"opsz" 40}
+.sec-h .aside{margin-left:auto;font-size:12.5px;color:var(--mute)}
+.legend{display:flex;gap:16px;font-size:12.5px;color:var(--mute);flex-wrap:wrap}
+.legend i{display:inline-block;vertical-align:middle;margin-right:6px}
+
+/* ---------- runway ---------- */
+.runway{border-top:1px solid var(--ink)}
+.rw-axis,.rw-row{display:grid;grid-template-columns:150px minmax(0,1fr) 64px;align-items:center}
+.rw-axis{height:28px;font-size:11.5px;color:var(--mute);border-bottom:1px solid var(--rule)}
+.rw-axis .ticks{position:relative;height:100%}
+.rw-axis .ticks span{position:absolute;top:7px;transform:translateX(-50%);font-family:var(--mono);white-space:nowrap}
+.rw-row{min-height:40px;border-bottom:1px solid var(--rule-2);cursor:pointer;width:100%;text-align:left}
+.rw-row:hover{background:var(--sheet)}
+.rw-row.flash{animation:flash 1.6s ease-out}
+@keyframes flash{0%{background:var(--risk-soft)}100%{background:transparent}}
+.rw-id{font-family:var(--mono);font-size:13px;line-height:1.2;padding:6px 8px 6px 0}
+.rw-id small{display:block;font-family:var(--sans);color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track{position:relative;height:40px}
+.track .now{position:absolute;top:0;bottom:0;width:1px;background:var(--ink);opacity:.35}
+.seg-bar{position:absolute;top:17px;height:6px;border-radius:1px;background:var(--bar)}
+.seg-bar.prod{background:repeating-linear-gradient(90deg,var(--bar) 0 3px,transparent 3px 5px)}
+.seg-over{position:absolute;top:15px;height:10px;background:var(--late);border-radius:1px}
+.crd{position:absolute;top:9px;height:22px;width:2px;background:var(--ok)}
+.crd.miss{background:var(--late)}
+.rw-row.risk .seg-bar{background:var(--risk)}
+.rw-slack{font-family:var(--mono);font-size:13px;text-align:right;padding-right:2px}
+.rw-more{display:block;width:100%;padding:12px 0;font-size:13.5px;color:var(--ink-2);text-align:left;border-bottom:1px solid var(--rule)}
+.rw-more:hover{color:var(--ink)}
+
+/* ---------- decisions ---------- */
+.decision{border:1px solid var(--ink);border-radius:8px;background:var(--sheet);padding:18px 18px 16px}
+.decision + .decision{margin-top:12px}
+.d-what{font-family:var(--serif);font-size:19px;line-height:1.3;margin:0;font-variation-settings:"opsz" 30}
+.d-meta{font-size:13px;color:var(--mute);margin:6px 0 14px}
+.d-effect{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:14px}
+.d-effect div{padding:10px 0}
+.d-effect div+div{border-left:1px solid var(--rule);padding-left:14px}
+.d-effect b{font-family:var(--mono);font-weight:500;font-size:18px}
+.d-effect span{display:block;font-size:12px;color:var(--mute)}
+.d-effect b span{display:inline;font-size:inherit}
+.d-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{height:38px;padding:0 16px;border-radius:6px;font-size:14px;font-weight:500;border:1px solid var(--rule);background:var(--paper)}
+.btn:hover{border-color:var(--ink-2)}
+.btn.go{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.go:hover{opacity:.88}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.quiet{border-color:transparent;color:var(--ink-2);padding:0 8px;background:none}
+.empty{color:var(--mute);font-size:14px;padding:4px 0 0;max-width:46ch;margin:0}
+.note-role{font-size:12.5px;color:var(--mute);margin:10px 0 0}
+
+/* ---------- note ---------- */
+.note{border-left:2px solid var(--ink);padding:2px 0 2px 16px}
+.note p{margin:0 0 8px;color:var(--ink-2);font-size:14.5px}
+.note p:first-child{color:var(--ink)}
+.note ul{margin:0 0 8px;padding:0;list-style:none}
+.note li{font-size:14px;color:var(--ink-2);padding:3px 0}
+.checked{font-size:12.5px;color:var(--mute);display:flex;gap:6px;align-items:center}
+.checked::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok);flex:none}
+.checked.bad::before{background:var(--late)}
+
+/* ---------- signals ---------- */
+.sig{display:grid;grid-template-columns:10px minmax(0,1fr);gap:12px;padding:11px 0;border-bottom:1px solid var(--rule-2)}
+.sig:first-child{border-top:1px solid var(--ink)}
+.sig .dot{width:8px;height:8px;border-radius:50%;margin-top:7px;background:var(--mute)}
+.sig.high .dot{background:var(--late)} .sig.medium .dot{background:var(--risk)}
+.sig p{margin:0;font-size:14px}
+.sig small{color:var(--mute);font-size:12px}
+.sig-more{font-size:13.5px;color:var(--ink-2);padding:10px 0}
+.feeds{display:flex;gap:8px 18px;flex-wrap:wrap;font-size:13.5px;margin-bottom:12px}
+.feed{display:flex;align-items:center;gap:7px}
+.feed i{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.feed.down i{background:var(--late);box-shadow:0 0 0 3px var(--late-soft)}
+.quality{font-size:13px;color:var(--mute);margin:12px 0 0}
+
+/* ---------- stock ---------- */
+.stock{width:100%;border-collapse:collapse;font-size:13.5px}
+.stock th{font-weight:500;font-size:12px;color:var(--mute);text-align:right;padding:6px 0 6px 12px;border-bottom:1px solid var(--ink)}
+.stock th:first-child{text-align:left;padding-left:0}
+.stock td{padding:8px 0 8px 12px;border-bottom:1px solid var(--rule-2);text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;vertical-align:top}
+.stock td:first-child{text-align:left;padding-left:0;font-family:var(--sans)}
+.stock td small{color:var(--mute);font-family:var(--mono);font-size:11.5px;margin-left:6px}
+.cover{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.cover .t{position:relative;width:88px;height:6px;background:var(--track);border-radius:1px}
+.cover .f{position:absolute;left:0;top:0;bottom:0;background:var(--bar);border-radius:1px}
+.cover .lt{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--risk)}
+.neg{color:var(--late)}
+.short{color:var(--late);font-family:var(--sans);font-size:12.5px}
+.rule-note{font-size:13px;color:var(--mute);margin:12px 0 0;max-width:70ch}
+.sup{display:grid;grid-template-columns:minmax(0,1fr) 70px 70px;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--rule-2)}
+.sup span{text-align:right;font-family:var(--mono)}
+.sup.h{font-size:12px;color:var(--mute);border-bottom:1px solid var(--ink)}
+.sup.h span{font-family:var(--sans)}
+.log{font-size:13px;color:var(--ink-2)}
+.log div{padding:6px 0;border-bottom:1px solid var(--rule-2)}
+.log .mono{color:var(--mute);margin-right:8px}
+
+/* ---------- sheet (explain / simulate / evidence) ---------- */
+.scrim{position:fixed;inset:0;background:rgba(20,20,18,.36);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;z-index:41;background:var(--sheet);color:var(--ink);top:0;right:0;bottom:0;width:min(460px,100vw);border-left:1px solid var(--rule);transform:translateX(100%);transition:transform .26s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;visibility:hidden}
+.sheet.on{transform:none;visibility:visible}
+.sheet header{display:flex;align-items:center;padding:18px 22px;border-bottom:1px solid var(--rule)}
+.sheet h3{font-family:var(--serif);font-weight:500;font-size:21px;margin:0}
+.sheet .x{margin-left:auto;width:34px;height:34px;border-radius:6px;font-size:22px;line-height:1}
+.sheet .x:hover{background:var(--rule-2)}
+.sheet .in{padding:20px 22px;overflow:auto;flex:1}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;font-size:14px;margin:0 0 18px}
+.kv dt{color:var(--mute)} .kv dd{margin:0;font-family:var(--mono)}
+.mat-line{padding:12px 0;border-top:1px solid var(--rule)}
+.mat-line b{font-weight:500}
+.mat-line p{margin:4px 0 0;font-size:13.5px;color:var(--ink-2)}
+.scen{display:block;width:100%;text-align:left;padding:14px 0;border-bottom:1px solid var(--rule)}
+.scen:first-child{border-top:1px solid var(--ink)}
+.scen b{display:block;font-weight:500;font-size:15px}
+.scen span{font-size:13.5px;color:var(--mute)}
+.scen:hover b{text-decoration:underline;text-underline-offset:3px}
+.ev-row .ev-big{font-family:var(--serif);font-size:40px;color:var(--ink);line-height:1.05;font-variation-settings:"opsz" 120;margin:0}
+.ev-row{padding:16px 0;border-top:1px solid var(--rule)}
+.ev-row p{margin:6px 0 0;font-size:13.5px;color:var(--ink-2)}
+.ev-row .num{font-size:22px}
+.method{font-size:13px;color:var(--mute);border-top:1px solid var(--ink);padding-top:12px;margin:6px 0 0}
+
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--ink);color:var(--paper);padding:11px 16px;border-radius:6px;font-size:14px;opacity:0;transition:all .25s;z-index:60;width:max-content;max-width:min(560px,calc(100vw - 32px));pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- mobile ---------- */
+.tabs,.mob-transport{display:none}
+@media (max-width:1060px){
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .lede{grid-template-columns:minmax(0,1fr);gap:22px}
+  .stats{border-left:0;border-top:1px solid var(--rule);padding-top:14px}
+  .stat:first-child{padding-left:0}
+}
+@media (max-width:720px){
+  body{padding-bottom:calc(122px + env(safe-area-inset-bottom))}
+  .bar-in{padding:10px 16px;gap:10px}
+  .plant,.transport,.linkbtn.desk{display:none}
+  .bar .seg{margin-left:auto}
+  .seg button{padding:6px 9px;font-size:13px}
+  main{padding:18px 16px 24px}
+  .stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .stat{padding-left:10px} .stat b{font-size:21px} .stat span{font-size:11.5px;line-height:1.25;display:block}
+  .grid{margin-top:4px;gap:0}
+  .col{gap:0;display:contents}
+  [data-tab]{display:none;padding-top:22px}
+  body[data-view=today] [data-tab~=today],body[data-view=orders] [data-tab~=orders],
+  body[data-view=stock] [data-tab~=stock],body[data-view=signals] [data-tab~=signals]{display:block}
+  body:not([data-view=today]) .lede{display:none}
+  body:not([data-view=today]) [data-tab]:first-of-type{padding-top:4px}
+  .rw-axis,.rw-row{grid-template-columns:96px minmax(0,1fr) 44px}
+  .rw-id small{font-size:11.5px} .rw-id .qty{display:none}
+  .legend{gap:6px 14px;font-size:12px}
+  .mob-transport .clock,.tbtn{white-space:nowrap}
+  .ev-link{display:block}
+  .stock .hide-m{display:none}
+  .cover .t{width:52px}
+  .sheet{top:auto;left:0;right:0;bottom:0;width:100%;max-height:86vh;border-left:0;border-top:1px solid var(--rule);border-radius:14px 14px 0 0;transform:translateY(100%)}
+  .sheet header{padding:16px 18px}
+  .sheet .in{padding:16px 18px calc(24px + env(safe-area-inset-bottom))}
+  .mob-transport{display:flex;position:fixed;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom));z-index:21;background:var(--paper);border-top:1px solid var(--rule);padding:8px 16px;align-items:center;gap:6px}
+  .mob-transport .clock{min-width:0;text-align:left;padding:0;margin-right:auto;font-size:13.5px}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:22;background:var(--sheet);border-top:1px solid var(--rule);padding-bottom:env(safe-area-inset-bottom)}
+  .tabs button{height:58px;font-size:12.5px;color:var(--mute);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative}
+  .tabs button[aria-selected=true]{color:var(--ink);font-weight:600}
+  .tabs button[aria-selected=true]::before{content:"";position:absolute;top:0;left:30%;right:30%;height:2px;background:var(--ink)}
+  .tabs .badge{position:absolute;top:7px;left:calc(50% + 7px);min-width:17px;height:17px;border-radius:9px;background:var(--late);color:#fff;font-size:10.5px;line-height:17px;font-family:var(--mono);padding:0 4px}
+  .tabs svg{width:20px;height:20px}
+  .toast{bottom:calc(132px + env(safe-area-inset-bottom))}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
-<body>
-<header>
-  <div class="brand">Sentinel<span>.</span></div>
-  <div class="clock" id="clock">Day –</div>
-  <button class="primary" id="play">▶ Play</button>
-  <button data-adv="0.25">+6 h</button>
-  <button data-adv="1">+1 day</button>
-  <label class="muted">View as
-    <select id="role"><option value="planner">Planner</option><option value="buyer">Buyer</option><option value="manager">Manager</option></select>
-  </label>
-  <div class="spacer"></div>
-  <div class="inject"><b>Inject</b>
-    <button data-inj="spike">Demand spike</button>
-    <button data-inj="supplier_delay">Supplier delay</button>
-    <button data-inj="outage">Feed outage</button>
-    <button data-inj="shrink">Stock loss</button>
-    <button data-inj="junk">Bad events</button>
-    <button id="reset" title="Restart the simulated plant">Reset</button>
+<body data-view="today">
+
+<div class="bar"><div class="bar-in">
+  <div class="mark"><i aria-hidden="true"></i>Sentinel</div>
+  <div class="plant">Demo plant · 8 products · 24 materials · 6 suppliers</div>
+  <div class="transport">
+    <span class="clock" id="clock">Day –</span>
+    <button class="tbtn play" id="play" aria-label="Play"><svg viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5v11l9-5.5z"/></svg></button>
+    <button class="tbtn" data-adv="0.25" title="Advance 6 hours">+6h</button>
+    <button class="tbtn" data-adv="1" title="Advance one day">+1 day</button>
   </div>
-</header>
+  <div class="seg" role="group" aria-label="View as">
+    <button data-role="planner" aria-pressed="true">Planner</button><button data-role="buyer" aria-pressed="false">Buyer</button><button data-role="manager" aria-pressed="false">Manager</button>
+  </div>
+  <button class="linkbtn desk" id="simBtn">Simulate a problem</button>
+  <button class="linkbtn desk" id="evBtn">Evidence</button>
+</div></div>
 
 <main>
-  <section class="kpis" id="kpis"></section>
+  <section class="lede">
+    <div>
+      <p class="kicker" id="kicker">Loading…</p>
+      <h1 class="headline" id="headline">&nbsp;</h1>
+      <p class="sub" id="sub"></p>
+    </div>
+    <div class="stats" id="stats"></div>
+  </section>
 
-  <div class="col">
-    <div class="card"><h2 id="briefTitle">Briefing</h2><div class="body"><div class="brief" id="brief"></div><div class="grounded" id="grounded"></div></div></div>
-    <div class="card"><h2>Orders by risk <span class="n" id="nOrders">0</span><span class="spacer"></span><span class="muted" style="text-transform:none;letter-spacing:0">click a row for the explanation</span></h2>
-      <div class="scroll"><table><thead><tr><th>Order</th><th>Product</th><th class="num">Qty</th><th class="num">CRD</th><th class="num">Ships</th><th class="num">Slack</th><th>Risk</th><th>Cause</th></tr></thead><tbody id="orders"></tbody></table></div></div>
-    <div class="card"><h2>Materials – net availability</h2>
-      <div class="scroll"><table><thead><tr><th>Material</th><th class="num">On hand</th><th class="num">Incoming</th><th class="num">Allocated</th><th class="num">Net</th><th class="num">Cover (d)</th><th>Stock-out</th></tr></thead><tbody id="mats"></tbody></table></div>
-      <div class="rule" id="rule"></div></div>
-  </div>
+  <div class="grid">
+    <div class="col">
+      <section data-tab="orders">
+        <div class="sec-h"><h2>Order runway</h2><span class="aside">today → projected ship date</span></div>
+        <div class="legend" style="margin-bottom:10px">
+          <span><i style="width:18px;height:6px;background:var(--bar)"></i>waiting for material</span>
+          <span><i style="width:18px;height:6px;background:repeating-linear-gradient(90deg,var(--bar) 0 3px,transparent 3px 5px)"></i>in production</span>
+          <span><i style="width:2px;height:12px;background:var(--ok)"></i>customer date</span>
+          <span><i style="width:14px;height:8px;background:var(--late)"></i>past the customer date</span>
+        </div>
+        <div class="runway" id="runway"></div>
+      </section>
 
-  <div class="col">
-    <div class="card"><h2>Approval queue <span class="n" id="nProps">0</span></h2><div class="body" id="props"></div></div>
-    <div class="card"><h2>Alerts <span class="n" id="nAlerts">0</span></h2><div class="body scroll" id="alerts" style="max-height:330px"></div></div>
-    <div class="card"><h2>Orders at risk over time</h2><div class="body"><svg id="trend" viewBox="0 0 400 110" width="100%" height="110"></svg></div></div>
-    <div class="card"><h2>Feed health and data quality</h2><div class="body"><div class="feeds" id="feeds"></div><div id="quality" style="margin-top:8px;font-size:13px"></div></div></div>
-    <div class="card"><h2>Supplier performance (learned)</h2><div class="body scroll" style="max-height:220px"><table><thead><tr><th>Supplier</th><th class="num">Delivered</th><th class="num">On time</th><th class="num">Avg delay</th></tr></thead><tbody id="sups"></tbody></table></div></div>
-    <div class="card"><h2>Decision log</h2><div class="body" id="log"></div></div>
+      <section data-tab="stock">
+        <div class="sec-h"><h2>Stock</h2><span class="aside">on hand + incoming − allocated</span></div>
+        <table class="stock">
+          <thead><tr><th>Material</th><th>On hand</th><th class="hide-m">Incoming</th><th class="hide-m">Allocated</th><th>Net</th><th>Cover <span class="mute">(days)</span></th></tr></thead>
+          <tbody id="stock"></tbody>
+        </table>
+        <p class="rule-note" id="rule"></p>
+      </section>
+    </div>
+
+    <div class="col">
+      <section data-tab="today">
+        <div class="sec-h"><h2 id="decTitle">Needs a decision</h2></div>
+        <div id="decisions"></div>
+      </section>
+
+      <section data-tab="today">
+        <div class="sec-h"><h2 id="noteTitle">Briefing</h2></div>
+        <div class="note" id="note"></div>
+        <button class="rw-more ev-link" id="evBtnM" style="margin-top:22px;border-top:1px solid var(--rule)">How we know it works: results from 30 simulated plants →</button>
+      </section>
+
+      <section data-tab="signals">
+        <div class="sec-h"><h2>Signals</h2><span class="aside" id="sigCount"></span></div>
+        <div class="feeds" id="feeds"></div>
+        <div id="signals"></div>
+        <p class="quality" id="quality"></p>
+      </section>
+
+      <section data-tab="signals">
+        <div class="sec-h"><h2>Suppliers</h2><span class="aside">learned from deliveries</span></div>
+        <div id="sups"></div>
+      </section>
+
+      <section data-tab="signals">
+        <div class="sec-h"><h2>Log</h2></div>
+        <div class="log" id="log"></div>
+      </section>
+    </div>
   </div>
 </main>
 
-<dialog id="dlg"><h3 id="dlgT"></h3><div class="body" id="dlgB"></div><div class="body" style="text-align:right;padding-top:0"><button onclick="dlg.close()">Close</button></div></dialog>
-<div class="toast" id="toast"></div>
+<div class="mob-transport">
+  <span class="clock" id="clockM">Day –</span>
+  <button class="tbtn" id="simBtnM">Simulate</button>
+  <button class="tbtn" data-adv="1" aria-label="Advance one day">+1d</button>
+  <button class="tbtn play" id="playM" aria-label="Play"><svg viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5v11l9-5.5z"/></svg></button>
+</div>
+<nav class="tabs" role="tablist">
+  <button role="tab" data-go="today" aria-selected="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg>Today<span class="badge" id="bToday" hidden></span></button>
+  <button role="tab" data-go="orders" aria-selected="false"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h9M3 10h13M3 15h7"/></svg>Orders<span class="badge" id="bOrders" hidden></span></button>
+  <button role="tab" data-go="stock" aria-selected="false"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7l7-4 7 4v7l-7 4-7-4z"/><path d="M3 7l7 4 7-4M10 11v7"/></svg>Stock</button>
+  <button role="tab" data-go="signals" aria-selected="false"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 10h3l2-5 3 10 2-5h6"/></svg>Signals<span class="badge" id="bSig" hidden></span></button>
+</nav>
+
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT">
+  <header><h3 id="sheetT"></h3><button class="x" id="sheetX" aria-label="Close">×</button></header>
+  <div class="in" id="sheetB"></div>
+</aside>
+<div class="toast" id="toast" role="status"></div>
 
 <script>
-const $ = s => document.querySelector(s);
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let role = "planner", playing = null, busy = false, last = null;
+const fmt = n => Number(n).toLocaleString("en-IN", {maximumFractionDigits: 1});
+const money = n => "₹" + Number(n).toLocaleString("en-IN", {maximumFractionDigits: 0});
+const plural = (n, w, ws) => `${n} ${n === 1 ? w : (ws || w + "s")}`;
+let role = "planner", S = null, playing = null, busy = false, showAll = false, prevRisk = {}, evidence = null;
 
 async function api(path, opts = {}) {
   const r = await fetch(path, {headers: {"Content-Type": "application/json", "X-Role": role}, ...opts});
@@ -134,120 +356,255 @@ async function api(path, opts = {}) {
   if (!r.ok) throw new Error(j.detail || r.statusText);
   return j;
 }
-function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 3200); }
-const riskLabel = {late: "Late", at_risk: "At risk", ok: "On track"};
+function toast(msg, ms = 3800) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), ms); }
+function clockText(now) { const d = Math.floor(now), h = Math.floor((now - d) * 24); return `Day ${d} · ${String(h).padStart(2, "0")}:00`; }
+const matName = id => ((S && S.materials.find(m => m.id === id)) || {}).name || id;
 
-function kpi(label, v, cls = "") { return `<div class="kpi ${cls}"><div class="v">${v}</div><div class="l">${label}</div></div>`; }
+/* ------------------------------------------------ headline */
+function lede(s) {
+  const k = s.kpis, late = s.orders.filter(o => o.risk === "late" && o.status === "open");
+  const prop = s.proposals[0], feeds = k.feeds_down;
+  $("#kicker").textContent = `${clockText(s.now)} · ${plural(k.open_orders, "open order")}`;
+  let h, sub;
+  if (feeds.length) {
+    h = `The <em>${feeds.map(f => ({erp: "orders", wms: "warehouse", supplier: "supplier"}[f] || f)).join(" and ")} feed</em> has gone quiet.`;
+    sub = `Figures that depend on it may be out of date, so treat them with care. ${k.late ? plural(k.late, "order") + " currently projected late." : "No order is projected late yet."}`;
+  } else if (k.late) {
+    h = `<em>${plural(k.late, "order")}</em> will miss ${k.late === 1 ? "its" : "their"} customer date.`;
+    const cause = causeLine(late);
+    if (prop && prop.effect.late_after < prop.effect.late_before) {
+      const fixed = prop.effect.late_before - prop.effect.late_after;
+      sub = `${cause} ${fixed >= k.late ? (k.late === 1 ? "One decision puts it back on time." : "One decision brings all of them back on time.") : `One decision brings ${fixed} back on time.`}`;
+    } else sub = cause || "Production has already started on these, so the delay can be managed but not avoided.";
+  } else if (k.at_risk) {
+    h = `Everything ships on time, but <span style="color:var(--risk)">${plural(k.at_risk, "order")}</span> ${k.at_risk === 1 ? "has" : "have"} less than two days to spare.`;
+    sub = "Nothing to decide yet. Sentinel raises it the moment a projection crosses a customer date.";
+  } else {
+    h = `<span class="calm">Every open order</span> is on track to ship by its customer date.`;
+    sub = "Sentinel re-plans each time an event arrives: a new order, a delivery, a stock count, a note from a supplier.";
+  }
+  $("#headline").innerHTML = h;
+  $("#sub").textContent = sub;
+  $("#stats").innerHTML = [
+    [k.late, "projected late", k.late ? "late-t" : ""],
+    [k.at_risk, "at risk", k.at_risk ? "risk-t" : ""],
+    [Math.round(k.on_track_pct) + "%", "on track", k.on_track_pct < 85 ? "risk-t" : ""],
+    [k.stockouts, "stock-outs ahead", k.stockouts ? "late-t" : ""],
+  ].map(([v, l, c]) => `<div class="stat"><b class="${c}">${v}</b><span>${l}</span></div>`).join("");
+}
+function causeLine(late) {
+  if (!late.length) return "";
+  const counts = {};
+  late.forEach(o => (o.reasons || []).forEach(r => {
+    if (r.kind === "stock") return;
+    const key = r.kind === "waiting_po" ? `${matName(r.material)} on ${r.po}` : `${matName(r.material)}, with nothing on order`;
+    counts[key] = (counts[key] || 0) + 1;
+  }));
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  if (!top) return "";
+  if (late.length === 1) return `It is waiting for ${top[0]}.`;
+  return top[1] === late.length ? `All of them are waiting for ${top[0]}.` : `${top[1]} of them are waiting for ${top[0]}.`;
+}
 
-function render(s) {
-  last = s;
-  const k = s.kpis, hh = Math.floor((s.now % 1) * 24);
-  $("#clock").textContent = `Day ${s.day} · ${String(hh).padStart(2, "0")}:00`;
-  $("#kpis").innerHTML =
-    kpi("Open orders", k.open_orders) +
-    kpi("Projected late", k.late, k.late ? "bad" : "good") +
-    kpi("At risk (< 2 days slack)", k.at_risk, k.at_risk ? "warn" : "good") +
-    kpi("On track", k.on_track_pct + "%", k.on_track_pct < 90 ? "warn" : "good") +
-    kpi("Stock-outs ahead", k.stockouts, k.stockouts ? "bad" : "good") +
-    kpi("Overdue POs", k.overdue_pos, k.overdue_pos ? "warn" : "good") +
-    kpi("Feeds down", k.feeds_down.length ? k.feeds_down.join(", ").toUpperCase() : "none", k.feeds_down.length ? "bad" : "good") +
-    kpi("Quarantined / dup. ignored", `${k.quarantined} / ${k.duplicates_ignored}`);
+/* ------------------------------------------------ runway */
+function runway(s) {
+  const rows = s.orders, now = s.now, t0 = Math.floor(now), span = 22, t1 = t0 + span;
+  const X = d => Math.max(0, Math.min(100, (d - t0) / span * 100));
+  const step = innerWidth < 720 ? 7 : 4, ticks = [];
+  for (let d = t0 + step; d < t1 - step * 0.6; d += step) ticks.push(d);
+  const shown = showAll ? rows : rows.slice(0, innerWidth < 720 ? 14 : 18);
+  const html = [`<div class="rw-axis"><span>Order</span><div class="ticks">${ticks.map(d => `<span style="left:${X(d)}%">day ${d}</span>`).join("")}</div><span style="text-align:right">Slack</span></div>`];
+  for (const o of shown) {
+    const prod = o.status === "in_production";
+    const start = prod ? Math.max(t0, Math.floor(o.started)) : now;
+    const end = o.projected_ship, miss = end > o.crd, okEnd = miss ? o.crd : end;
+    const cls = o.risk === "late" ? "late" : o.risk === "at_risk" ? "risk" : "";
+    const changed = prevRisk[o.id] && prevRisk[o.id] !== o.risk ? " flash" : "";
+    html.push(`<button class="rw-row ${cls}${changed}" data-o="${esc(o.id)}" aria-label="${esc(o.id)}, ${esc(o.product_name)}, ships day ${end}, customer date day ${o.crd}">
+      <span class="rw-id">${esc(o.id)}<small>${esc(o.product_name)}<span class="qty"> · ${o.qty}</span></small></span>
+      <span class="track"><span class="now" style="left:${X(now)}%"></span>
+        <span class="seg-bar${prod ? " prod" : ""}" style="left:${X(start)}%;width:${Math.max(.6, X(okEnd) - X(start))}%"></span>
+        ${miss ? `<span class="seg-over" style="left:${X(o.crd)}%;width:${Math.max(.8, X(end) - X(o.crd))}%"></span>` : ""}
+        <span class="crd${miss ? " miss" : ""}" style="left:calc(${X(o.crd)}% - 1px)"></span></span>
+      <span class="rw-slack ${o.slack < 0 ? "late-t" : o.slack < 2 ? "risk-t" : "mute"}">${o.slack > 0 ? "+" : ""}${o.slack}d</span></button>`);
+  }
+  if (rows.length > shown.length || showAll) html.push(`<button class="rw-more" id="rwMore">${showAll ? "Show fewer" : `Show all ${rows.length} orders`}</button>`);
+  $("#runway").innerHTML = html.join("");
+  prevRisk = Object.fromEntries(rows.map(o => [o.id, o.risk]));
+}
 
-  const b = s.briefing;
-  $("#briefTitle").textContent = `Briefing for the ${s.role}` + (b.mode === "claude" ? " (written by Claude, checked)" : "");
-  $("#brief").textContent = b.text;
-  const g = b.grounding;
-  $("#grounded").className = "grounded" + (g.ok ? "" : " bad");
-  $("#grounded").textContent = g.ok ? `✓ Grounded: all ${g.numbers} numbers trace to the data` : `✗ ${g.ungrounded.length} number(s) not found in the data`;
-
-  $("#nOrders").textContent = s.orders.length;
-  $("#orders").innerHTML = s.orders.map(o => {
-    const cause = (o.reasons || []).filter(r => r.kind !== "stock").map(r => r.kind === "no_supply" ? `${r.material}: short ${r.short}` : `${r.material}: waits ${r.po} (d${r.eta})`).join("; ");
-    const st = o.status === "in_production" ? `<span class="badge info">In production</span>` : `<span class="badge ${o.risk === "ok" ? "ok-b" : o.risk}">${riskLabel[o.risk]}</span>`;
-    return `<tr class="click" data-o="${esc(o.id)}"><td>${esc(o.id)}</td><td>${esc(o.product_name)}</td><td class="num">${o.qty}</td><td class="num">${o.crd}</td><td class="num">${o.projected_ship}</td><td class="num">${o.slack}</td><td>${st}</td><td class="muted">${esc(cause)}</td></tr>`;
-  }).join("") || `<tr><td colspan="8" class="empty">No open orders.</td></tr>`;
-
-  $("#mats").innerHTML = s.materials.map(m => `<tr><td>${esc(m.name)} <span class="muted">${m.id}</span></td><td class="num">${m.on_hand}</td><td class="num">${m.incoming}</td><td class="num">${m.allocated}</td><td class="num" style="color:${m.net < 0 ? "var(--red)" : "inherit"}">${m.net}</td><td class="num">${m.days_of_cover ?? "–"}</td><td>${m.uncovered > 0 ? `<span class="badge late">day ${m.stockout_day}, short ${m.uncovered}</span>` : `<span class="muted">—</span>`}</td></tr>`).join("");
-  $("#rule").textContent = "Allocation rule: " + s.rule;
-
-  const canDecide = s.role !== "manager";
-  $("#nProps").textContent = s.proposals.length;
-  $("#props").innerHTML = s.proposals.map(p => {
+/* ------------------------------------------------ decisions + note */
+function decisions(s) {
+  const canDecide = s.role !== "manager", n = s.proposals.length;
+  $("#decTitle").textContent = n ? (n === 1 ? "One decision" : `${n} decisions`) : "Nothing to decide";
+  if (!n) {
+    $("#decisions").innerHTML = `<p class="empty">Sentinel only asks when a purchase would bring a late order back on time, and it tests each one against the plan before showing it here.</p>`;
+    return;
+  }
+  $("#decisions").innerHTML = s.proposals.map(p => {
     const e = p.effect;
-    return `<div class="prop"><div class="t">${p.qty} ${esc(p.unit)} ${esc(p.material_name)} ${p.expedite ? '<span class="badge high">Expedite</span>' : '<span class="badge info">Standard</span>'}</div>
-      <div class="m">${esc(p.supplier_name)} · arrives day ${p.expected_day} · cost ${p.cost.toLocaleString()} · ${p.kind === "slow_po" ? `${esc(p.slow_po)} is too slow` : `short ${p.short}`}</div>
-      <div class="effect">If approved: late orders <b>${e.late_before} → ${e.late_after}</b>, days late <b>${e.late_days_before} → ${e.late_days_after}</b>${e.orders_saved.length ? ` · saves ${e.orders_saved.map(esc).join(", ")}` : ""}</div>
-      <div class="row"><button class="ok" data-ap="${esc(p.id)}" ${canDecide ? "" : "disabled title='Managers cannot approve POs'"}>Approve PO</button><button class="no" data-rj="${esc(p.id)}" ${canDecide ? "" : "disabled"}>Reject</button><button data-em="${esc(p.id)}">Supplier email draft</button></div></div>`;
-  }).join("") || `<div class="empty">Nothing to approve. Sentinel proposes a PO only when its what-if shows it saves a late order.</div>`;
+    const why = p.kind === "slow_po" ? `${esc(p.slow_po)} won't arrive until day ${Math.ceil(p.slow_po_eta)}` : `${fmt(p.short)} ${esc(p.unit)} short, with nothing on order`;
+    return `<article class="decision">
+      <p class="d-what">${p.expedite ? "Rush-order" : "Order"} ${fmt(p.qty)} ${esc(p.unit)} of ${esc(p.material_name)} from ${esc(p.supplier_name)}</p>
+      <p class="d-meta">${why}. ${p.expedite ? "Expedited, arrives" : "Arrives"} day ${p.expected_day} · ${money(p.cost)}</p>
+      <div class="d-effect">
+        <div><b>${e.late_before} → <span class="${e.late_after ? "" : "ok-t"}">${e.late_after}</span></b><span>orders late</span></div>
+        <div><b>${e.late_days_before} → <span class="${e.late_days_after ? "" : "ok-t"}">${e.late_days_after}</span></b><span>days late in total</span></div>
+      </div>
+      <div class="d-actions">
+        <button class="btn go" data-ap="${esc(p.id)}" ${canDecide ? "" : "disabled"}>Approve purchase</button>
+        <button class="btn" data-rj="${esc(p.id)}" ${canDecide ? "" : "disabled"}>Not now</button>
+        <button class="btn quiet" data-em="${esc(p.id)}">Supplier email</button>
+      </div>
+      ${canDecide ? "" : `<p class="note-role">Managers see every decision, but only planners and buyers can approve a purchase.</p>`}
+    </article>`;
+  }).join("");
+}
+function note(s) {
+  const b = s.briefing;
+  $("#noteTitle").textContent = {planner: "Briefing for the planner", buyer: "Briefing for the buyer", manager: "Briefing for the manager"}[s.role];
+  const out = []; let list = [];
+  const flush = () => { if (list.length) { out.push(`<ul>${list.join("")}</ul>`); list = []; } };
+  for (const l of b.text.split("\n")) {
+    if (l.startsWith("- ")) list.push(`<li>${esc(l.slice(2))}</li>`);
+    else { flush(); out.push(`<p>${esc(l)}</p>`); }
+  }
+  flush();
+  const g = b.grounding;
+  out.push(`<div class="checked${g.ok ? "" : " bad"}">${g.ok ? `All ${g.numbers} figures above were checked against the data` : `${g.ungrounded.length} figure(s) could not be traced to the data`}</div>`);
+  $("#note").innerHTML = out.join("");
+}
 
-  $("#nAlerts").textContent = s.alerts.length;
-  $("#alerts").innerHTML = s.alerts.map(a => `<div class="alert"><span class="badge ${a.severity}">${a.severity}</span><div>${esc(a.message)}<div class="when">first seen day ${a.first_seen.toFixed(2)}</div></div></div>`).join("") || `<div class="empty">No alerts.</div>`;
-
+/* ------------------------------------------------ stock, signals, suppliers, log */
+function stock(s) {
+  $("#stock").innerHTML = s.materials.map(m => {
+    const cov = m.days_of_cover ?? 0, w = Math.min(100, cov / 20 * 100), lt = Math.min(100, m.lead_days / 20 * 100);
+    return `<tr><td>${esc(m.name)}<small>${m.id}</small>${m.uncovered > 0 ? `<div class="short">Short ${fmt(m.uncovered)} from day ${m.stockout_day}</div>` : ""}</td>
+      <td>${fmt(m.on_hand)}</td><td class="hide-m">${fmt(m.incoming)}</td><td class="hide-m">${fmt(m.allocated)}</td>
+      <td class="${m.net < 0 ? "neg" : ""}">${fmt(m.net)}</td>
+      <td><span class="cover"><span>${fmt(cov)}</span><span class="t" title="Lead time ${m.lead_days} days"><span class="f" style="width:${w}%"></span><span class="lt" style="left:${lt}%"></span></span></span></td></tr>`;
+  }).join("");
+  $("#rule").innerHTML = `<b style="color:var(--ink);font-weight:500">How stock is shared.</b> ${esc(s.rule)} The ochre tick on each cover bar marks the supplier's lead time: cover to the left of it means a new order would arrive too late.`;
+}
+function signalHTML(a) { return `<div class="sig ${a.severity}"><span class="dot"></span><div><p>${esc(a.message)}</p><small class="mono">since ${clockText(a.first_seen)}</small></div></div>`; }
+function signals(s) {
   const now = s.now;
   $("#feeds").innerHTML = Object.entries(s.feeds).map(([src, t]) => {
     const silent = t == null ? null : now - t, down = silent != null && silent > 0.75;
-    return `<span class="badge ${down ? "late" : "ok-b"}">${src.toUpperCase()} · ${silent == null ? "no data" : down ? `silent ${Math.round(silent * 24)} h` : "live"}</span>`;
+    const name = {erp: "Orders (ERP)", wms: "Warehouse (WMS)", supplier: "Supplier portal"}[src];
+    return `<span class="feed${down ? " down" : ""}"><i></i>${name} <span class="mute">${silent == null ? "no data" : down ? `silent ${Math.round(silent * 24)}h` : "live"}</span></span>`;
   }).join("");
+  const al = s.alerts.filter(a => !a.kind.startsWith("order_")), limit = 7;
+  $("#sigCount").textContent = al.length ? plural(al.length, "signal") : "";
+  $("#signals").innerHTML = al.slice(0, limit).map(signalHTML).join("")
+    + (al.length > limit ? `<button class="sig-more" id="sigAll">See all ${al.length} signals</button>` : "")
+    + (al.length ? "" : `<p class="empty">No supply or data signals right now. Late orders show on the runway.</p>`);
   const q = s.quality;
-  $("#quality").innerHTML = `${q.received} events received · ${q.accepted} accepted · ${q.duplicates} duplicates ignored · ${q.quarantined} quarantined` +
-    (q.recent_quarantine.length ? `<div class="muted" style="margin-top:4px">Latest quarantined: ${q.recent_quarantine.map(r => esc(r.reason)).join(" · ")}</div>` : "");
-
-  $("#sups").innerHTML = s.suppliers.map(x => `<tr><td>${esc(x.name)}</td><td class="num">${x.delivered}</td><td class="num">${x.on_time_rate == null ? "–" : Math.round(x.on_time_rate * 100) + "%"}</td><td class="num">${x.avg_delay_days ?? "–"} d</td></tr>`).join("");
-
-  $("#log").innerHTML = (s.decisions.map(d => `<div class="alert"><span class="badge ${d.decision === "approved" ? "ok-b" : "late"}">${d.decision}</span><div>${esc(d.proposal)} by ${esc(d.by)}${d.po ? ` → ${esc(d.po)}` : ""}<div class="when">day ${d.t}</div></div></div>`).join("") +
-    s.injections.map(i => `<div class="alert"><span class="badge info">injected</span><div>${esc(i.detail)}<div class="when">day ${i.t}</div></div></div>`).join("")) || `<div class="empty">No decisions yet.</div>`;
-
-  drawTrend(s.history);
+  $("#quality").textContent = `${fmt(q.received)} events received. ${fmt(q.duplicates)} duplicates were ignored and ${fmt(q.quarantined)} malformed events set aside, so neither changed a single figure.`;
+  $("#sups").innerHTML = `<div class="sup h"><span style="text-align:left">Supplier</span><span>On time</span><span>Avg late</span></div>` +
+    s.suppliers.map(x => `<div class="sup"><div>${esc(x.name)} <span class="mute" style="font-size:12px">${plural(x.delivered, "delivery", "deliveries")}</span></div><span>${x.on_time_rate == null ? "–" : Math.round(x.on_time_rate * 100) + "%"}</span><span class="${(x.avg_delay_days || 0) >= 1 ? "risk-t" : ""}">${x.avg_delay_days == null ? "–" : x.avg_delay_days + "d"}</span></div>`).join("");
+  const log = [...s.decisions.map(d => ({t: d.t, txt: `${d.decision === "approved" ? "Approved" : "Declined"} ${d.proposal} as ${d.by}${d.po ? `, created ${d.po}` : ""}`})),
+               ...s.injections.map(i => ({t: i.t, txt: `Simulated: ${i.detail}`}))].sort((a, b) => b.t - a.t);
+  $("#log").innerHTML = log.map(l => `<div><span class="mono">${clockText(l.t)}</span>${esc(l.txt)}</div>`).join("") || `<p class="empty">Approvals and simulated problems are listed here.</p>`;
+}
+function badges(s) {
+  const set = (id, n) => { const b = $(id); b.hidden = !n; b.textContent = n; };
+  set("#bToday", s.proposals.length); set("#bOrders", s.kpis.late);
+  set("#bSig", s.alerts.filter(a => a.severity === "high" && !a.kind.startsWith("order_")).length);
+}
+function render(s) {
+  S = s;
+  $("#clock").textContent = $("#clockM").textContent = clockText(s.now);
+  lede(s); runway(s); decisions(s); note(s); stock(s); signals(s); badges(s);
 }
 
-function drawTrend(h) {
-  const svg = $("#trend");
-  if (h.length < 2) { svg.innerHTML = ""; return; }
-  const W = 400, H = 110, P = 22, max = Math.max(3, ...h.map(x => x.late + x.at_risk));
-  const t0 = h[0].t, t1 = h[h.length - 1].t || 1;
-  const X = t => P + (W - P - 6) * (t - t0) / Math.max(0.01, t1 - t0), Y = v => H - 16 - (H - 26) * v / max;
-  const line = (f, col) => `<polyline fill="none" stroke="${col}" stroke-width="2" points="${h.map(p => `${X(p.t).toFixed(1)},${Y(f(p)).toFixed(1)}`).join(" ")}"/>`;
-  svg.innerHTML = `<line x1="${P}" x2="${W}" y1="${H - 16}" y2="${H - 16}" stroke="var(--line)"/>` +
-    `<text x="0" y="${Y(max) + 4}">${max}</text><text x="0" y="${H - 13}">0</text>` +
-    `<text x="${P}" y="${H - 2}">day ${t0.toFixed(0)}</text><text x="${W - 40}" y="${H - 2}">day ${t1.toFixed(0)}</text>` +
-    line(p => p.late + p.at_risk, "var(--amber)") + line(p => p.late, "var(--red)") +
-    `<text x="${W - 150}" y="12" style="fill:var(--red)">■ late</text><text x="${W - 100}" y="12" style="fill:var(--amber)">■ late + at risk</text>`;
+/* ------------------------------------------------ sheet */
+let lastFocus = null;
+function openSheet(title, html) { lastFocus = document.activeElement; $("#sheetT").textContent = title; $("#sheetB").innerHTML = html; $("#sheetB").scrollTop = 0; $("#scrim").classList.add("on"); $("#sheet").classList.add("on"); $("#sheetX").focus(); }
+function closeSheet() { $("#scrim").classList.remove("on"); $("#sheet").classList.remove("on"); if (lastFocus) lastFocus.focus(); }
+$("#scrim").onclick = closeSheet; $("#sheetX").onclick = closeSheet;
+addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); if (e.key === " " && e.target === document.body) { e.preventDefault(); togglePlay(); } });
+
+async function explain(oid) {
+  const o = S.orders.find(x => x.id === oid);
+  const r = await api(`/api/orders/${encodeURIComponent(oid)}/explain`);
+  const facts = r.facts.filter(f => f.id && f.id.startsWith("need:"));
+  const status = o.status === "in_production" ? "In production" : o.risk === "late" ? `${plural(-o.slack, "day")} late` : o.risk === "at_risk" ? `${plural(o.slack, "day")} to spare` : "On track";
+  const lines = facts.map(f => {
+    const mid = f.id.slice(5), m = S.materials.find(x => x.id === mid) || {name: mid, unit: ""};
+    const src = f.draws.length ? f.draws.map(d => `${fmt(d.qty)} from ${d.lot === "stock" ? "stock" : d.lot + ` (due day ${Math.ceil(d.eta)})`}`).join(", ") : "nothing available yet";
+    return `<div class="mat-line"><b>${esc(m.name)}</b> <span class="mute mono" style="font-size:12px">${mid}</span><p>Needs ${fmt(f.need)} ${esc(m.unit)}: ${esc(src)}${f.short ? `. <span class="late-t">Short ${fmt(f.short)}, so a new order is needed.</span>` : "."}</p></div>`;
+  }).join("");
+  openSheet(`${oid} · ${o.product_name}`, `
+    <dl class="kv"><dt>Quantity</dt><dd>${o.qty}</dd><dt>Customer date</dt><dd>day ${o.crd}</dd><dt>Projected ship</dt><dd class="${o.slack < 0 ? "late-t" : ""}">day ${o.projected_ship}</dd><dt>Status</dt><dd>${status}</dd></dl>
+    <p style="margin:0 0 6px;font-weight:500">Where its materials come from</p>${lines || (o.started != null ? `<p class="mute" style="margin:0">Its materials were used when production started on day ${Math.floor(o.started)}.</p>` : `<p class="mute" style="margin:0">No material detail for this order.</p>`)}
+    <p class="rule-note" style="margin-top:18px">${esc(S.rule)}</p>
+    <div class="checked${r.grounding.ok ? "" : " bad"}" style="margin-top:12px">${r.grounding.numbers} figures checked against the data</div>`);
 }
 
+const SCENARIOS = [
+  ["supplier_delay", "A supplier slips a week", "The delivery that most orders are waiting on moves back seven days. The supplier does warn you."],
+  ["spike", "Demand spike", "Tomorrow one product gets a burst of eight to fourteen extra orders."],
+  ["outage", "Warehouse feed goes down", "The WMS stops sending for 30 hours. Its events arrive late, all at once."],
+  ["shrink", "Stock quietly disappears", "40% of one material goes missing. Nobody knows until the next cycle count."],
+  ["junk", "Bad data arrives", "Five malformed events hit the feed: negative quantities, materials that don't exist."],
+];
+function simulate() {
+  openSheet("Simulate a problem", `<p class="mute" style="margin:0 0 14px;font-size:13.5px">Pick one, then watch the headline and the runway. Advancing time shows what happens next.</p>` +
+    SCENARIOS.map(([k, t, d]) => `<button class="scen" data-inj="${k}"><b>${t}</b><span>${d}</span></button>`).join("") +
+    `<button class="scen" data-reset="1"><b>Start over</b><span>Reset the plant to day 4 with a calm order book.</span></button>`);
+}
+async function showEvidence() {
+  try { evidence = evidence || await api("/api/evidence"); } catch { openSheet("Evidence", `<p class="empty">This build has no evaluation results.</p>`); return; }
+  const e = evidence, pct = x => Math.round(x * 100) + "%";
+  openSheet("Evidence", `
+    <p class="mute" style="margin:0 0 14px;font-size:13.5px">${e.seeds} simulated plants, ${e.days} days each, ${fmt(e.orders)} orders. The simulator knows how every order really turned out; Sentinel only ever sees the event feed.</p>
+    <div class="ev-row"><p class="ev-big">${e.on_time.baseline.toFixed(1)}% → <span class="ok-t">${e.on_time.agent.toFixed(1)}%</span></p><p>Orders shipped by their customer date: the plant's existing planner, then with Sentinel's proposals approved. Better in ${e.on_time.seeds_better} of ${e.seeds} plants (p ${e.on_time.p < 0.001 ? "< 0.001" : "= " + e.on_time.p.toFixed(3)}), with no significant change in purchase spend.</p></div>
+    <div class="ev-row"><span class="num">${pct(e.detection.recall)}</span><p>of the orders that really did miss were flagged three days ahead (precision ${e.detection.precision.toFixed(2)}). A standard stock check caught ${pct(e.detection.static_recall)}. Median warning: ${e.detection.lead_median} days.</p></div>
+    <div class="ev-row"><span class="num">${e.numbers.mismatches} errors</span><p>in ${fmt(e.numbers.checks)} stock figures checked against an independently written calculator, with ${fmt(e.numbers.dups)} duplicate and ${fmt(e.numbers.junk)} malformed events in the feed. ${e.numbers.replay} of ${e.numbers.replay_total} full replays gave identical results.</p></div>
+    <div class="ev-row"><span class="num">${fmt(e.agent.grounded)} of ${fmt(e.agent.briefings)}</span><p>briefings had every figure traced to the data (${fmt(e.agent.numbers)} figures in all). Stock claims correct: ${fmt(e.agent.claims_ok)} of ${fmt(e.agent.claims)}.</p></div>
+    <div class="ev-row"><span class="num">${e.alerts.outages_found}/${e.alerts.outages} · ${e.alerts.spikes_found}/${e.alerts.spikes} · ${e.alerts.shrink_found}/${e.alerts.shrink}</span><p>feed outages, demand spikes and hidden stock losses detected.</p></div>
+    <p class="method">What this does not show: the plant is a simulator and the approvals were simulated, so no real planner has used Sentinel yet. About one "late" flag in four turns out to be a false alarm. The method, baselines and failure cases are written up in the project's RESULTS.md.</p>`);
+}
+
+/* ------------------------------------------------ actions */
 async function refresh() { render(await api(`/api/state?role=${role}`)); }
 async function advance(days) {
   if (busy) return; busy = true;
   try { await api("/api/advance", {method: "POST", body: JSON.stringify({days})}); await refresh(); }
-  catch (e) { toast(e.message); stop(); } finally { busy = false; }
+  catch (e) { toast(e.message); stopPlay(); } finally { busy = false; }
 }
-function stop() { clearInterval(playing); playing = null; $("#play").textContent = "▶ Play"; }
-
-$("#play").onclick = () => { if (playing) return stop(); $("#play").textContent = "❚❚ Pause"; playing = setInterval(() => advance(0.25), 1100); };
-document.querySelectorAll("[data-adv]").forEach(b => b.onclick = () => advance(+b.dataset.adv));
-$("#role").onchange = e => { role = e.target.value; refresh(); };
-document.querySelectorAll("[data-inj]").forEach(b => b.onclick = async () => {
-  try { const r = await api(`/api/inject/${b.dataset.inj}`, {method: "POST"}); toast("Injected: " + r.detail); await refresh(); } catch (e) { toast(e.message); }
-});
-$("#reset").onclick = async () => { stop(); await api("/api/reset", {method: "POST", body: JSON.stringify({seed: 7})}); await refresh(); toast("Plant reset"); };
+const playIcon = '<svg viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5v11l9-5.5z"/></svg>', pauseIcon = '<svg viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5h3v11H3zM8 1.5h3v11H8z"/></svg>';
+function stopPlay() { clearInterval(playing); playing = null; $("#play").innerHTML = $("#playM").innerHTML = playIcon; $("#play").ariaLabel = $("#playM").ariaLabel = "Play"; }
+function togglePlay() { if (playing) return stopPlay(); $("#play").innerHTML = $("#playM").innerHTML = pauseIcon; $("#play").ariaLabel = $("#playM").ariaLabel = "Pause"; advance(0.25); playing = setInterval(() => advance(0.25), 1200); }
+$("#play").onclick = $("#playM").onclick = togglePlay;
+$$("[data-adv]").forEach(b => b.onclick = () => advance(+b.dataset.adv));
+$$("[data-role]").forEach(b => b.onclick = () => { role = b.dataset.role; $$("[data-role]").forEach(x => x.setAttribute("aria-pressed", x === b)); refresh(); });
+$("#simBtn").onclick = $("#simBtnM").onclick = simulate;
+$("#evBtn").onclick = $("#evBtnM").onclick = showEvidence;
+$$("[data-go]").forEach(b => b.onclick = () => { document.body.dataset.view = b.dataset.go; $$("[data-go]").forEach(x => x.setAttribute("aria-selected", x === b)); scrollTo({top: 0}); });
 
 document.addEventListener("click", async e => {
-  const t = e.target.closest("[data-ap],[data-rj],[data-em],[data-o]");
+  const t = e.target.closest("[data-o],[data-ap],[data-rj],[data-em],[data-inj],[data-reset],#rwMore,#sigAll");
   if (!t) return;
-  if (t.dataset.ap || t.dataset.rj) {
-    const id = t.dataset.ap || t.dataset.rj, act = t.dataset.ap ? "approve" : "reject";
-    try { const r = await api(`/api/proposals/${encodeURIComponent(id)}/${act}`, {method: "POST", body: "{}"}); toast(act === "approve" ? `Approved → ${r.po} created. Email draft queued for the buyer (not sent).` : "Rejected"); await refresh(); } catch (err) { toast(err.message); }
-  } else if (t.dataset.em) {
-    const p = last.proposals.find(x => x.id === t.dataset.em);
-    $("#dlgT").textContent = "Supplier email – draft only"; $("#dlgB").textContent = p.email; dlg.showModal();
-  } else if (t.dataset.o) {
-    const r = await api(`/api/orders/${encodeURIComponent(t.dataset.o)}/explain`);
-    $("#dlgT").textContent = "Why this projection";
-    $("#dlgB").textContent = r.text + `\n\n${r.grounding.ok ? "✓" : "✗"} ${r.grounding.numbers} numbers checked against the data.`;
-    dlg.showModal();
-  }
+  try {
+    if (t.id === "rwMore") { showAll = !showAll; runway(S); }
+    else if (t.id === "sigAll") openSheet("All signals", S.alerts.filter(a => !a.kind.startsWith("order_")).map(signalHTML).join(""));
+    else if (t.dataset.o) await explain(t.dataset.o);
+    else if (t.dataset.em) { const p = S.proposals.find(x => x.id === t.dataset.em); openSheet("Email to the supplier", `<p class="mute" style="margin:0 0 12px;font-size:13.5px">A draft only. Sentinel never sends email; once a purchase is approved, the buyer sends it.</p><pre style="white-space:pre-wrap;font:13.5px/1.6 var(--mono);margin:0">${esc(p.email)}</pre>`); }
+    else if (t.dataset.ap || t.dataset.rj) {
+      const id = t.dataset.ap || t.dataset.rj, approve = !!t.dataset.ap, before = S.kpis.late;
+      t.disabled = true;
+      const r = await api(`/api/proposals/${encodeURIComponent(id)}/${approve ? "approve" : "reject"}`, {method: "POST", body: "{}"});
+      await refresh();
+      toast(approve ? `${r.po} placed. Late orders: ${before} → ${S.kpis.late}. The email now waits for the buyer.` : "Set aside. Sentinel will ask again if things get worse.");
+    }
+    else if (t.dataset.inj) { closeSheet(); const r = await api(`/api/inject/${t.dataset.inj}`, {method: "POST"}); await refresh(); toast(r.detail + ".", 5000); }
+    else if (t.dataset.reset) { closeSheet(); stopPlay(); await api("/api/reset", {method: "POST", body: JSON.stringify({seed: 7})}); showAll = false; prevRisk = {}; await refresh(); toast("The plant is back to day 4."); }
+  } catch (err) { toast(err.message); }
 });
-const dlg = $("#dlg");
-refresh();
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => S && runway(S), 150); });
+refresh().catch(e => { $("#headline").textContent = "Sentinel could not reach its server."; $("#sub").textContent = e.message; });
 </script>
 </body>
 </html>

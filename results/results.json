@@ -274,12 +274,12 @@
  "E4_agent": {
   "briefings": 5400,
   "grounded": 5400,
-  "numbers": 83628,
+  "numbers": 76838,
   "ungrounded_numbers": 0,
   "material_claims": 21668,
   "material_ok": 21668,
-  "order_claims": 3607,
-  "order_ok": 3607
+  "order_claims": 5314,
+  "order_ok": 5314
  },
  "E5_policy_means": {
   "agent": {

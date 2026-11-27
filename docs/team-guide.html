@@ -92,7 +92,7 @@ ol li,ul li{margin:4px 0}
 <p>Now, one supplier quietly becomes late. The switches that were coming on day 19 will now come on day 26. Building takes 2 days, so the mixer grinders will ship on day 28, <span class="red">7 days late</span>.</p>
 <p>And it's not only this one order. <b>Six orders</b> were all waiting for those same switches. All six will be late.</p>
 <div class="box warn"><p style="margin:0"><b>The real problem:</b> in most factories, nobody notices until day 21 itself, when the order fails to go out. By then it's too late to do anything. The customer is unhappy, and the factory may lose them.</p></div>
-<p>If someone had noticed on <b>day 14</b>, they could have quickly ordered switches from the supplier with fast delivery ("rush order"), and all six orders would have shipped on time. <b>Noticing early is everything.</b> That's what Sentinel does.</p>
+<p>If someone had noticed on <b>day 14</b>, they could have quickly ordered switches from the supplier with fast delivery ("rush order"), and all seven orders would have shipped on time. <b>Noticing early is everything.</b> That's what Sentinel does.</p>
 
 <h2>3. Words you need to know</h2>
 <table>
@@ -101,7 +101,7 @@ ol li,ul li{margin:4px 0}
 <tr><td>Customer date (CRD)</td><td>The day we promised to deliver. CRD stands for Customer Request Date.</td><td>"By day 21"</td></tr>
 <tr><td>Material / part</td><td>Things needed to build a product</td><td>Switches, bearings, paint</td></tr>
 <tr><td>Supplier</td><td>A company that sells us materials</td><td>"Deccan Electricals"</td></tr>
-<tr><td>Purchase order (PO)</td><td>Our order to a supplier, with a number like PO0055</td><td>"Send us 90 switches by day 19"</td></tr>
+<tr><td>Purchase order (PO)</td><td>Our order to a supplier, with a number like PO0042</td><td>"Send us 95 switches by Fri 20 Nov"</td></tr>
 <tr><td>Lead time</td><td>How many days a supplier needs to deliver</td><td>Normal delivery 7 days, rush delivery 4 days</td></tr>
 <tr><td>Rush order (expedite)</td><td>Pay a bit more to get materials faster</td><td>Like paying extra for express delivery</td></tr>
 <tr><td>On hand</td><td>Material already in our store room</td><td>"We have 34 switches"</td></tr>
@@ -137,56 +137,61 @@ ol li,ul li{margin:4px 0}
 <div class="step"><b class="n">+</b><div><b>The pretend factory (simulator).</b> Since we don't have a real factory, we built one inside the computer: <b>8 products, 24 materials, 6 suppliers</b>, with new customer orders every day. Suppliers are sometimes late. Some days bring a sudden rush of orders. Stock sometimes goes missing quietly (like theft or damage). Messages arrive twice, broken, or late. The pretend factory knows the <b>true answer</b> for everything, like an answer key in an exam, so we can check if Sentinel got it right.</div></div>
 
 <h2>5. How it works, step by step</h2>
-<p>Here is the exact story you will see in the demo:</p>
+<p>Here is the exact story you will see in the demo (dates are in the pretend factory's calendar):</p>
 <ol>
-<li><b>Day 4.</b> The factory is calm. All orders are on track. The website says: <i>"Every open order is on track to ship by its customer date."</i></li>
+<li><b>Mon 6 Nov.</b> The factory is calm. All orders are on track. The website says: <i>"Every open order is on track to ship by its customer date."</i> (The very first time someone opens chatu.in, Sentinel jumps ahead by itself and shows a supplier slipping, so a judge sees a problem straight away.)</li>
 <li><b>Time moves forward</b> (you press "+1 day" or Play). New orders come in, deliveries arrive, stock gets used. Sentinel re-plans every time a message arrives.</li>
-<li><b>Day 14: problem!</b> (You press "Simulate a problem", then "A supplier slips a week".) The supplier of switches says their delivery PO0055 will now arrive on day 26 instead of day 19.</li>
-<li><b>Sentinel reacts instantly.</b> The headline changes to <span class="red">"6 orders will miss their customer date."</span> It explains: <i>"All of them are waiting for Switch assembly on PO0055."</i> On the runway chart, six bars turn red.</li>
-<li><b>The helper suggests a fix:</b> <i>"Rush-order 90 pcs of Switch assembly from Deccan Electricals. Arrives day 18. Cost ₹3,650. Late orders 6 → 0. Days late in total 24 → 0."</i></li>
-<li><b>A manager tries to approve.</b> The button is greyed out: only planners and buyers can approve.</li>
-<li><b>The planner approves.</b> A new purchase order (PO0056) is created. The email to the supplier is prepared as a draft for the buyer to send. Late orders drop to <span class="green">0</span>.</li>
+<li><b>Mon 16 Nov: problem!</b> (You press "Simulate a problem", then "A supplier slips a week".) The switches on purchase order PO0042 will now arrive on Sat 28 Nov.</li>
+<li><b>Sentinel reacts instantly.</b> The headline changes to <span class="red">"7 orders will miss their customer date."</span> It explains: <i>"All of them are waiting for Switch assembly on PO0042."</i> On the runway chart, seven bars turn red, each with a small diamond showing the late delivery it waits for.</li>
+<li><b>The helper suggests a fix:</b> <i>"Rush-order 95 pcs of Switch assembly from Deccan Electricals. Arrives Fri 20 Nov. ₹3,853. Late orders 7 → 0. Days late in total 15 → 0."</i> Hovering the card shows dashed outlines of where each order would ship after the fix.</li>
+<li><b>A manager looks.</b> Managers see a "This week at a glance" summary and "Awaiting planner" labels: only planners and buyers can approve.</li>
+<li><b>The planner approves.</b> A new purchase order (PO0045) is created. The headline turns green: <span class="green">"7 orders are back on time."</span> The seven rows turn green and are tagged "Saved by PO0045". The email to the supplier waits as a draft for the buyer.</li>
+<li><b>A supplier writes something vague</b> (Simulate → "A supplier writes something vague"), e.g. <i>"postponed to next Wednesday"</i>. Sentinel shows both possible Wednesdays on a small date bar, plans for the later one, and drafts one question. Press "Send question", then "+1 day": the supplier answers and the plan gets the exact date.</li>
 </ol>
-<p>Without Sentinel, the factory would have discovered the problem on day 21, a full week later, when it was too late.</p>
+<p>Without Sentinel, the factory would have discovered the problem on the customer date itself, a week later, when it was too late.</p>
 
 <h2 class="pb">6. A tour of the website</h2>
-<p>Open <b>https://chatu.in</b>. Here is what each part means.</p>
+<p>Open <b>https://chatu.in</b>. Each visitor gets their own pretend factory, so nobody can disturb your screen. Here is what each part means.</p>
 <img src="img/d1-desktop.png" style="max-height:200mm">
-<p class="cap">The laptop view on day 14, right after the supplier delay.</p>
+<p class="cap">The laptop view on Mon 16 Nov, right after the supplier delay.</p>
 
 <h3>Top bar</h3>
 <ul>
-<li><b>Day 14 · 06:00</b>: the pretend factory's clock. Time only moves when you press the buttons.</li>
-<li><b>▶ (Play)</b>: time runs by itself, 6 hours every second. <b>+6h</b> and <b>+1 day</b> jump forward.</li>
-<li><b>Planner / Buyer / Manager</b>: see the page as that person. Each gets a different briefing. Only Planner and Buyer can approve.</li>
-<li><b>Simulate a problem</b>: create trouble on purpose (late supplier, demand spike, warehouse system down, missing stock, broken messages, or start over).</li>
-<li><b>Evidence</b>: our proof numbers, for the judges.</li>
+<li><b>Mon 16 Nov 12:00</b>: the pretend factory's clock. Time only moves when you press the buttons.</li>
+<li><b>▶ (Play)</b>: time runs by itself, 6 hours every second (or press Space). <b>+6h</b> and <b>+1 day</b> jump forward.</li>
+<li><b>Planner / Buyer / Manager</b>: see the page as that person. Each gets a different view and briefing. Only Planner and Buyer can approve.</li>
+<li><b>⚡ Simulate a problem</b>: create trouble on purpose (late supplier, vague supplier message, demand spike, warehouse system down, missing stock, broken messages, or start over).</li>
+<li><b>Evidence</b> (on a phone: <b>Proof</b>): our proof numbers, for the judges.</li>
+<li>If a data feed goes quiet, a <span class="red">red banner</span> appears right under the top bar.</li>
 </ul>
 <h3>The headline</h3>
-<p>One big sentence that tells you the most important thing right now, for example <i>"6 orders will miss their customer date"</i>, with the reason underneath. Next to it are four numbers: projected late, at risk (less than 2 days to spare), percentage on track, and stock-outs ahead.</p>
+<p>One big sentence that tells you the most important thing right now, for example <i>"7 orders will miss their customer date"</i>, with the reason underneath and a link "Why trust this". Next to it are four numbers: projected late, at risk (less than 2 days to spare), percentage on track, and stock-outs ahead.</p>
 <h3>Order runway (the chart)</h3>
 <p>Each row is one order. The bar starts <b>today</b> and ends on the day the order will <b>really ship</b>.</p>
 <ul>
 <li>The small <b style="color:#2f6b45">green tick</b> is the customer date.</li>
 <li>If the bar goes <b>past</b> the tick, that extra part is <span class="red">red</span>: that's how late it will be.</li>
-<li>A <b>dotted bar</b> means the order is already being built.</li>
-<li>"Slack" on the right: +2d means 2 days to spare, −7d means 7 days late.</li>
-<li><b>Click any row</b> to see exactly where each material for that order comes from.</li>
+<li>An <b style="color:#a8700f">amber bar</b> means less than 2 days to spare. A <b>dotted bar</b> means the order is already being built.</li>
+<li>A <b style="color:#a8700f">diamond</b> marks the late delivery the order is waiting for.</li>
+<li>"Slack" on the right: +2d means 2 days to spare, −7d means 7 days late, "due" means it ships on the day.</li>
+<li><b>Click any row</b> to see why it is late, a small timeline of its materials, and a "See the fix" button.</li>
 </ul>
 <h3>Decision card</h3>
-<p>The helper's suggestion, what it costs, and what it changes (late orders before → after). Buttons: <b>Approve purchase</b>, <b>Not now</b>, and <b>Supplier email</b> (to view the draft email).</p>
+<p>The helper's suggestion, what it costs, and what it changes (late orders before → after). Buttons: <b>Approve purchase</b>, <b>Not now</b>, and <b>Supplier email</b> (to view the draft). When there are several, the best one is marked "Recommended".</p>
+<h3>Supplier messages</h3>
+<p>Every message a supplier sent, marked Clear, Unclear or No date. Unclear ones get a card with the possible dates, the day Sentinel plans for, and a drafted question. <b>Write one yourself</b> lets anyone type a message and watch Sentinel read it.</p>
 <h3>Briefing</h3>
-<p>A short note written for the person you selected (planner, buyer or manager). At the bottom it says how many figures were checked against the data.</p>
+<p>A short note written for the person you selected. At the bottom it says how many figures and dates were checked against the data.</p>
 <h3>Stock</h3>
-<p>Every material with on hand, incoming, allocated and net. The little bar shows days of cover. The <b style="color:#a8700f">yellow tick</b> on it is the supplier's lead time. If the stock bar is shorter than the tick, a new order would arrive too late.</p>
+<p>The six thinnest materials (press "Show all" for all 24) with on hand, incoming, allocated and net. The little bar shows days of cover; the <b style="color:#a8700f">amber tick</b> is the supplier's lead time. A <span class="red">red bar</span> means cover is shorter than the lead time: a new order would arrive too late.</p>
 <h3>Signals</h3>
-<p>Health of the three data feeds (orders, warehouse, supplier), plus warnings like "PO0016 was due day 13 and has not arrived" or "Demand spike on Room heater".</p>
+<p>Health of the three data feeds (orders, warehouse, supplier), plus warnings like "PO0016 was due Sun 15 Nov and has not arrived" or "Demand spike on Room heater".</p>
 
 <div class="pair">
 <img src="img/m1-today.png">
 <img src="img/m3-explain.png">
 </div>
-<p class="cap">On a phone: the Today tab (left) and an order's explanation (right). Four tabs at the bottom: Today, Orders, Stock, Signals.</p>
+<p class="cap">On a phone: the Today tab (left: the decision first, then the top of the runway) and an order's explanation (right). Four tabs at the bottom: Today, Orders, Stock, Signals.</p>
 
 <h2 class="pb">7. How we proved it works (all the numbers)</h2>
 <div class="box soft">
@@ -331,7 +336,7 @@ ol li,ul li{margin:4px 0}
 <table>
 <tr><th>Time</th><th>Do this</th><th>Say this</th></tr>
 <tr><td>0:00</td><td>Open chatu.in, press Simulate → Start over</td><td>"Factories usually find out an order is late on the day it fails. Sentinel predicts every order's ship date, all the time."</td></tr>
-<tr><td>0:20</td><td>Press +1 day until day 14</td><td>"Every number comes from the factory's messages. Repeated or broken messages are ignored."</td></tr>
+<tr><td>0:20</td><td>Press +1 day ten times (to Mon 16 Nov)</td><td>"Every number comes from the factory's messages. Repeated or broken messages are ignored."</td></tr>
 <tr><td>0:40</td><td>Simulate → A supplier slips a week</td><td>"A supplier just pushed a delivery back a week."</td></tr>
 <tr><td>0:50</td><td>Point at the red headline, click a red row</td><td>"Seven orders will now miss their date, two weeks before it happens. They're all waiting for switches on PO0042."</td></tr>
 <tr><td>1:15</td><td>Point at the decision card</td><td>"Sentinel already tested a fix: rush-order 95 switches. Late orders go from 7 to 0."</td></tr>

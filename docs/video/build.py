@@ -94,11 +94,11 @@ SCENES = [
         (0, "Here's the helper's suggestion: rush-order ninety-five switches. It costs about three thousand eight hundred and fifty rupees, and late orders go from seven to zero.",
             "The suggestion: rush-order 95 switches. Cost about ₹3,850. Late orders: 7 → 0."),
     ]),
-    ("screen", {"head": "Only planners and buyers can buy", "img": "manager"}, [
-        (0, "A manager can see this, but cannot approve it. The button is locked. Only planners and buyers can buy.", None),
+    ("screen", {"head": "Managers see, planners decide", "img": "manager"}, [
+        (0, "A manager sees a summary of the week and an awaiting-planner label. Only planners and buyers can buy.", None),
     ]),
     ("screen", {"head": "A person approves", "img": "approved", "hl": [4.5, 9, 54, 16]}, [
-        (0, "The planner clicks approve. A new purchase order is created, and late orders drop to zero.", None),
+        (0, "The planner clicks approve. A new purchase order is created. The headline says seven orders are back on time, and the rows turn green, tagged with the purchase order that saved them.", None),
     ]),
     ("screen", {"head": "Vague supplier messages (Topic 6)", "img": "vague"}, [
         (0, "Suppliers rarely send a clean date. Here one writes: postponed to next Wednesday. Is that this coming Wednesday, or the one after? A normal system picks one date and hopes.",

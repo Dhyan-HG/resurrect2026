@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sentinel – Inventory Intelligence</title>
+<style>
+:root{
+  --bg:#f4f6f9;--panel:#fff;--ink:#14202e;--muted:#5d6b7c;--line:#e3e8ef;
+  --red:#d64545;--red-bg:#fdecec;--amber:#c98a12;--amber-bg:#fdf4e1;--green:#1f9d63;--green-bg:#e6f6ee;
+  --blue:#2563c9;--blue-bg:#e8f0fc;--chip:#eef2f7;--shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0d131b;--panel:#151e29;--ink:#e6edf5;--muted:#93a1b3;--line:#253243;
+  --red:#f07171;--red-bg:#3a1d22;--amber:#f0b44c;--amber-bg:#3a2d16;--green:#4cc98d;--green-bg:#163327;
+  --blue:#6ea2ff;--blue-bg:#172a47;--chip:#1d2836;--shadow:none}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.brand{font-weight:800;font-size:18px;letter-spacing:.2px;margin-right:6px}
+.brand span{color:var(--green)}
+.clock{font-variant-numeric:tabular-nums;font-weight:700;background:var(--chip);padding:5px 10px;border-radius:8px}
+button,select{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 11px;border-radius:8px;cursor:pointer}
+button:hover{border-color:var(--blue)}
+button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+button.ok{background:var(--green);border-color:var(--green);color:#fff}
+button.no{color:var(--red)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.spacer{flex:1}
+.inject{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.inject b{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+main{padding:16px 18px;display:grid;gap:14px;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);max-width:1500px;margin:0 auto}
+@media (max-width:1000px){main{grid-template-columns:1fr}}
+.kpis{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow)}
+.kpi .v{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.kpi .l{color:var(--muted);font-size:12px}
+.kpi.bad .v{color:var(--red)} .kpi.warn .v{color:var(--amber)} .kpi.good .v{color:var(--green)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0;padding:11px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.card h2 .n{background:var(--chip);color:var(--ink);border-radius:10px;padding:0 7px;font-size:12px}
+.body{padding:12px 14px}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;padding:6px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--chip)}
+.scroll{max-height:360px;overflow:auto}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;white-space:nowrap}
+.late,.high{background:var(--red-bg);color:var(--red)} .at_risk,.medium{background:var(--amber-bg);color:var(--amber)}
+.ok-b,.low{background:var(--green-bg);color:var(--green)} .info{background:var(--blue-bg);color:var(--blue)}
+.brief{white-space:pre-wrap;font-size:13.5px}
+.grounded{font-size:12px;color:var(--green);margin-top:8px}
+.grounded.bad{color:var(--red)}
+.prop{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.prop .t{font-weight:700}
+.prop .m{color:var(--muted);font-size:12.5px;margin:3px 0 8px}
+.effect{font-size:13px;margin-bottom:8px}
+.effect b{color:var(--green)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.alert{padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;display:flex;gap:8px}
+.alert:last-child{border:0}
+.alert .when{color:var(--muted);font-size:11.5px;white-space:nowrap}
+.feeds{display:flex;gap:6px;flex-wrap:wrap}
+.muted{color:var(--muted)}
+.empty{color:var(--muted);font-size:13px;padding:6px 0}
+svg text{fill:var(--muted);font-size:10px}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);max-width:640px;width:92vw;padding:0}
+dialog .body{white-space:pre-wrap;font-size:13.5px}
+dialog h3{margin:0;padding:12px 14px;border-bottom:1px solid var(--line);font-size:15px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:20;max-width:90vw}
+.toast.show{opacity:.95}
+.rule{font-size:12px;color:var(--muted);padding:8px 14px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Sentinel<span>.</span></div>
+  <div class="clock" id="clock">Day –</div>
+  <button class="primary" id="play">▶ Play</button>
+  <button data-adv="0.25">+6 h</button>
+  <button data-adv="1">+1 day</button>
+  <label class="muted">View as
+    <select id="role"><option value="planner">Planner</option><option value="buyer">Buyer</option><option value="manager">Manager</option></select>
+  </label>
+  <div class="spacer"></div>
+  <div class="inject"><b>Inject</b>
+    <button data-inj="spike">Demand spike</button>
+    <button data-inj="supplier_delay">Supplier delay</button>
+    <button data-inj="outage">Feed outage</button>
+    <button data-inj="shrink">Stock loss</button>
+    <button data-inj="junk">Bad events</button>
+    <button id="reset" title="Restart the simulated plant">Reset</button>
+  </div>
+</header>
+
+<main>
+  <section class="kpis" id="kpis"></section>
+
+  <div class="col">
+    <div class="card"><h2 id="briefTitle">Briefing</h2><div class="body"><div class="brief" id="brief"></div><div class="grounded" id="grounded"></div></div></div>
+    <div class="card"><h2>Orders by risk <span class="n" id="nOrders">0</span><span class="spacer"></span><span class="muted" style="text-transform:none;letter-spacing:0">click a row for the explanation</span></h2>
+      <div class="scroll"><table><thead><tr><th>Order</th><th>Product</th><th class="num">Qty</th><th class="num">CRD</th><th class="num">Ships</th><th class="num">Slack</th><th>Risk</th><th>Cause</th></tr></thead><tbody id="orders"></tbody></table></div></div>
+    <div class="card"><h2>Materials – net availability</h2>
+      <div class="scroll"><table><thead><tr><th>Material</th><th class="num">On hand</th><th class="num">Incoming</th><th class="num">Allocated</th><th class="num">Net</th><th class="num">Cover (d)</th><th>Stock-out</th></tr></thead><tbody id="mats"></tbody></table></div>
+      <div class="rule" id="rule"></div></div>
+  </div>
+
+  <div class="col">
+    <div class="card"><h2>Approval queue <span class="n" id="nProps">0</span></h2><div class="body" id="props"></div></div>
+    <div class="card"><h2>Alerts <span class="n" id="nAlerts">0</span></h2><div class="body scroll" id="alerts" style="max-height:330px"></div></div>
+    <div class="card"><h2>Orders at risk over time</h2><div class="body"><svg id="trend" viewBox="0 0 400 110" width="100%" height="110"></svg></div></div>
+    <div class="card"><h2>Feed health and data quality</h2><div class="body"><div class="feeds" id="feeds"></div><div id="quality" style="margin-top:8px;font-size:13px"></div></div></div>
+    <div class="card"><h2>Supplier performance (learned)</h2><div class="body scroll" style="max-height:220px"><table><thead><tr><th>Supplier</th><th class="num">Delivered</th><th class="num">On time</th><th class="num">Avg delay</th></tr></thead><tbody id="sups"></tbody></table></div></div>
+    <div class="card"><h2>Decision log</h2><div class="body" id="log"></div></div>
+  </div>
+</main>
+
+<dialog id="dlg"><h3 id="dlgT"></h3><div class="body" id="dlgB"></div><div class="body" style="text-align:right;padding-top:0"><button onclick="dlg.close()">Close</button></div></dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let role = "planner", playing = null, busy = false, last = null;
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, {headers: {"Content-Type": "application/json", "X-Role": role}, ...opts});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.detail || r.statusText);
+  return j;
+}
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 3200); }
+const riskLabel = {late: "Late", at_risk: "At risk", ok: "On track"};
+
+function kpi(label, v, cls = "") { return `<div class="kpi ${cls}"><div class="v">${v}</div><div class="l">${label}</div></div>`; }
+
+function render(s) {
+  last = s;
+  const k = s.kpis, hh = Math.floor((s.now % 1) * 24);
+  $("#clock").textContent = `Day ${s.day} · ${String(hh).padStart(2, "0")}:00`;
+  $("#kpis").innerHTML =
+    kpi("Open orders", k.open_orders) +
+    kpi("Projected late", k.late, k.late ? "bad" : "good") +
+    kpi("At risk (< 2 days slack)", k.at_risk, k.at_risk ? "warn" : "good") +
+    kpi("On track", k.on_track_pct + "%", k.on_track_pct < 90 ? "warn" : "good") +
+    kpi("Stock-outs ahead", k.stockouts, k.stockouts ? "bad" : "good") +
+    kpi("Overdue POs", k.overdue_pos, k.overdue_pos ? "warn" : "good") +
+    kpi("Feeds down", k.feeds_down.length ? k.feeds_down.join(", ").toUpperCase() : "none", k.feeds_down.length ? "bad" : "good") +
+    kpi("Quarantined / dup. ignored", `${k.quarantined} / ${k.duplicates_ignored}`);
+
+  const b = s.briefing;
+  $("#briefTitle").textContent = `Briefing for the ${s.role}` + (b.mode === "claude" ? " (written by Claude, checked)" : "");
+  $("#brief").textContent = b.text;
+  const g = b.grounding;
+  $("#grounded").className = "grounded" + (g.ok ? "" : " bad");
+  $("#grounded").textContent = g.ok ? `✓ Grounded: all ${g.numbers} numbers trace to the data` : `✗ ${g.ungrounded.length} number(s) not found in the data`;
+
+  $("#nOrders").textContent = s.orders.length;
+  $("#orders").innerHTML = s.orders.map(o => {
+    const cause = (o.reasons || []).filter(r => r.kind !== "stock").map(r => r.kind === "no_supply" ? `${r.material}: short ${r.short}` : `${r.material}: waits ${r.po} (d${r.eta})`).join("; ");
+    const st = o.status === "in_production" ? `<span class="badge info">In production</span>` : `<span class="badge ${o.risk === "ok" ? "ok-b" : o.risk}">${riskLabel[o.risk]}</span>`;
+    return `<tr class="click" data-o="${esc(o.id)}"><td>${esc(o.id)}</td><td>${esc(o.product_name)}</td><td class="num">${o.qty}</td><td class="num">${o.crd}</td><td class="num">${o.projected_ship}</td><td class="num">${o.slack}</td><td>${st}</td><td class="muted">${esc(cause)}</td></tr>`;
+  }).join("") || `<tr><td colspan="8" class="empty">No open orders.</td></tr>`;
+
+  $("#mats").innerHTML = s.materials.map(m => `<tr><td>${esc(m.name)} <span class="muted">${m.id}</span></td><td class="num">${m.on_hand}</td><td class="num">${m.incoming}</td><td class="num">${m.allocated}</td><td class="num" style="color:${m.net < 0 ? "var(--red)" : "inherit"}">${m.net}</td><td class="num">${m.days_of_cover ?? "–"}</td><td>${m.uncovered > 0 ? `<span class="badge late">day ${m.stockout_day}, short ${m.uncovered}</span>` : `<span class="muted">—</span>`}</td></tr>`).join("");
+  $("#rule").textContent = "Allocation rule: " + s.rule;
+
+  const canDecide = s.role !== "manager";
+  $("#nProps").textContent = s.proposals.length;
+  $("#props").innerHTML = s.proposals.map(p => {
+    const e = p.effect;
+    return `<div class="prop"><div class="t">${p.qty} ${esc(p.unit)} ${esc(p.material_name)} ${p.expedite ? '<span class="badge high">Expedite</span>' : '<span class="badge info">Standard</span>'}</div>
+      <div class="m">${esc(p.supplier_name)} · arrives day ${p.expected_day} · cost ${p.cost.toLocaleString()} · ${p.kind === "slow_po" ? `${esc(p.slow_po)} is too slow` : `short ${p.short}`}</div>
+      <div class="effect">If approved: late orders <b>${e.late_before} → ${e.late_after}</b>, days late <b>${e.late_days_before} → ${e.late_days_after}</b>${e.orders_saved.length ? ` · saves ${e.orders_saved.map(esc).join(", ")}` : ""}</div>
+      <div class="row"><button class="ok" data-ap="${esc(p.id)}" ${canDecide ? "" : "disabled title='Managers cannot approve POs'"}>Approve PO</button><button class="no" data-rj="${esc(p.id)}" ${canDecide ? "" : "disabled"}>Reject</button><button data-em="${esc(p.id)}">Supplier email draft</button></div></div>`;
+  }).join("") || `<div class="empty">Nothing to approve. Sentinel proposes a PO only when its what-if shows it saves a late order.</div>`;
+
+  $("#nAlerts").textContent = s.alerts.length;
+  $("#alerts").innerHTML = s.alerts.map(a => `<div class="alert"><span class="badge ${a.severity}">${a.severity}</span><div>${esc(a.message)}<div class="when">first seen day ${a.first_seen.toFixed(2)}</div></div></div>`).join("") || `<div class="empty">No alerts.</div>`;
+
+  const now = s.now;
+  $("#feeds").innerHTML = Object.entries(s.feeds).map(([src, t]) => {
+    const silent = t == null ? null : now - t, down = silent != null && silent > 0.75;
+    return `<span class="badge ${down ? "late" : "ok-b"}">${src.toUpperCase()} · ${silent == null ? "no data" : down ? `silent ${Math.round(silent * 24)} h` : "live"}</span>`;
+  }).join("");
+  const q = s.quality;
+  $("#quality").innerHTML = `${q.received} events received · ${q.accepted} accepted · ${q.duplicates} duplicates ignored · ${q.quarantined} quarantined` +
+    (q.recent_quarantine.length ? `<div class="muted" style="margin-top:4px">Latest quarantined: ${q.recent_quarantine.map(r => esc(r.reason)).join(" · ")}</div>` : "");
+
+  $("#sups").innerHTML = s.suppliers.map(x => `<tr><td>${esc(x.name)}</td><td class="num">${x.delivered}</td><td class="num">${x.on_time_rate == null ? "–" : Math.round(x.on_time_rate * 100) + "%"}</td><td class="num">${x.avg_delay_days ?? "–"} d</td></tr>`).join("");
+
+  $("#log").innerHTML = (s.decisions.map(d => `<div class="alert"><span class="badge ${d.decision === "approved" ? "ok-b" : "late"}">${d.decision}</span><div>${esc(d.proposal)} by ${esc(d.by)}${d.po ? ` → ${esc(d.po)}` : ""}<div class="when">day ${d.t}</div></div></div>`).join("") +
+    s.injections.map(i => `<div class="alert"><span class="badge info">injected</span><div>${esc(i.detail)}<div class="when">day ${i.t}</div></div></div>`).join("")) || `<div class="empty">No decisions yet.</div>`;
+
+  drawTrend(s.history);
+}
+
+function drawTrend(h) {
+  const svg = $("#trend");
+  if (h.length < 2) { svg.innerHTML = ""; return; }
+  const W = 400, H = 110, P = 22, max = Math.max(3, ...h.map(x => x.late + x.at_risk));
+  const t0 = h[0].t, t1 = h[h.length - 1].t || 1;
+  const X = t => P + (W - P - 6) * (t - t0) / Math.max(0.01, t1 - t0), Y = v => H - 16 - (H - 26) * v / max;
+  const line = (f, col) => `<polyline fill="none" stroke="${col}" stroke-width="2" points="${h.map(p => `${X(p.t).toFixed(1)},${Y(f(p)).toFixed(1)}`).join(" ")}"/>`;
+  svg.innerHTML = `<line x1="${P}" x2="${W}" y1="${H - 16}" y2="${H - 16}" stroke="var(--line)"/>` +
+    `<text x="0" y="${Y(max) + 4}">${max}</text><text x="0" y="${H - 13}">0</text>` +
+    `<text x="${P}" y="${H - 2}">day ${t0.toFixed(0)}</text><text x="${W - 40}" y="${H - 2}">day ${t1.toFixed(0)}</text>` +
+    line(p => p.late + p.at_risk, "var(--amber)") + line(p => p.late, "var(--red)") +
+    `<text x="${W - 150}" y="12" style="fill:var(--red)">■ late</text><text x="${W - 100}" y="12" style="fill:var(--amber)">■ late + at risk</text>`;
+}
+
+async function refresh() { render(await api(`/api/state?role=${role}`)); }
+async function advance(days) {
+  if (busy) return; busy = true;
+  try { await api("/api/advance", {method: "POST", body: JSON.stringify({days})}); await refresh(); }
+  catch (e) { toast(e.message); stop(); } finally { busy = false; }
+}
+function stop() { clearInterval(playing); playing = null; $("#play").textContent = "▶ Play"; }
+
+$("#play").onclick = () => { if (playing) return stop(); $("#play").textContent = "❚❚ Pause"; playing = setInterval(() => advance(0.25), 1100); };
+document.querySelectorAll("[data-adv]").forEach(b => b.onclick = () => advance(+b.dataset.adv));
+$("#role").onchange = e => { role = e.target.value; refresh(); };
+document.querySelectorAll("[data-inj]").forEach(b => b.onclick = async () => {
+  try { const r = await api(`/api/inject/${b.dataset.inj}`, {method: "POST"}); toast("Injected: " + r.detail); await refresh(); } catch (e) { toast(e.message); }
+});
+$("#reset").onclick = async () => { stop(); await api("/api/reset", {method: "POST", body: JSON.stringify({seed: 7})}); await refresh(); toast("Plant reset"); };
+
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-ap],[data-rj],[data-em],[data-o]");
+  if (!t) return;
+  if (t.dataset.ap || t.dataset.rj) {
+    const id = t.dataset.ap || t.dataset.rj, act = t.dataset.ap ? "approve" : "reject";
+    try { const r = await api(`/api/proposals/${encodeURIComponent(id)}/${act}`, {method: "POST", body: "{}"}); toast(act === "approve" ? `Approved → ${r.po} created. Email draft queued for the buyer (not sent).` : "Rejected"); await refresh(); } catch (err) { toast(err.message); }
+  } else if (t.dataset.em) {
+    const p = last.proposals.find(x => x.id === t.dataset.em);
+    $("#dlgT").textContent = "Supplier email – draft only"; $("#dlgB").textContent = p.email; dlg.showModal();
+  } else if (t.dataset.o) {
+    const r = await api(`/api/orders/${encodeURIComponent(t.dataset.o)}/explain`);
+    $("#dlgT").textContent = "Why this projection";
+    $("#dlgB").textContent = r.text + `\n\n${r.grounding.ok ? "✓" : "✗"} ${r.grounding.numbers} numbers checked against the data.`;
+    dlg.showModal();
+  }
+});
+const dlg = $("#dlg");
+refresh();
+</script>
+</body>
+</html>

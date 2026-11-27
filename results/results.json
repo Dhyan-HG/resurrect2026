@@ -1,0 +1,2548 @@
+{
+ "seeds": 30,
+ "days": 60,
+ "runtime_s": 2.3,
+ "dataset": {
+  "orders_scored": 6609,
+  "late_orders": 496,
+  "base_late_rate_pct": 7.5
+ },
+ "E1_detection": {
+  "ours@3": {
+   "tp": 496,
+   "fp": 164,
+   "fn": 0,
+   "precision": 0.7515151515151515,
+   "recall": 1.0,
+   "f1": 0.8581314878892733,
+   "precision_ci": [
+    0.7092985256117952,
+    0.7887339120932491
+   ],
+   "recall_ci": [
+    1.0,
+    1.0
+   ],
+   "f1_ci": [
+    0.8299293713661373,
+    0.8818907124561237
+   ]
+  },
+  "ours_any@3": {
+   "tp": 496,
+   "fp": 256,
+   "fn": 0,
+   "precision": 0.6595744680851063,
+   "recall": 1.0,
+   "f1": 0.7948717948717948,
+   "precision_ci": [
+    0.6126738402442627,
+    0.7022487295313382
+   ],
+   "recall_ci": [
+    1.0,
+    1.0
+   ],
+   "f1_ci": [
+    0.7598236232043236,
+    0.8250835688966662
+   ]
+  },
+  "ablation@3": {
+   "tp": 304,
+   "fp": 0,
+   "fn": 192,
+   "precision": 1.0,
+   "recall": 0.6129032258064516,
+   "f1": 0.76,
+   "precision_ci": [
+    1.0,
+    1.0
+   ],
+   "recall_ci": [
+    0.5289683394957359,
+    0.700451879544519
+   ],
+   "f1_ci": [
+    0.6919284403903078,
+    0.8238420480379559
+   ]
+  },
+  "static@3": {
+   "tp": 0,
+   "fp": 0,
+   "fn": 496,
+   "precision": NaN,
+   "recall": 0.0,
+   "f1": NaN,
+   "precision_ci": [
+    NaN,
+    NaN
+   ],
+   "recall_ci": [
+    0.0,
+    0.0
+   ],
+   "f1_ci": [
+    NaN,
+    NaN
+   ]
+  },
+  "ours@5": {
+   "tp": 376,
+   "fp": 189,
+   "fn": 120,
+   "precision": 0.6654867256637168,
+   "recall": 0.7580645161290323,
+   "f1": 0.708765315739868,
+   "precision_ci": [
+    0.6041238477484233,
+    0.7222292724196278
+   ],
+   "recall_ci": [
+    0.6972472173862014,
+    0.8158533184606804
+   ],
+   "f1_ci": [
+    0.6595680723148425,
+    0.7513611615245009
+   ]
+  },
+  "ours_any@5": {
+   "tp": 495,
+   "fp": 868,
+   "fn": 1,
+   "precision": 0.3631694790902421,
+   "recall": 0.9979838709677419,
+   "f1": 0.5325443786982248,
+   "precision_ci": [
+    0.323042123959019,
+    0.4008435743601256
+   ],
+   "recall_ci": [
+    0.9935890557939915,
+    1.0
+   ],
+   "f1_ci": [
+    0.4882932602466675,
+    0.571753084040642
+   ]
+  },
+  "ablation@5": {
+   "tp": 303,
+   "fp": 0,
+   "fn": 193,
+   "precision": 1.0,
+   "recall": 0.6108870967741935,
+   "f1": 0.7584480600750938,
+   "precision_ci": [
+    1.0,
+    1.0
+   ],
+   "recall_ci": [
+    0.5283621178600538,
+    0.6977817385866167
+   ],
+   "f1_ci": [
+    0.6914095927782317,
+    0.8219922767637616
+   ]
+  },
+  "static@5": {
+   "tp": 2,
+   "fp": 4,
+   "fn": 494,
+   "precision": 0.3333333333333333,
+   "recall": 0.004032258064516129,
+   "f1": 0.00796812749003984,
+   "precision_ci": [
+    0.0,
+    1.0
+   ],
+   "recall_ci": [
+    0.0,
+    0.010504754533392308
+   ],
+   "f1_ci": [
+    0.003548618721892597,
+    0.02130381527015378
+   ]
+  }
+ },
+ "E1_lead_time": {
+  "ours": {
+   "median_days": 8.0,
+   "mean_days": 7.570564516129032,
+   "pct_ge_3_days": 100.0,
+   "mean_ci": [
+    7.304385080645162,
+    7.834677419354839
+   ]
+  },
+  "ablation": {
+   "median_days": 7.0,
+   "mean_days": 6.195564516129032,
+   "pct_ge_3_days": 61.49193548387096,
+   "mean_ci": [
+    5.868951612903226,
+    6.516129032258065
+   ]
+  },
+  "static": {
+   "median_days": 0.0,
+   "mean_days": 1.4637096774193548,
+   "pct_ge_3_days": 13.911290322580644,
+   "mean_ci": [
+    1.1390625,
+    1.8065020161290315
+   ]
+  },
+  "no_system": {
+   "median_days": 0.0,
+   "mean_days": 0.0,
+   "pct_ge_3_days": 0.0,
+   "note": "without a projection the planner learns on the CRD itself"
+  }
+ },
+ "E1_false_alarm_ever_pct": {
+  "ours": 5.774578766563062,
+  "ablation": 0.22902012105349256,
+  "static": 1.7012923278259446
+ },
+ "E2_feed": {
+  "outages": 30,
+  "detected": 30,
+  "median_latency_hours": 16.752,
+  "max_latency_hours": 18.0,
+  "false_alert_episodes": 2,
+  "timeout_hours": 18.0
+ },
+ "E2_spikes": {
+  "spikes": 60,
+  "detected": 60,
+  "false_alerts": 24,
+  "recall": 1.0,
+  "precision": 0.7142857142857143
+ },
+ "E2_supplier_delays": {
+  "delayed_pos": 1780,
+  "late_surprise_pct_ours": 28.9122703023118,
+  "late_surprise_pct_promised": 32.083580320094846,
+  "eta_rmse_ours": 2.342335905157584,
+  "eta_rmse_promised": 2.726274493536534,
+  "warned_before_arrival": 1780,
+  "median_warning_days": 5.050000000000001,
+  "false_po_alerts": 24,
+  "eta_mae_ours": 1.7745732068761113,
+  "eta_mae_promised": 1.4432424422050978,
+  "eta_mae_ours_ci": [
+   1.7382643005334915,
+   1.8114154564315352
+  ],
+  "eta_mae_promised_ci": [
+   1.3884076763485478,
+   1.4979253112033195
+  ],
+  "eta_n": 6748
+ },
+ "E2_discrepancies": {
+  "planted": 89,
+  "detected": 89,
+  "median_days_to_detect": 3.0,
+  "note": "detection is bounded by when the next cycle count happens"
+ },
+ "E3_numbers": {
+  "snapshots": 1800,
+  "materials_checked": 43200,
+  "mismatches": 0,
+  "examples": []
+ },
+ "E3_faulty_vs_clean": {
+  "snapshots": 1800,
+  "identical": 1800
+ },
+ "E3_replay": {
+  "replays": 90,
+  "identical": 90
+ },
+ "E3_feed_faults": {
+  "junk": 1232,
+  "dups": 1829,
+  "quarantined": 1232,
+  "dup_ignored": 1829
+ },
+ "E4_agent": {
+  "briefings": 5400,
+  "grounded": 5400,
+  "numbers": 83628,
+  "ungrounded_numbers": 0,
+  "material_claims": 21668,
+  "material_ok": 21668,
+  "order_claims": 3607,
+  "order_ok": 3607
+ },
+ "E5_policy_means": {
+  "agent": {
+   "on_time_pct": 96.31525696235092,
+   "late_orders": 7.966666666666667,
+   "late_days_total": 15.4,
+   "stockout_material_days": 8.233333333333333,
+   "po_spend": 785027.0248333332,
+   "avg_stock_value": 64884.51695,
+   "proposals": 9.0,
+   "approved": 9.0
+  },
+  "agent_half_approved": {
+   "on_time_pct": 95.19721351001091,
+   "late_orders": 10.466666666666667,
+   "late_days_total": 20.3,
+   "stockout_material_days": 12.566666666666666,
+   "po_spend": 793171.5871666666,
+   "avg_stock_value": 64878.578022222224,
+   "proposals": 13.366666666666667,
+   "approved": 7.266666666666667
+  },
+  "agent_no_expedite": {
+   "on_time_pct": 92.5510385843908,
+   "late_orders": 16.533333333333335,
+   "late_days_total": 41.8,
+   "stockout_material_days": 19.166666666666668,
+   "po_spend": 787511.5896666666,
+   "avg_stock_value": 65005.88077777778,
+   "proposals": 0.0,
+   "approved": 0.0
+  },
+  "agent_no_learning": {
+   "on_time_pct": 94.78557814320055,
+   "late_orders": 11.4,
+   "late_days_total": 24.866666666666667,
+   "stockout_material_days": 11.766666666666667,
+   "po_spend": 788034.0506666668,
+   "avg_stock_value": 65708.85322222223,
+   "proposals": 6.4,
+   "approved": 6.4
+  },
+  "baseline": {
+   "on_time_pct": 92.5510385843908,
+   "late_orders": 16.533333333333335,
+   "late_days_total": 41.8,
+   "stockout_material_days": 19.166666666666668,
+   "po_spend": 787511.5896666666,
+   "avg_stock_value": 65005.88077777778,
+   "proposals": 0.0,
+   "approved": 0.0
+  }
+ },
+ "E5_vs_baseline": {
+  "agent": {
+   "on_time_pct": {
+    "mean_diff": 3.7642183779601095,
+    "ci95": [
+     2.7261573974797573,
+     4.8271424563701295
+    ],
+    "p_value": 0.0,
+    "seeds_better": 28,
+    "seeds_worse": 2
+   },
+   "late_orders": {
+    "mean_diff": -8.566666666666666,
+    "ci95": [
+     -10.766666666666667,
+     -6.433333333333334
+    ],
+    "p_value": 0.0,
+    "seeds_better": 29,
+    "seeds_worse": 0
+   },
+   "late_days_total": {
+    "mean_diff": -26.4,
+    "ci95": [
+     -35.93333333333333,
+     -17.766666666666666
+    ],
+    "p_value": 0.0,
+    "seeds_better": 28,
+    "seeds_worse": 1
+   },
+   "stockout_material_days": {
+    "mean_diff": -10.933333333333334,
+    "ci95": [
+     -13.366666666666667,
+     -8.7
+    ],
+    "p_value": 0.0,
+    "seeds_better": 29,
+    "seeds_worse": 0
+   },
+   "po_spend": {
+    "mean_diff": -2484.564833333163,
+    "ci95": [
+     -23597.652912499867,
+     18808.16748750016
+    ],
+    "p_value": 0.8198,
+    "seeds_better": 17,
+    "seeds_worse": 13
+   },
+   "avg_stock_value": {
+    "mean_diff": -121.36382777778368,
+    "ci95": [
+     -1562.9813815277876,
+     1403.3837565277702
+    ],
+    "p_value": 0.87855,
+    "seeds_better": 18,
+    "seeds_worse": 12
+   }
+  },
+  "agent_half_approved": {
+   "on_time_pct": {
+    "mean_diff": 2.6461749256200933,
+    "ci95": [
+     1.4094837258483113,
+     3.81229874078586
+    ],
+    "p_value": 0.00025,
+    "seeds_better": 24,
+    "seeds_worse": 6
+   },
+   "late_orders": {
+    "mean_diff": -6.066666666666666,
+    "ci95": [
+     -8.666666666666666,
+     -3.4
+    ],
+    "p_value": 0.00015,
+    "seeds_better": 23,
+    "seeds_worse": 6
+   },
+   "late_days_total": {
+    "mean_diff": -21.5,
+    "ci95": [
+     -31.500833333333333,
+     -12.366666666666667
+    ],
+    "p_value": 5e-05,
+    "seeds_better": 25,
+    "seeds_worse": 5
+   },
+   "stockout_material_days": {
+    "mean_diff": -6.6,
+    "ci95": [
+     -9.666666666666666,
+     -3.5
+    ],
+    "p_value": 0.00025,
+    "seeds_better": 22,
+    "seeds_worse": 6
+   },
+   "po_spend": {
+    "mean_diff": 5659.99750000014,
+    "ci95": [
+     -15947.76698333318,
+     27781.83217083348
+    ],
+    "p_value": 0.6131,
+    "seeds_better": 13,
+    "seeds_worse": 17
+   },
+   "avg_stock_value": {
+    "mean_diff": -127.30275555556048,
+    "ci95": [
+     -1465.775139305557,
+     1266.4106156944351
+    ],
+    "p_value": 0.8628,
+    "seeds_better": 17,
+    "seeds_worse": 13
+   }
+  },
+  "agent_no_expedite": {
+   "on_time_pct": {
+    "mean_diff": 0.0,
+    "ci95": [
+     0.0,
+     0.0
+    ],
+    "p_value": 1.0,
+    "seeds_better": 0,
+    "seeds_worse": 0
+   },
+   "late_orders": {
+    "mean_diff": 0.0,
+    "ci95": [
+     0.0,
+     0.0
+    ],
+    "p_value": 1.0,
+    "seeds_better": 0,
+    "seeds_worse": 0
+   },
+   "late_days_total": {
+    "mean_diff": 0.0,
+    "ci95": [
+     0.0,
+     0.0
+    ],
+    "p_value": 1.0,
+    "seeds_better": 0,
+    "seeds_worse": 0
+   },
+   "stockout_material_days": {
+    "mean_diff": 0.0,
+    "ci95": [
+     0.0,
+     0.0
+    ],
+    "p_value": 1.0,
+    "seeds_better": 0,
+    "seeds_worse": 0
+   },
+   "po_spend": {
+    "mean_diff": 0.0,
+    "ci95": [
+     0.0,
+     0.0
+    ],
+    "p_value": 1.0,
+    "seeds_better": 0,
+    "seeds_worse": 0
+   },
+   "avg_stock_value": {
+    "mean_diff": 0.0,
+    "ci95": [
+     0.0,
+     0.0
+    ],
+    "p_value": 1.0,
+    "seeds_better": 0,
+    "seeds_worse": 0
+   }
+  },
+  "agent_no_learning": {
+   "on_time_pct": {
+    "mean_diff": 2.2345395588097485,
+    "ci95": [
+     0.7821214987884529,
+     3.642218753657589
+    ],
+    "p_value": 0.0062,
+    "seeds_better": 23,
+    "seeds_worse": 7
+   },
+   "late_orders": {
+    "mean_diff": -5.133333333333334,
+    "ci95": [
+     -8.133333333333333,
+     -2.066666666666667
+    ],
+    "p_value": 0.0043,
+    "seeds_better": 24,
+    "seeds_worse": 6
+   },
+   "late_days_total": {
+    "mean_diff": -16.933333333333334,
+    "ci95": [
+     -27.7,
+     -7.1
+    ],
+    "p_value": 0.0028,
+    "seeds_better": 22,
+    "seeds_worse": 7
+   },
+   "stockout_material_days": {
+    "mean_diff": -7.4,
+    "ci95": [
+     -10.166666666666666,
+     -4.733333333333333
+    ],
+    "p_value": 0.0,
+    "seeds_better": 24,
+    "seeds_worse": 6
+   },
+   "po_spend": {
+    "mean_diff": 522.4610000002606,
+    "ci95": [
+     -22386.486658333117,
+     22779.452270833706
+    ],
+    "p_value": 0.964,
+    "seeds_better": 16,
+    "seeds_worse": 14
+   },
+   "avg_stock_value": {
+    "mean_diff": 702.9724444444461,
+    "ci95": [
+     -1070.9995081944467,
+     2599.8537415277733
+    ],
+    "p_value": 0.47265,
+    "seeds_better": 15,
+    "seeds_worse": 15
+   }
+  }
+ },
+ "E5_per_seed": {
+  "agent": [
+   {
+    "seed": 1,
+    "policy": "agent",
+    "orders": 225,
+    "on_time_pct": 98.22222222222223,
+    "late_orders": 4,
+    "late_days_total": 4,
+    "stockout_material_days": 2,
+    "po_spend": 912929.7749999999,
+    "avg_stock_value": 74505.07400000001,
+    "proposals": 12,
+    "approved": 12
+   },
+   {
+    "seed": 2,
+    "policy": "agent",
+    "orders": 243,
+    "on_time_pct": 95.06172839506173,
+    "late_orders": 12,
+    "late_days_total": 33,
+    "stockout_material_days": 17,
+    "po_spend": 1011803.0250000005,
+    "avg_stock_value": 83811.56516666668,
+    "proposals": 9,
+    "approved": 9
+   },
+   {
+    "seed": 3,
+    "policy": "agent",
+    "orders": 200,
+    "on_time_pct": 98.5,
+    "late_orders": 3,
+    "late_days_total": 4,
+    "stockout_material_days": 4,
+    "po_spend": 796237.5599999999,
+    "avg_stock_value": 69755.58433333333,
+    "proposals": 8,
+    "approved": 8
+   },
+   {
+    "seed": 4,
+    "policy": "agent",
+    "orders": 208,
+    "on_time_pct": 98.07692307692307,
+    "late_orders": 4,
+    "late_days_total": 7,
+    "stockout_material_days": 5,
+    "po_spend": 746611.0850000004,
+    "avg_stock_value": 66213.8005,
+    "proposals": 3,
+    "approved": 3
+   },
+   {
+    "seed": 5,
+    "policy": "agent",
+    "orders": 213,
+    "on_time_pct": 97.1830985915493,
+    "late_orders": 6,
+    "late_days_total": 8,
+    "stockout_material_days": 5,
+    "po_spend": 884101.7299999996,
+    "avg_stock_value": 77236.78716666669,
+    "proposals": 11,
+    "approved": 11
+   },
+   {
+    "seed": 6,
+    "policy": "agent",
+    "orders": 182,
+    "on_time_pct": 87.91208791208791,
+    "late_orders": 22,
+    "late_days_total": 62,
+    "stockout_material_days": 31,
+    "po_spend": 665120.285,
+    "avg_stock_value": 68753.56983333334,
+    "proposals": 12,
+    "approved": 12
+   },
+   {
+    "seed": 7,
+    "policy": "agent",
+    "orders": 192,
+    "on_time_pct": 97.91666666666666,
+    "late_orders": 4,
+    "late_days_total": 4,
+    "stockout_material_days": 2,
+    "po_spend": 623957.65,
+    "avg_stock_value": 55024.1733333333,
+    "proposals": 4,
+    "approved": 4
+   },
+   {
+    "seed": 8,
+    "policy": "agent",
+    "orders": 217,
+    "on_time_pct": 100.0,
+    "late_orders": 0,
+    "late_days_total": 0,
+    "stockout_material_days": 0,
+    "po_spend": 788038.9499999998,
+    "avg_stock_value": 74195.94599999998,
+    "proposals": 4,
+    "approved": 4
+   },
+   {
+    "seed": 9,
+    "policy": "agent",
+    "orders": 195,
+    "on_time_pct": 97.94871794871794,
+    "late_orders": 4,
+    "late_days_total": 4,
+    "stockout_material_days": 3,
+    "po_spend": 641516.5549999998,
+    "avg_stock_value": 57872.48850000001,
+    "proposals": 20,
+    "approved": 20
+   },
+   {
+    "seed": 10,
+    "policy": "agent",
+    "orders": 264,
+    "on_time_pct": 95.83333333333334,
+    "late_orders": 11,
+    "late_days_total": 27,
+    "stockout_material_days": 10,
+    "po_spend": 869588.2600000004,
+    "avg_stock_value": 70527.91966666664,
+    "proposals": 2,
+    "approved": 2
+   },
+   {
+    "seed": 11,
+    "policy": "agent",
+    "orders": 199,
+    "on_time_pct": 100.0,
+    "late_orders": 0,
+    "late_days_total": 0,
+    "stockout_material_days": 0,
+    "po_spend": 505662.82499999995,
+    "avg_stock_value": 44966.261333333336,
+    "proposals": 11,
+    "approved": 11
+   },
+   {
+    "seed": 12,
+    "policy": "agent",
+    "orders": 220,
+    "on_time_pct": 93.63636363636364,
+    "late_orders": 14,
+    "late_days_total": 31,
+    "stockout_material_days": 13,
+    "po_spend": 864500.325,
+    "avg_stock_value": 71872.89466666665,
+    "proposals": 16,
+    "approved": 16
+   },
+   {
+    "seed": 13,
+    "policy": "agent",
+    "orders": 167,
+    "on_time_pct": 96.40718562874252,
+    "late_orders": 6,
+    "late_days_total": 15,
+    "stockout_material_days": 11,
+    "po_spend": 829853.2700000004,
+    "avg_stock_value": 83764.10766666666,
+    "proposals": 4,
+    "approved": 4
+   },
+   {
+    "seed": 14,
+    "policy": "agent",
+    "orders": 222,
+    "on_time_pct": 94.14414414414415,
+    "late_orders": 13,
+    "late_days_total": 18,
+    "stockout_material_days": 12,
+    "po_spend": 910220.6649999999,
+    "avg_stock_value": 65565.47966666667,
+    "proposals": 9,
+    "approved": 9
+   },
+   {
+    "seed": 15,
+    "policy": "agent",
+    "orders": 223,
+    "on_time_pct": 98.65470852017937,
+    "late_orders": 3,
+    "late_days_total": 4,
+    "stockout_material_days": 5,
+    "po_spend": 791404.0450000003,
+    "avg_stock_value": 64535.075333333334,
+    "proposals": 14,
+    "approved": 14
+   },
+   {
+    "seed": 16,
+    "policy": "agent",
+    "orders": 203,
+    "on_time_pct": 90.14778325123153,
+    "late_orders": 20,
+    "late_days_total": 42,
+    "stockout_material_days": 15,
+    "po_spend": 669569.5200000007,
+    "avg_stock_value": 62652.771499999995,
+    "proposals": 7,
+    "approved": 7
+   },
+   {
+    "seed": 17,
+    "policy": "agent",
+    "orders": 228,
+    "on_time_pct": 93.85964912280701,
+    "late_orders": 14,
+    "late_days_total": 26,
+    "stockout_material_days": 19,
+    "po_spend": 739508.6450000006,
+    "avg_stock_value": 55835.421499999975,
+    "proposals": 8,
+    "approved": 8
+   },
+   {
+    "seed": 18,
+    "policy": "agent",
+    "orders": 226,
+    "on_time_pct": 98.23008849557522,
+    "late_orders": 4,
+    "late_days_total": 10,
+    "stockout_material_days": 6,
+    "po_spend": 901187.2999999998,
+    "avg_stock_value": 70001.13766666668,
+    "proposals": 3,
+    "approved": 3
+   },
+   {
+    "seed": 19,
+    "policy": "agent",
+    "orders": 250,
+    "on_time_pct": 98.0,
+    "late_orders": 5,
+    "late_days_total": 7,
+    "stockout_material_days": 5,
+    "po_spend": 797302.9600000001,
+    "avg_stock_value": 54959.61266666666,
+    "proposals": 9,
+    "approved": 9
+   },
+   {
+    "seed": 20,
+    "policy": "agent",
+    "orders": 210,
+    "on_time_pct": 100.0,
+    "late_orders": 0,
+    "late_days_total": 0,
+    "stockout_material_days": 0,
+    "po_spend": 546941.71,
+    "avg_stock_value": 43969.60416666668,
+    "proposals": 6,
+    "approved": 6
+   },
+   {
+    "seed": 21,
+    "policy": "agent",
+    "orders": 237,
+    "on_time_pct": 96.62447257383965,
+    "late_orders": 8,
+    "late_days_total": 10,
+    "stockout_material_days": 8,
+    "po_spend": 964183.4700000002,
+    "avg_stock_value": 64873.75533333333,
+    "proposals": 10,
+    "approved": 10
+   },
+   {
+    "seed": 22,
+    "policy": "agent",
+    "orders": 235,
+    "on_time_pct": 94.8936170212766,
+    "late_orders": 12,
+    "late_days_total": 23,
+    "stockout_material_days": 13,
+    "po_spend": 902008.7400000007,
+    "avg_stock_value": 68808.85216666666,
+    "proposals": 12,
+    "approved": 12
+   },
+   {
+    "seed": 23,
+    "policy": "agent",
+    "orders": 229,
+    "on_time_pct": 96.06986899563319,
+    "late_orders": 9,
+    "late_days_total": 16,
+    "stockout_material_days": 14,
+    "po_spend": 759211.7449999996,
+    "avg_stock_value": 66225.82716666666,
+    "proposals": 13,
+    "approved": 13
+   },
+   {
+    "seed": 24,
+    "policy": "agent",
+    "orders": 239,
+    "on_time_pct": 95.81589958158996,
+    "late_orders": 10,
+    "late_days_total": 15,
+    "stockout_material_days": 5,
+    "po_spend": 756742.9650000002,
+    "avg_stock_value": 56027.656833333334,
+    "proposals": 11,
+    "approved": 11
+   },
+   {
+    "seed": 25,
+    "policy": "agent",
+    "orders": 200,
+    "on_time_pct": 93.5,
+    "late_orders": 13,
+    "late_days_total": 18,
+    "stockout_material_days": 8,
+    "po_spend": 784728.8099999998,
+    "avg_stock_value": 61751.38783333332,
+    "proposals": 1,
+    "approved": 1
+   },
+   {
+    "seed": 26,
+    "policy": "agent",
+    "orders": 190,
+    "on_time_pct": 97.89473684210527,
+    "late_orders": 4,
+    "late_days_total": 4,
+    "stockout_material_days": 4,
+    "po_spend": 638919.5399999999,
+    "avg_stock_value": 67578.13299999997,
+    "proposals": 10,
+    "approved": 10
+   },
+   {
+    "seed": 27,
+    "policy": "agent",
+    "orders": 237,
+    "on_time_pct": 94.9367088607595,
+    "late_orders": 12,
+    "late_days_total": 30,
+    "stockout_material_days": 14,
+    "po_spend": 731506.7349999999,
+    "avg_stock_value": 54848.10633333334,
+    "proposals": 8,
+    "approved": 8
+   },
+   {
+    "seed": 28,
+    "policy": "agent",
+    "orders": 207,
+    "on_time_pct": 94.68599033816425,
+    "late_orders": 11,
+    "late_days_total": 18,
+    "stockout_material_days": 9,
+    "po_spend": 899080.5449999998,
+    "avg_stock_value": 75579.81466666669,
+    "proposals": 17,
+    "approved": 17
+   },
+   {
+    "seed": 29,
+    "policy": "agent",
+    "orders": 241,
+    "on_time_pct": 97.0954356846473,
+    "late_orders": 7,
+    "late_days_total": 17,
+    "stockout_material_days": 5,
+    "po_spend": 761433.6399999994,
+    "avg_stock_value": 50811.84716666666,
+    "proposals": 3,
+    "approved": 3
+   },
+   {
+    "seed": 30,
+    "policy": "agent",
+    "orders": 223,
+    "on_time_pct": 98.20627802690582,
+    "late_orders": 4,
+    "late_days_total": 5,
+    "stockout_material_days": 2,
+    "po_spend": 856938.4149999998,
+    "avg_stock_value": 64010.85333333335,
+    "proposals": 13,
+    "approved": 13
+   }
+  ],
+  "agent_half_approved": [
+   {
+    "seed": 1,
+    "policy": "agent_half_approved",
+    "orders": 228,
+    "on_time_pct": 93.85964912280701,
+    "late_orders": 14,
+    "late_days_total": 25,
+    "stockout_material_days": 19,
+    "po_spend": 862036.1450000004,
+    "avg_stock_value": 76685.47116666666,
+    "proposals": 16,
+    "approved": 5
+   },
+   {
+    "seed": 2,
+    "policy": "agent_half_approved",
+    "orders": 237,
+    "on_time_pct": 97.46835443037975,
+    "late_orders": 6,
+    "late_days_total": 14,
+    "stockout_material_days": 7,
+    "po_spend": 983419.1500000001,
+    "avg_stock_value": 79729.38983333336,
+    "proposals": 15,
+    "approved": 9
+   },
+   {
+    "seed": 3,
+    "policy": "agent_half_approved",
+    "orders": 198,
+    "on_time_pct": 95.45454545454545,
+    "late_orders": 9,
+    "late_days_total": 13,
+    "stockout_material_days": 6,
+    "po_spend": 762163.8749999999,
+    "avg_stock_value": 69567.59449999998,
+    "proposals": 10,
+    "approved": 7
+   },
+   {
+    "seed": 4,
+    "policy": "agent_half_approved",
+    "orders": 217,
+    "on_time_pct": 98.61751152073732,
+    "late_orders": 3,
+    "late_days_total": 7,
+    "stockout_material_days": 7,
+    "po_spend": 796654.8100000003,
+    "avg_stock_value": 66700.45166666669,
+    "proposals": 10,
+    "approved": 5
+   },
+   {
+    "seed": 5,
+    "policy": "agent_half_approved",
+    "orders": 225,
+    "on_time_pct": 91.11111111111111,
+    "late_orders": 20,
+    "late_days_total": 51,
+    "stockout_material_days": 28,
+    "po_spend": 955566.0299999999,
+    "avg_stock_value": 79867.09183333334,
+    "proposals": 13,
+    "approved": 8
+   },
+   {
+    "seed": 6,
+    "policy": "agent_half_approved",
+    "orders": 210,
+    "on_time_pct": 93.33333333333333,
+    "late_orders": 14,
+    "late_days_total": 32,
+    "stockout_material_days": 24,
+    "po_spend": 711211.9150000002,
+    "avg_stock_value": 65879.79016666664,
+    "proposals": 21,
+    "approved": 16
+   },
+   {
+    "seed": 7,
+    "policy": "agent_half_approved",
+    "orders": 202,
+    "on_time_pct": 93.56435643564356,
+    "late_orders": 13,
+    "late_days_total": 26,
+    "stockout_material_days": 15,
+    "po_spend": 663690.175,
+    "avg_stock_value": 50486.88183333333,
+    "proposals": 10,
+    "approved": 2
+   },
+   {
+    "seed": 8,
+    "policy": "agent_half_approved",
+    "orders": 226,
+    "on_time_pct": 97.78761061946902,
+    "late_orders": 5,
+    "late_days_total": 8,
+    "stockout_material_days": 10,
+    "po_spend": 797844.2350000005,
+    "avg_stock_value": 76164.99,
+    "proposals": 17,
+    "approved": 8
+   },
+   {
+    "seed": 9,
+    "policy": "agent_half_approved",
+    "orders": 198,
+    "on_time_pct": 92.42424242424242,
+    "late_orders": 15,
+    "late_days_total": 27,
+    "stockout_material_days": 17,
+    "po_spend": 627056.405,
+    "avg_stock_value": 57576.186166666674,
+    "proposals": 14,
+    "approved": 8
+   },
+   {
+    "seed": 10,
+    "policy": "agent_half_approved",
+    "orders": 275,
+    "on_time_pct": 96.72727272727273,
+    "late_orders": 9,
+    "late_days_total": 21,
+    "stockout_material_days": 8,
+    "po_spend": 949388.87,
+    "avg_stock_value": 65410.951499999996,
+    "proposals": 5,
+    "approved": 1
+   },
+   {
+    "seed": 11,
+    "policy": "agent_half_approved",
+    "orders": 195,
+    "on_time_pct": 91.7948717948718,
+    "late_orders": 16,
+    "late_days_total": 35,
+    "stockout_material_days": 11,
+    "po_spend": 495656.3150000001,
+    "avg_stock_value": 50572.49950000001,
+    "proposals": 24,
+    "approved": 14
+   },
+   {
+    "seed": 12,
+    "policy": "agent_half_approved",
+    "orders": 209,
+    "on_time_pct": 95.69377990430623,
+    "late_orders": 9,
+    "late_days_total": 16,
+    "stockout_material_days": 11,
+    "po_spend": 799547.01,
+    "avg_stock_value": 63945.03583333331,
+    "proposals": 15,
+    "approved": 8
+   },
+   {
+    "seed": 13,
+    "policy": "agent_half_approved",
+    "orders": 182,
+    "on_time_pct": 90.65934065934066,
+    "late_orders": 17,
+    "late_days_total": 33,
+    "stockout_material_days": 19,
+    "po_spend": 852751.9800000007,
+    "avg_stock_value": 88638.84766666667,
+    "proposals": 17,
+    "approved": 8
+   },
+   {
+    "seed": 14,
+    "policy": "agent_half_approved",
+    "orders": 223,
+    "on_time_pct": 95.96412556053812,
+    "late_orders": 9,
+    "late_days_total": 13,
+    "stockout_material_days": 13,
+    "po_spend": 833083.2999999999,
+    "avg_stock_value": 63038.89499999998,
+    "proposals": 17,
+    "approved": 12
+   },
+   {
+    "seed": 15,
+    "policy": "agent_half_approved",
+    "orders": 227,
+    "on_time_pct": 98.23788546255507,
+    "late_orders": 4,
+    "late_days_total": 7,
+    "stockout_material_days": 8,
+    "po_spend": 839401.2599999999,
+    "avg_stock_value": 68309.03316666668,
+    "proposals": 10,
+    "approved": 6
+   },
+   {
+    "seed": 16,
+    "policy": "agent_half_approved",
+    "orders": 229,
+    "on_time_pct": 94.75982532751091,
+    "late_orders": 12,
+    "late_days_total": 18,
+    "stockout_material_days": 15,
+    "po_spend": 700847.305,
+    "avg_stock_value": 61491.42866666667,
+    "proposals": 15,
+    "approved": 10
+   },
+   {
+    "seed": 17,
+    "policy": "agent_half_approved",
+    "orders": 214,
+    "on_time_pct": 92.99065420560748,
+    "late_orders": 15,
+    "late_days_total": 17,
+    "stockout_material_days": 9,
+    "po_spend": 676071.9350000004,
+    "avg_stock_value": 59567.01849999999,
+    "proposals": 14,
+    "approved": 6
+   },
+   {
+    "seed": 18,
+    "policy": "agent_half_approved",
+    "orders": 222,
+    "on_time_pct": 97.74774774774775,
+    "late_orders": 5,
+    "late_days_total": 12,
+    "stockout_material_days": 7,
+    "po_spend": 945825.0600000003,
+    "avg_stock_value": 70543.73666666663,
+    "proposals": 12,
+    "approved": 5
+   },
+   {
+    "seed": 19,
+    "policy": "agent_half_approved",
+    "orders": 243,
+    "on_time_pct": 99.58847736625515,
+    "late_orders": 1,
+    "late_days_total": 1,
+    "stockout_material_days": 2,
+    "po_spend": 817132.5299999994,
+    "avg_stock_value": 52584.74966666666,
+    "proposals": 14,
+    "approved": 6
+   },
+   {
+    "seed": 20,
+    "policy": "agent_half_approved",
+    "orders": 180,
+    "on_time_pct": 98.33333333333333,
+    "late_orders": 3,
+    "late_days_total": 4,
+    "stockout_material_days": 3,
+    "po_spend": 498204.05999999976,
+    "avg_stock_value": 48099.50416666666,
+    "proposals": 8,
+    "approved": 4
+   },
+   {
+    "seed": 21,
+    "policy": "agent_half_approved",
+    "orders": 236,
+    "on_time_pct": 97.03389830508475,
+    "late_orders": 7,
+    "late_days_total": 10,
+    "stockout_material_days": 7,
+    "po_spend": 908473.6499999999,
+    "avg_stock_value": 70710.53883333334,
+    "proposals": 5,
+    "approved": 3
+   },
+   {
+    "seed": 22,
+    "policy": "agent_half_approved",
+    "orders": 226,
+    "on_time_pct": 90.2654867256637,
+    "late_orders": 22,
+    "late_days_total": 36,
+    "stockout_material_days": 22,
+    "po_spend": 884730.0049999998,
+    "avg_stock_value": 75484.42983333331,
+    "proposals": 16,
+    "approved": 10
+   },
+   {
+    "seed": 23,
+    "policy": "agent_half_approved",
+    "orders": 240,
+    "on_time_pct": 92.08333333333334,
+    "late_orders": 19,
+    "late_days_total": 45,
+    "stockout_material_days": 19,
+    "po_spend": 787499.8900000004,
+    "avg_stock_value": 64542.97583333334,
+    "proposals": 14,
+    "approved": 8
+   },
+   {
+    "seed": 24,
+    "policy": "agent_half_approved",
+    "orders": 251,
+    "on_time_pct": 96.41434262948208,
+    "late_orders": 9,
+    "late_days_total": 16,
+    "stockout_material_days": 13,
+    "po_spend": 831139.5749999998,
+    "avg_stock_value": 59458.596,
+    "proposals": 16,
+    "approved": 9
+   },
+   {
+    "seed": 25,
+    "policy": "agent_half_approved",
+    "orders": 224,
+    "on_time_pct": 98.21428571428571,
+    "late_orders": 4,
+    "late_days_total": 4,
+    "stockout_material_days": 3,
+    "po_spend": 866623.1849999998,
+    "avg_stock_value": 61814.88916666667,
+    "proposals": 13,
+    "approved": 7
+   },
+   {
+    "seed": 26,
+    "policy": "agent_half_approved",
+    "orders": 198,
+    "on_time_pct": 96.96969696969697,
+    "late_orders": 6,
+    "late_days_total": 16,
+    "stockout_material_days": 11,
+    "po_spend": 724608.7800000001,
+    "avg_stock_value": 60413.268,
+    "proposals": 15,
+    "approved": 6
+   },
+   {
+    "seed": 27,
+    "policy": "agent_half_approved",
+    "orders": 226,
+    "on_time_pct": 90.7079646017699,
+    "late_orders": 21,
+    "late_days_total": 51,
+    "stockout_material_days": 37,
+    "po_spend": 718395.505,
+    "avg_stock_value": 57578.22316666667,
+    "proposals": 17,
+    "approved": 9
+   },
+   {
+    "seed": 28,
+    "policy": "agent_half_approved",
+    "orders": 219,
+    "on_time_pct": 93.15068493150685,
+    "late_orders": 15,
+    "late_days_total": 22,
+    "stockout_material_days": 14,
+    "po_spend": 926365.8099999994,
+    "avg_stock_value": 69384.3975,
+    "proposals": 17,
+    "approved": 10
+   },
+   {
+    "seed": 29,
+    "policy": "agent_half_approved",
+    "orders": 241,
+    "on_time_pct": 97.0954356846473,
+    "late_orders": 7,
+    "late_days_total": 17,
+    "stockout_material_days": 5,
+    "po_spend": 761433.6399999994,
+    "avg_stock_value": 50811.84716666666,
+    "proposals": 3,
+    "approved": 3
+   },
+   {
+    "seed": 30,
+    "policy": "agent_half_approved",
+    "orders": 234,
+    "on_time_pct": 97.86324786324786,
+    "late_orders": 5,
+    "late_days_total": 12,
+    "stockout_material_days": 7,
+    "po_spend": 818325.2100000001,
+    "avg_stock_value": 61298.62766666668,
+    "proposals": 8,
+    "approved": 5
+   }
+  ],
+  "agent_no_expedite": [
+   {
+    "seed": 1,
+    "policy": "agent_no_expedite",
+    "orders": 214,
+    "on_time_pct": 97.19626168224299,
+    "late_orders": 6,
+    "late_days_total": 11,
+    "stockout_material_days": 11,
+    "po_spend": 831149.5399999999,
+    "avg_stock_value": 75893.64416666668,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 2,
+    "policy": "agent_no_expedite",
+    "orders": 250,
+    "on_time_pct": 88.8,
+    "late_orders": 28,
+    "late_days_total": 124,
+    "stockout_material_days": 33,
+    "po_spend": 1059540.6199999999,
+    "avg_stock_value": 80438.29883333336,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 3,
+    "policy": "agent_no_expedite",
+    "orders": 205,
+    "on_time_pct": 98.53658536585365,
+    "late_orders": 3,
+    "late_days_total": 6,
+    "stockout_material_days": 6,
+    "po_spend": 826592.8800000005,
+    "avg_stock_value": 64230.27333333334,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 4,
+    "policy": "agent_no_expedite",
+    "orders": 200,
+    "on_time_pct": 94.0,
+    "late_orders": 12,
+    "late_days_total": 25,
+    "stockout_material_days": 14,
+    "po_spend": 658712.6299999999,
+    "avg_stock_value": 71851.20466666666,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 5,
+    "policy": "agent_no_expedite",
+    "orders": 226,
+    "on_time_pct": 88.05309734513274,
+    "late_orders": 27,
+    "late_days_total": 59,
+    "stockout_material_days": 24,
+    "po_spend": 923823.29,
+    "avg_stock_value": 76437.97833333336,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 6,
+    "policy": "agent_no_expedite",
+    "orders": 204,
+    "on_time_pct": 88.23529411764706,
+    "late_orders": 24,
+    "late_days_total": 69,
+    "stockout_material_days": 42,
+    "po_spend": 710151.0299999992,
+    "avg_stock_value": 60362.72933333332,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 7,
+    "policy": "agent_no_expedite",
+    "orders": 206,
+    "on_time_pct": 96.11650485436894,
+    "late_orders": 8,
+    "late_days_total": 14,
+    "stockout_material_days": 13,
+    "po_spend": 655709.5599999999,
+    "avg_stock_value": 52861.68050000001,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 8,
+    "policy": "agent_no_expedite",
+    "orders": 236,
+    "on_time_pct": 93.64406779661016,
+    "late_orders": 15,
+    "late_days_total": 30,
+    "stockout_material_days": 18,
+    "po_spend": 859464.1800000005,
+    "avg_stock_value": 70422.25766666667,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 9,
+    "policy": "agent_no_expedite",
+    "orders": 197,
+    "on_time_pct": 86.80203045685279,
+    "late_orders": 26,
+    "late_days_total": 91,
+    "stockout_material_days": 38,
+    "po_spend": 636130.7599999999,
+    "avg_stock_value": 58437.189333333336,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 10,
+    "policy": "agent_no_expedite",
+    "orders": 257,
+    "on_time_pct": 92.60700389105058,
+    "late_orders": 19,
+    "late_days_total": 35,
+    "stockout_material_days": 17,
+    "po_spend": 904080.42,
+    "avg_stock_value": 66532.35066666667,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 11,
+    "policy": "agent_no_expedite",
+    "orders": 203,
+    "on_time_pct": 93.10344827586206,
+    "late_orders": 14,
+    "late_days_total": 55,
+    "stockout_material_days": 15,
+    "po_spend": 514645.8199999999,
+    "avg_stock_value": 47447.67283333333,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 12,
+    "policy": "agent_no_expedite",
+    "orders": 219,
+    "on_time_pct": 92.69406392694064,
+    "late_orders": 16,
+    "late_days_total": 23,
+    "stockout_material_days": 15,
+    "po_spend": 797698.9099999997,
+    "avg_stock_value": 63129.58849999999,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 13,
+    "policy": "agent_no_expedite",
+    "orders": 201,
+    "on_time_pct": 96.01990049751244,
+    "late_orders": 8,
+    "late_days_total": 15,
+    "stockout_material_days": 13,
+    "po_spend": 927345.3600000003,
+    "avg_stock_value": 79966.42399999998,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 14,
+    "policy": "agent_no_expedite",
+    "orders": 219,
+    "on_time_pct": 88.58447488584476,
+    "late_orders": 25,
+    "late_days_total": 47,
+    "stockout_material_days": 22,
+    "po_spend": 806730.9399999997,
+    "avg_stock_value": 68280.13399999999,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 15,
+    "policy": "agent_no_expedite",
+    "orders": 209,
+    "on_time_pct": 92.34449760765551,
+    "late_orders": 16,
+    "late_days_total": 79,
+    "stockout_material_days": 17,
+    "po_spend": 721243.3999999999,
+    "avg_stock_value": 69439.6498333333,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 16,
+    "policy": "agent_no_expedite",
+    "orders": 238,
+    "on_time_pct": 89.49579831932773,
+    "late_orders": 25,
+    "late_days_total": 64,
+    "stockout_material_days": 27,
+    "po_spend": 785468.4399999997,
+    "avg_stock_value": 57846.510666666676,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 17,
+    "policy": "agent_no_expedite",
+    "orders": 233,
+    "on_time_pct": 87.55364806866953,
+    "late_orders": 29,
+    "late_days_total": 61,
+    "stockout_material_days": 30,
+    "po_spend": 752786.33,
+    "avg_stock_value": 56232.46366666666,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 18,
+    "policy": "agent_no_expedite",
+    "orders": 202,
+    "on_time_pct": 96.53465346534654,
+    "late_orders": 7,
+    "late_days_total": 13,
+    "stockout_material_days": 6,
+    "po_spend": 861466.1999999996,
+    "avg_stock_value": 74829.85916666668,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 19,
+    "policy": "agent_no_expedite",
+    "orders": 241,
+    "on_time_pct": 92.9460580912863,
+    "late_orders": 17,
+    "late_days_total": 31,
+    "stockout_material_days": 18,
+    "po_spend": 785097.6299999997,
+    "avg_stock_value": 54297.47183333334,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 20,
+    "policy": "agent_no_expedite",
+    "orders": 211,
+    "on_time_pct": 96.6824644549763,
+    "late_orders": 7,
+    "late_days_total": 15,
+    "stockout_material_days": 12,
+    "po_spend": 585839.9599999998,
+    "avg_stock_value": 49403.486833333336,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 21,
+    "policy": "agent_no_expedite",
+    "orders": 232,
+    "on_time_pct": 95.25862068965517,
+    "late_orders": 11,
+    "late_days_total": 21,
+    "stockout_material_days": 15,
+    "po_spend": 923667.2099999998,
+    "avg_stock_value": 68991.90650000001,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 22,
+    "policy": "agent_no_expedite",
+    "orders": 210,
+    "on_time_pct": 86.66666666666667,
+    "late_orders": 28,
+    "late_days_total": 87,
+    "stockout_material_days": 31,
+    "po_spend": 796291.0800000003,
+    "avg_stock_value": 74659.27966666667,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 23,
+    "policy": "agent_no_expedite",
+    "orders": 241,
+    "on_time_pct": 90.04149377593362,
+    "late_orders": 24,
+    "late_days_total": 54,
+    "stockout_material_days": 21,
+    "po_spend": 805429.5999999997,
+    "avg_stock_value": 70127.162,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 24,
+    "policy": "agent_no_expedite",
+    "orders": 247,
+    "on_time_pct": 92.3076923076923,
+    "late_orders": 19,
+    "late_days_total": 43,
+    "stockout_material_days": 17,
+    "po_spend": 744840.2899999995,
+    "avg_stock_value": 59912.66633333334,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 25,
+    "policy": "agent_no_expedite",
+    "orders": 206,
+    "on_time_pct": 93.20388349514563,
+    "late_orders": 14,
+    "late_days_total": 24,
+    "stockout_material_days": 13,
+    "po_spend": 840357.63,
+    "avg_stock_value": 66846.43383333334,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 26,
+    "policy": "agent_no_expedite",
+    "orders": 201,
+    "on_time_pct": 93.03482587064677,
+    "late_orders": 14,
+    "late_days_total": 39,
+    "stockout_material_days": 23,
+    "po_spend": 659250.0899999996,
+    "avg_stock_value": 62169.725,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 27,
+    "policy": "agent_no_expedite",
+    "orders": 222,
+    "on_time_pct": 90.54054054054053,
+    "late_orders": 21,
+    "late_days_total": 54,
+    "stockout_material_days": 25,
+    "po_spend": 717165.5099999999,
+    "avg_stock_value": 55691.14466666668,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 28,
+    "policy": "agent_no_expedite",
+    "orders": 216,
+    "on_time_pct": 94.44444444444444,
+    "late_orders": 12,
+    "late_days_total": 19,
+    "stockout_material_days": 14,
+    "po_spend": 966625.1399999993,
+    "avg_stock_value": 76634.08266666668,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 29,
+    "policy": "agent_no_expedite",
+    "orders": 246,
+    "on_time_pct": 94.3089430894309,
+    "late_orders": 14,
+    "late_days_total": 30,
+    "stockout_material_days": 13,
+    "po_spend": 776612.8200000002,
+    "avg_stock_value": 51596.320000000014,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 30,
+    "policy": "agent_no_expedite",
+    "orders": 217,
+    "on_time_pct": 96.7741935483871,
+    "late_orders": 7,
+    "late_days_total": 16,
+    "stockout_material_days": 12,
+    "po_spend": 791430.4199999999,
+    "avg_stock_value": 65206.8345,
+    "proposals": 0,
+    "approved": 0
+   }
+  ],
+  "agent_no_learning": [
+   {
+    "seed": 1,
+    "policy": "agent_no_learning",
+    "orders": 216,
+    "on_time_pct": 89.35185185185185,
+    "late_orders": 23,
+    "late_days_total": 53,
+    "stockout_material_days": 17,
+    "po_spend": 882595.8400000002,
+    "avg_stock_value": 73251.56083333335,
+    "proposals": 1,
+    "approved": 1
+   },
+   {
+    "seed": 2,
+    "policy": "agent_no_learning",
+    "orders": 250,
+    "on_time_pct": 94.39999999999999,
+    "late_orders": 14,
+    "late_days_total": 35,
+    "stockout_material_days": 22,
+    "po_spend": 1030965.3250000005,
+    "avg_stock_value": 79955.49050000003,
+    "proposals": 8,
+    "approved": 8
+   },
+   {
+    "seed": 3,
+    "policy": "agent_no_learning",
+    "orders": 202,
+    "on_time_pct": 95.54455445544554,
+    "late_orders": 9,
+    "late_days_total": 13,
+    "stockout_material_days": 7,
+    "po_spend": 790212.5650000003,
+    "avg_stock_value": 68312.04999999999,
+    "proposals": 6,
+    "approved": 6
+   },
+   {
+    "seed": 4,
+    "policy": "agent_no_learning",
+    "orders": 215,
+    "on_time_pct": 98.6046511627907,
+    "late_orders": 3,
+    "late_days_total": 5,
+    "stockout_material_days": 5,
+    "po_spend": 754762.0500000006,
+    "avg_stock_value": 65257.594666666686,
+    "proposals": 6,
+    "approved": 6
+   },
+   {
+    "seed": 5,
+    "policy": "agent_no_learning",
+    "orders": 209,
+    "on_time_pct": 91.86602870813397,
+    "late_orders": 17,
+    "late_days_total": 48,
+    "stockout_material_days": 13,
+    "po_spend": 918656.5299999998,
+    "avg_stock_value": 81135.1335,
+    "proposals": 7,
+    "approved": 7
+   },
+   {
+    "seed": 6,
+    "policy": "agent_no_learning",
+    "orders": 211,
+    "on_time_pct": 81.99052132701422,
+    "late_orders": 38,
+    "late_days_total": 89,
+    "stockout_material_days": 34,
+    "po_spend": 743923.3200000002,
+    "avg_stock_value": 61664.58100000001,
+    "proposals": 10,
+    "approved": 10
+   },
+   {
+    "seed": 7,
+    "policy": "agent_no_learning",
+    "orders": 229,
+    "on_time_pct": 93.88646288209607,
+    "late_orders": 14,
+    "late_days_total": 18,
+    "stockout_material_days": 14,
+    "po_spend": 784961.8050000004,
+    "avg_stock_value": 53052.310833333344,
+    "proposals": 5,
+    "approved": 5
+   },
+   {
+    "seed": 8,
+    "policy": "agent_no_learning",
+    "orders": 217,
+    "on_time_pct": 99.53917050691244,
+    "late_orders": 1,
+    "late_days_total": 2,
+    "stockout_material_days": 2,
+    "po_spend": 794519.68,
+    "avg_stock_value": 75711.94566666667,
+    "proposals": 7,
+    "approved": 7
+   },
+   {
+    "seed": 9,
+    "policy": "agent_no_learning",
+    "orders": 184,
+    "on_time_pct": 96.19565217391303,
+    "late_orders": 7,
+    "late_days_total": 22,
+    "stockout_material_days": 7,
+    "po_spend": 614239.9300000002,
+    "avg_stock_value": 54187.920999999995,
+    "proposals": 10,
+    "approved": 10
+   },
+   {
+    "seed": 10,
+    "policy": "agent_no_learning",
+    "orders": 264,
+    "on_time_pct": 95.83333333333334,
+    "late_orders": 11,
+    "late_days_total": 27,
+    "stockout_material_days": 10,
+    "po_spend": 869554.4200000003,
+    "avg_stock_value": 70581.61499999999,
+    "proposals": 2,
+    "approved": 2
+   },
+   {
+    "seed": 11,
+    "policy": "agent_no_learning",
+    "orders": 206,
+    "on_time_pct": 100.0,
+    "late_orders": 0,
+    "late_days_total": 0,
+    "stockout_material_days": 0,
+    "po_spend": 532492.145,
+    "avg_stock_value": 45068.68483333334,
+    "proposals": 5,
+    "approved": 5
+   },
+   {
+    "seed": 12,
+    "policy": "agent_no_learning",
+    "orders": 212,
+    "on_time_pct": 95.28301886792453,
+    "late_orders": 10,
+    "late_days_total": 27,
+    "stockout_material_days": 5,
+    "po_spend": 766032.7799999998,
+    "avg_stock_value": 64384.474999999984,
+    "proposals": 9,
+    "approved": 9
+   },
+   {
+    "seed": 13,
+    "policy": "agent_no_learning",
+    "orders": 166,
+    "on_time_pct": 90.96385542168674,
+    "late_orders": 15,
+    "late_days_total": 34,
+    "stockout_material_days": 21,
+    "po_spend": 776102.6100000005,
+    "avg_stock_value": 91490.64166666669,
+    "proposals": 3,
+    "approved": 3
+   },
+   {
+    "seed": 14,
+    "policy": "agent_no_learning",
+    "orders": 218,
+    "on_time_pct": 94.03669724770643,
+    "late_orders": 13,
+    "late_days_total": 23,
+    "stockout_material_days": 13,
+    "po_spend": 844128.3349999996,
+    "avg_stock_value": 63165.87516666666,
+    "proposals": 11,
+    "approved": 11
+   },
+   {
+    "seed": 15,
+    "policy": "agent_no_learning",
+    "orders": 223,
+    "on_time_pct": 97.30941704035875,
+    "late_orders": 6,
+    "late_days_total": 9,
+    "stockout_material_days": 6,
+    "po_spend": 810141.4600000002,
+    "avg_stock_value": 66576.54666666665,
+    "proposals": 8,
+    "approved": 8
+   },
+   {
+    "seed": 16,
+    "policy": "agent_no_learning",
+    "orders": 227,
+    "on_time_pct": 92.95154185022027,
+    "late_orders": 16,
+    "late_days_total": 31,
+    "stockout_material_days": 12,
+    "po_spend": 735025.0550000003,
+    "avg_stock_value": 62793.24450000004,
+    "proposals": 10,
+    "approved": 10
+   },
+   {
+    "seed": 17,
+    "policy": "agent_no_learning",
+    "orders": 222,
+    "on_time_pct": 87.38738738738738,
+    "late_orders": 28,
+    "late_days_total": 77,
+    "stockout_material_days": 32,
+    "po_spend": 684961.2599999997,
+    "avg_stock_value": 59206.78116666667,
+    "proposals": 10,
+    "approved": 10
+   },
+   {
+    "seed": 18,
+    "policy": "agent_no_learning",
+    "orders": 224,
+    "on_time_pct": 97.32142857142857,
+    "late_orders": 6,
+    "late_days_total": 13,
+    "stockout_material_days": 7,
+    "po_spend": 917634.6400000004,
+    "avg_stock_value": 69917.469,
+    "proposals": 1,
+    "approved": 1
+   },
+   {
+    "seed": 19,
+    "policy": "agent_no_learning",
+    "orders": 250,
+    "on_time_pct": 99.2,
+    "late_orders": 2,
+    "late_days_total": 3,
+    "stockout_material_days": 3,
+    "po_spend": 798534.5800000002,
+    "avg_stock_value": 54941.88916666665,
+    "proposals": 7,
+    "approved": 7
+   },
+   {
+    "seed": 20,
+    "policy": "agent_no_learning",
+    "orders": 214,
+    "on_time_pct": 99.06542056074767,
+    "late_orders": 2,
+    "late_days_total": 4,
+    "stockout_material_days": 4,
+    "po_spend": 541675.4699999999,
+    "avg_stock_value": 46640.942,
+    "proposals": 4,
+    "approved": 4
+   },
+   {
+    "seed": 21,
+    "policy": "agent_no_learning",
+    "orders": 241,
+    "on_time_pct": 97.0954356846473,
+    "late_orders": 7,
+    "late_days_total": 8,
+    "stockout_material_days": 5,
+    "po_spend": 869062.6599999998,
+    "avg_stock_value": 67385.00300000001,
+    "proposals": 4,
+    "approved": 4
+   },
+   {
+    "seed": 22,
+    "policy": "agent_no_learning",
+    "orders": 230,
+    "on_time_pct": 95.21739130434783,
+    "late_orders": 11,
+    "late_days_total": 27,
+    "stockout_material_days": 15,
+    "po_spend": 877736.4650000001,
+    "avg_stock_value": 72296.94849999998,
+    "proposals": 10,
+    "approved": 10
+   },
+   {
+    "seed": 23,
+    "policy": "agent_no_learning",
+    "orders": 244,
+    "on_time_pct": 94.26229508196722,
+    "late_orders": 14,
+    "late_days_total": 26,
+    "stockout_material_days": 17,
+    "po_spend": 848591.16,
+    "avg_stock_value": 75282.42883333332,
+    "proposals": 2,
+    "approved": 2
+   },
+   {
+    "seed": 24,
+    "policy": "agent_no_learning",
+    "orders": 254,
+    "on_time_pct": 95.2755905511811,
+    "late_orders": 12,
+    "late_days_total": 39,
+    "stockout_material_days": 15,
+    "po_spend": 822779.1300000001,
+    "avg_stock_value": 56946.38433333334,
+    "proposals": 9,
+    "approved": 9
+   },
+   {
+    "seed": 25,
+    "policy": "agent_no_learning",
+    "orders": 218,
+    "on_time_pct": 94.03669724770643,
+    "late_orders": 13,
+    "late_days_total": 19,
+    "stockout_material_days": 10,
+    "po_spend": 864756.2299999997,
+    "avg_stock_value": 58611.339000000014,
+    "proposals": 2,
+    "approved": 2
+   },
+   {
+    "seed": 26,
+    "policy": "agent_no_learning",
+    "orders": 211,
+    "on_time_pct": 93.8388625592417,
+    "late_orders": 13,
+    "late_days_total": 23,
+    "stockout_material_days": 16,
+    "po_spend": 709844.205,
+    "avg_stock_value": 61195.330500000004,
+    "proposals": 11,
+    "approved": 11
+   },
+   {
+    "seed": 27,
+    "policy": "agent_no_learning",
+    "orders": 228,
+    "on_time_pct": 92.98245614035088,
+    "late_orders": 16,
+    "late_days_total": 34,
+    "stockout_material_days": 22,
+    "po_spend": 701927.0200000003,
+    "avg_stock_value": 53352.27700000002,
+    "proposals": 5,
+    "approved": 5
+   },
+   {
+    "seed": 28,
+    "policy": "agent_no_learning",
+    "orders": 200,
+    "on_time_pct": 99.0,
+    "late_orders": 2,
+    "late_days_total": 2,
+    "stockout_material_days": 3,
+    "po_spend": 873719.1100000006,
+    "avg_stock_value": 90789.90483333336,
+    "proposals": 9,
+    "approved": 9
+   },
+   {
+    "seed": 29,
+    "policy": "agent_no_learning",
+    "orders": 220,
+    "on_time_pct": 95.45454545454545,
+    "late_orders": 10,
+    "late_days_total": 23,
+    "stockout_material_days": 10,
+    "po_spend": 695510.5800000005,
+    "avg_stock_value": 61270.64533333332,
+    "proposals": 2,
+    "approved": 2
+   },
+   {
+    "seed": 30,
+    "policy": "agent_no_learning",
+    "orders": 208,
+    "on_time_pct": 95.67307692307693,
+    "late_orders": 9,
+    "late_days_total": 12,
+    "stockout_material_days": 6,
+    "po_spend": 785975.1600000001,
+    "avg_stock_value": 66838.58316666669,
+    "proposals": 8,
+    "approved": 8
+   }
+  ],
+  "baseline": [
+   {
+    "seed": 1,
+    "policy": "baseline",
+    "orders": 214,
+    "on_time_pct": 97.19626168224299,
+    "late_orders": 6,
+    "late_days_total": 11,
+    "stockout_material_days": 11,
+    "po_spend": 831149.5399999999,
+    "avg_stock_value": 75893.64416666668,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 2,
+    "policy": "baseline",
+    "orders": 250,
+    "on_time_pct": 88.8,
+    "late_orders": 28,
+    "late_days_total": 124,
+    "stockout_material_days": 33,
+    "po_spend": 1059540.6199999999,
+    "avg_stock_value": 80438.29883333336,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 3,
+    "policy": "baseline",
+    "orders": 205,
+    "on_time_pct": 98.53658536585365,
+    "late_orders": 3,
+    "late_days_total": 6,
+    "stockout_material_days": 6,
+    "po_spend": 826592.8800000005,
+    "avg_stock_value": 64230.27333333334,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 4,
+    "policy": "baseline",
+    "orders": 200,
+    "on_time_pct": 94.0,
+    "late_orders": 12,
+    "late_days_total": 25,
+    "stockout_material_days": 14,
+    "po_spend": 658712.6299999999,
+    "avg_stock_value": 71851.20466666666,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 5,
+    "policy": "baseline",
+    "orders": 226,
+    "on_time_pct": 88.05309734513274,
+    "late_orders": 27,
+    "late_days_total": 59,
+    "stockout_material_days": 24,
+    "po_spend": 923823.29,
+    "avg_stock_value": 76437.97833333336,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 6,
+    "policy": "baseline",
+    "orders": 204,
+    "on_time_pct": 88.23529411764706,
+    "late_orders": 24,
+    "late_days_total": 69,
+    "stockout_material_days": 42,
+    "po_spend": 710151.0299999992,
+    "avg_stock_value": 60362.72933333332,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 7,
+    "policy": "baseline",
+    "orders": 206,
+    "on_time_pct": 96.11650485436894,
+    "late_orders": 8,
+    "late_days_total": 14,
+    "stockout_material_days": 13,
+    "po_spend": 655709.5599999999,
+    "avg_stock_value": 52861.68050000001,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 8,
+    "policy": "baseline",
+    "orders": 236,
+    "on_time_pct": 93.64406779661016,
+    "late_orders": 15,
+    "late_days_total": 30,
+    "stockout_material_days": 18,
+    "po_spend": 859464.1800000005,
+    "avg_stock_value": 70422.25766666667,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 9,
+    "policy": "baseline",
+    "orders": 197,
+    "on_time_pct": 86.80203045685279,
+    "late_orders": 26,
+    "late_days_total": 91,
+    "stockout_material_days": 38,
+    "po_spend": 636130.7599999999,
+    "avg_stock_value": 58437.189333333336,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 10,
+    "policy": "baseline",
+    "orders": 257,
+    "on_time_pct": 92.60700389105058,
+    "late_orders": 19,
+    "late_days_total": 35,
+    "stockout_material_days": 17,
+    "po_spend": 904080.42,
+    "avg_stock_value": 66532.35066666667,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 11,
+    "policy": "baseline",
+    "orders": 203,
+    "on_time_pct": 93.10344827586206,
+    "late_orders": 14,
+    "late_days_total": 55,
+    "stockout_material_days": 15,
+    "po_spend": 514645.8199999999,
+    "avg_stock_value": 47447.67283333333,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 12,
+    "policy": "baseline",
+    "orders": 219,
+    "on_time_pct": 92.69406392694064,
+    "late_orders": 16,
+    "late_days_total": 23,
+    "stockout_material_days": 15,
+    "po_spend": 797698.9099999997,
+    "avg_stock_value": 63129.58849999999,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 13,
+    "policy": "baseline",
+    "orders": 201,
+    "on_time_pct": 96.01990049751244,
+    "late_orders": 8,
+    "late_days_total": 15,
+    "stockout_material_days": 13,
+    "po_spend": 927345.3600000003,
+    "avg_stock_value": 79966.42399999998,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 14,
+    "policy": "baseline",
+    "orders": 219,
+    "on_time_pct": 88.58447488584476,
+    "late_orders": 25,
+    "late_days_total": 47,
+    "stockout_material_days": 22,
+    "po_spend": 806730.9399999997,
+    "avg_stock_value": 68280.13399999999,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 15,
+    "policy": "baseline",
+    "orders": 209,
+    "on_time_pct": 92.34449760765551,
+    "late_orders": 16,
+    "late_days_total": 79,
+    "stockout_material_days": 17,
+    "po_spend": 721243.3999999999,
+    "avg_stock_value": 69439.6498333333,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 16,
+    "policy": "baseline",
+    "orders": 238,
+    "on_time_pct": 89.49579831932773,
+    "late_orders": 25,
+    "late_days_total": 64,
+    "stockout_material_days": 27,
+    "po_spend": 785468.4399999997,
+    "avg_stock_value": 57846.510666666676,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 17,
+    "policy": "baseline",
+    "orders": 233,
+    "on_time_pct": 87.55364806866953,
+    "late_orders": 29,
+    "late_days_total": 61,
+    "stockout_material_days": 30,
+    "po_spend": 752786.33,
+    "avg_stock_value": 56232.46366666666,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 18,
+    "policy": "baseline",
+    "orders": 202,
+    "on_time_pct": 96.53465346534654,
+    "late_orders": 7,
+    "late_days_total": 13,
+    "stockout_material_days": 6,
+    "po_spend": 861466.1999999996,
+    "avg_stock_value": 74829.85916666668,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 19,
+    "policy": "baseline",
+    "orders": 241,
+    "on_time_pct": 92.9460580912863,
+    "late_orders": 17,
+    "late_days_total": 31,
+    "stockout_material_days": 18,
+    "po_spend": 785097.6299999997,
+    "avg_stock_value": 54297.47183333334,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 20,
+    "policy": "baseline",
+    "orders": 211,
+    "on_time_pct": 96.6824644549763,
+    "late_orders": 7,
+    "late_days_total": 15,
+    "stockout_material_days": 12,
+    "po_spend": 585839.9599999998,
+    "avg_stock_value": 49403.486833333336,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 21,
+    "policy": "baseline",
+    "orders": 232,
+    "on_time_pct": 95.25862068965517,
+    "late_orders": 11,
+    "late_days_total": 21,
+    "stockout_material_days": 15,
+    "po_spend": 923667.2099999998,
+    "avg_stock_value": 68991.90650000001,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 22,
+    "policy": "baseline",
+    "orders": 210,
+    "on_time_pct": 86.66666666666667,
+    "late_orders": 28,
+    "late_days_total": 87,
+    "stockout_material_days": 31,
+    "po_spend": 796291.0800000003,
+    "avg_stock_value": 74659.27966666667,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 23,
+    "policy": "baseline",
+    "orders": 241,
+    "on_time_pct": 90.04149377593362,
+    "late_orders": 24,
+    "late_days_total": 54,
+    "stockout_material_days": 21,
+    "po_spend": 805429.5999999997,
+    "avg_stock_value": 70127.162,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 24,
+    "policy": "baseline",
+    "orders": 247,
+    "on_time_pct": 92.3076923076923,
+    "late_orders": 19,
+    "late_days_total": 43,
+    "stockout_material_days": 17,
+    "po_spend": 744840.2899999995,
+    "avg_stock_value": 59912.66633333334,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 25,
+    "policy": "baseline",
+    "orders": 206,
+    "on_time_pct": 93.20388349514563,
+    "late_orders": 14,
+    "late_days_total": 24,
+    "stockout_material_days": 13,
+    "po_spend": 840357.63,
+    "avg_stock_value": 66846.43383333334,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 26,
+    "policy": "baseline",
+    "orders": 201,
+    "on_time_pct": 93.03482587064677,
+    "late_orders": 14,
+    "late_days_total": 39,
+    "stockout_material_days": 23,
+    "po_spend": 659250.0899999996,
+    "avg_stock_value": 62169.725,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 27,
+    "policy": "baseline",
+    "orders": 222,
+    "on_time_pct": 90.54054054054053,
+    "late_orders": 21,
+    "late_days_total": 54,
+    "stockout_material_days": 25,
+    "po_spend": 717165.5099999999,
+    "avg_stock_value": 55691.14466666668,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 28,
+    "policy": "baseline",
+    "orders": 216,
+    "on_time_pct": 94.44444444444444,
+    "late_orders": 12,
+    "late_days_total": 19,
+    "stockout_material_days": 14,
+    "po_spend": 966625.1399999993,
+    "avg_stock_value": 76634.08266666668,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 29,
+    "policy": "baseline",
+    "orders": 246,
+    "on_time_pct": 94.3089430894309,
+    "late_orders": 14,
+    "late_days_total": 30,
+    "stockout_material_days": 13,
+    "po_spend": 776612.8200000002,
+    "avg_stock_value": 51596.320000000014,
+    "proposals": 0,
+    "approved": 0
+   },
+   {
+    "seed": 30,
+    "policy": "baseline",
+    "orders": 217,
+    "on_time_pct": 96.7741935483871,
+    "late_orders": 7,
+    "late_days_total": 16,
+    "stockout_material_days": 12,
+    "po_spend": 791430.4199999999,
+    "avg_stock_value": 65206.8345,
+    "proposals": 0,
+    "approved": 0
+   }
+  ]
+ }
+}

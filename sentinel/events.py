@@ -33,6 +33,13 @@ SCHEMAS: dict[str, dict[str, str]] = {
 }
 
 
+MAX_DAY = 100_000          # times and dates are days since the start; anything larger is garbage
+MAX_QTY = 10_000_000
+MAX_EVENT_BYTES = 4_000
+FUTURE_TOLERANCE = 1.0     # an event may not claim a time more than a day after it arrived
+QUARANTINE_KEEP = 500      # keep the latest quarantined events; counters keep the totals
+
+
 def _is_num(v: Any) -> bool:
     return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
@@ -49,8 +56,13 @@ def validate(ev: Any, catalog: Catalog) -> str | None:
         return "missing type"
     if etype not in SCHEMAS:
         return f"unknown type {etype!r}"
-    if not _is_num(ev.get("ts")) or ev["ts"] < 0:
+    if not _is_num(ev.get("ts")) or not 0 <= ev["ts"] <= MAX_DAY:
         return "bad ts"
+    try:
+        if len(canonical(ev)) > MAX_EVENT_BYTES:
+            return "event too large"
+    except (TypeError, ValueError):
+        return "not serialisable"
     if ev.get("source") not in SOURCES:
         return f"unknown source {ev.get('source')!r}"
     for fname, kind in SCHEMAS[etype].items():
@@ -59,11 +71,11 @@ def validate(ev: Any, catalog: Catalog) -> str | None:
         v = ev[fname]
         if kind == "str" and (not isinstance(v, str) or not v.strip() or len(v) > 2000):
             return f"bad {fname}"
-        if kind == "num" and (not _is_num(v) or v < 0):
+        if kind == "num" and (not _is_num(v) or not 0 <= v <= MAX_DAY):
             return f"bad {fname}"
-        if kind == "posint" and (not isinstance(v, int) or isinstance(v, bool) or v <= 0):
+        if kind == "posint" and (not isinstance(v, int) or isinstance(v, bool) or not 0 < v <= MAX_QTY):
             return f"bad {fname}"
-        if kind == "nonnegint" and (not isinstance(v, int) or isinstance(v, bool) or v < 0):
+        if kind == "nonnegint" and (not isinstance(v, int) or isinstance(v, bool) or not 0 <= v <= MAX_QTY):
             return f"bad {fname}"
         if kind == "material" and v not in catalog.materials:
             return f"unknown material {v!r}"
@@ -93,21 +105,31 @@ class EventStore:
     def ingest(self, ev: Any, arrival: float | None = None) -> str:
         self.stats["received"] += 1
         reason = validate(ev, self.catalog)
+        if not reason and arrival is not None and ev["ts"] > arrival + FUTURE_TOLERANCE:
+            reason = "timestamp in the future"     # would otherwise hide a dead feed
         if reason:
-            self.stats["quarantined"] += 1
-            self.quarantine.append({"reason": reason, "arrival": arrival,
-                                    "event": ev if isinstance(ev, dict) else repr(ev)})
+            self._quarantine(reason, arrival, ev if isinstance(ev, dict) else repr(ev)[:200])
             return "quarantined"
         eid = ev["event_id"]
         if eid in self.events:
-            if canonical(self.events[eid]) == canonical(ev):
+            old = self.events[eid]
+            if canonical(old) == canonical(ev):
                 self.stats["duplicates"] += 1
                 return "duplicate"
-            # Same id, different content: keep the first, flag the second.
+            # Same id, different content. Keep one by a fixed rule (smaller canonical form), so the
+            # result does not depend on which copy arrived first; flag the other.
             self.stats["conflicts"] += 1
-            self.stats["quarantined"] += 1
-            self.quarantine.append({"reason": "conflicting duplicate id",
-                                    "arrival": arrival, "event": ev})
+            if canonical(ev) < canonical(old):
+                self.events[eid] = dict(ev)
+                self.arrival[eid] = arrival if arrival is not None else ev["ts"]
+                self._sorted = None
+                self._quarantine("conflicting duplicate id", arrival, old)
+                src = old["source"]
+                self.last_seen[src] = max((e["ts"] for e in self.events.values() if e["source"] == src), default=-1.0)
+                if ev["ts"] > self.last_seen.get(ev["source"], -1.0):
+                    self.last_seen[ev["source"]] = ev["ts"]
+            else:
+                self._quarantine("conflicting duplicate id", arrival, ev)
             return "conflict"
         self.events[eid] = dict(ev)
         self.arrival[eid] = arrival if arrival is not None else ev["ts"]
@@ -117,6 +139,12 @@ class EventStore:
             self.last_seen[src] = ev["ts"]
         self._sorted = None
         return "accepted"
+
+    def _quarantine(self, reason: str, arrival, ev) -> None:
+        self.stats["quarantined"] += 1
+        self.quarantine.append({"reason": reason, "arrival": arrival, "event": ev})
+        if len(self.quarantine) > QUARANTINE_KEEP:
+            del self.quarantine[: len(self.quarantine) - QUARANTINE_KEEP]
 
     def sorted_events(self) -> list[dict]:
         if self._sorted is None:

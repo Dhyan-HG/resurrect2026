@@ -5,6 +5,10 @@ from sentinel import server
 client = TestClient(server.app)
 
 
+def sess():
+    return server._sessions[client.cookies.get("sid")][0]
+
+
 def reset():
     assert client.post("/api/reset", json={"seed": 7}).status_code == 200
 
@@ -47,10 +51,10 @@ def test_approval_requires_planner_or_buyer():
     pid = props[0]["id"]
     r = client.post(f"/api/proposals/{pid}/approve", headers={"X-Role": "manager"})
     assert r.status_code == 403
-    pos_before = len(server.S.world.pos)
+    pos_before = len(sess().world.pos)
     r = client.post(f"/api/proposals/{pid}/approve", headers={"X-Role": "planner"})
     assert r.status_code == 200 and r.json()["po"]
-    assert len(server.S.world.pos) == pos_before + 1
+    assert len(sess().world.pos) == pos_before + 1
     assert client.post(f"/api/proposals/{pid}/approve", headers={"X-Role": "planner"}).status_code == 409
 
 
@@ -72,3 +76,30 @@ def test_explain_and_index():
     r = client.get(f"/api/orders/{o}/explain").json()
     assert o in r["text"] and r["grounding"]["ok"]
     assert "Sentinel" in client.get("/").text
+
+
+def test_hostile_input_never_breaks_the_demo():
+    reset()
+    po = client.get("/api/state").json()["pos"][0]["id"]
+    for text in ("delayed by 9999999 days", "in 99999999999 days", "x" * 500, "\U0001F69A tomorrow", "31/02"):
+        assert client.post("/api/messages", json={"po": po, "text": text}).status_code == 200
+    assert client.post("/api/advance", json={"days": 1}).status_code == 200
+    for body in ("[1,2]", '"text"', "{bad json", "null"):
+        r = client.post("/api/advance", content=body, headers={"Content-Type": "application/json"})
+        assert r.status_code == 400, body
+    assert client.post("/api/advance", json={"days": "abc"}).status_code == 400
+    assert client.post("/api/reset", content='{"seed": 1e400}', headers={"Content-Type": "application/json"}).status_code == 400
+    huge = [{"event_id": "h1", "type": "order_created", "ts": 5, "source": "erp", "order_id": "X",
+             "product": "P1", "qty": 10 ** 400, "crd": 9}]
+    assert client.post("/api/events", json=huge).json()["quarantined"] == 1
+    future = [{"event_id": "f1", "type": "heartbeat", "ts": 99999, "source": "wms"}]
+    assert client.post("/api/events", json=future).json()["quarantined"] == 1
+    assert client.get("/api/state").status_code == 200
+
+
+def test_each_visitor_has_their_own_plant():
+    reset()
+    other = TestClient(server.app)
+    other.post("/api/advance", json={"days": 5})
+    assert other.get("/api/state").json()["day"] == 9
+    assert client.get("/api/state").json()["day"] == 4

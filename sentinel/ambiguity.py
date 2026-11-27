@@ -41,6 +41,7 @@ from functools import lru_cache
 
 DAY0 = date(2026, 11, 2)          # simulation day 0 is Monday 2 November 2026
 TRANSIT_DAYS = 2
+MAX_AHEAD = 3650
 MISSING_WINDOW = 7
 FEW = (2, 5)
 COUPLE = (2, 3)
@@ -423,8 +424,10 @@ def _extract(s: str, S: int, D: int) -> list[_M]:
 
 @lru_cache(maxsize=20000)
 def _interpret(text: str, S: int, D: int) -> tuple:
-    s = _normalize(text)
+    s = _normalize(text[:2000])
     ms = _extract(s, S, D)
+    # a delivery date more than a year back or ten years ahead is not a delivery date
+    ms = [m for m in ms if m.lo - S >= -400 and m.hi - S <= MAX_AHEAD]
 
     # 1. drop dates that are named only to be replaced ("instead of 12 Nov", "not the 18th", "from 12th")
     ms = [m for m in ms if not EXCLUDE_BEFORE.search(s[:m.start])]
@@ -500,7 +503,10 @@ def _interpret(text: str, S: int, D: int) -> tuple:
 def interpret(text: str, sent: float, due: float, po: str = "this order") -> dict:
     """Read one supplier message. `sent` = event time (days), `due` = the PO's promised day."""
     S, D = int(sent // 1), int(round(due))
-    status, typ, lo, hi, readings, cues, hedged, no_change = _interpret(text, S, D)
+    try:
+        status, typ, lo, hi, readings, cues, hedged, no_change = _interpret(str(text), S, D)
+    except (ValueError, OverflowError, KeyError, IndexError):   # never let one message break the rebuild
+        status, typ, lo, hi, readings, cues, hedged, no_change = ("none", None, None, None, None, (), False, False)
     r = {"status": status, "type": typ, "lo": lo, "hi": hi, "day": lo if status == "clear" else None,
          "plan_day": hi, "readings": list(readings) if readings else None, "cues": list(cues),
          "hedged": hedged, "no_change": no_change}

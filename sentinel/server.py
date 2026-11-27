@@ -5,14 +5,19 @@ Run:  python -m uvicorn sentinel.server:app --port 8000
 """
 from __future__ import annotations
 
+import json
 import math
 import random
+import secrets
 import threading
+import time
+from collections import OrderedDict, deque
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, Header, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi import FastAPI, Header, HTTPException, Request, Response
+from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from . import agent, ambiguity, engine, supplier_text
 from .catalog import PROD_DAYS
@@ -141,7 +146,7 @@ class Session:
             raise HTTPException(404, "no open PO with that id")
         if not math.floor(self.clock) <= day <= math.floor(self.clock) + 60:
             raise HTTPException(400, "day must be between today and 60 days ahead")
-        self.world._emit("po_date_changed", self.clock + 0.001, "sentinel", po_id=po, expected=int(day))
+        self.world._emit("po_date_changed", self.clock + 0.001, "sentinel", prompt=True, po_id=po, expected=int(day))
         self.world.deliver_until(self.clock + 0.03)
         self.clock += 0.03
         rec = {"t": round(self.clock, 2), "po": po, "decision": "date set by hand", "by": role,
@@ -155,7 +160,7 @@ class Session:
         if not p:
             raise HTTPException(404, "no PO with that id")
         ts = self.clock + 0.001
-        ev = self.world._emit("supplier_message", ts, "supplier", po_id=po, text=text)
+        ev = self.world._emit("supplier_message", ts, "supplier", prompt=True, po_id=po, text=text)
         self.world.deliver_until(self.clock + 0.03)
         self.clock += 0.03
         self.refresh()
@@ -205,7 +210,7 @@ class Session:
             pid, p = max(open_pos, key=lambda x: (waiting.get(x[0], 0), x[1]["qty"]))
             p["actual"] += 7
             w.truth.pos[pid]["actual"] = p["actual"]
-            w._emit("po_date_changed", self.clock + 0.01, "supplier", po_id=pid, expected=p["actual"])
+            w._emit("po_date_changed", self.clock + 0.01, "supplier", prompt=True, po_id=pid, expected=p["actual"])
             info["detail"] = f"{pid} ({w.cat.materials[p['material']].name}) slips 7 days to day {p['actual']}"
         elif kind == "vague":
             open_pos = [(pid, p) for pid, p in w.pos.items() if not p["received"] and p["actual"] > self.clock + 1]
@@ -221,7 +226,7 @@ class Session:
             w.truth.pos[pid]["actual"] = p["actual"]
             text, label = supplier_text.delay_message(w.trng, pid, self.clock + 0.01, p["expected"], p["actual"],
                                                       force="ambiguous")
-            w.send_text(pid, self.clock + 0.01, text, label, "notice")
+            w.send_text(pid, self.clock + 0.01, text, label, "notice", prompt=True)
             info["detail"] = f"Supplier of {pid} ({w.cat.materials[p['material']].name}) writes: \u201c{text}\u201d"
             info["po"] = pid
         elif kind == "outage":
@@ -266,6 +271,8 @@ class Session:
         s = self._snap
         props = sorted((p for p in self.proposals.values() if p["status"] == "pending"),
                        key=lambda p: -(p["effect"]["late_days_before"] - p["effect"]["late_days_after"]))
+        for p in props:   # a purchase based on a feed that has gone quiet may rest on stale numbers
+            p["stale_feeds"] = list(s["kpis"]["feeds_down"])
         brief = agent.briefing(role, s, props, self.world.cat)
         brief.pop("ignore", None)
         cat = self.world.cat
@@ -302,8 +309,72 @@ class Session:
 
 
 app = FastAPI(title="Sentinel")
-_lock = threading.Lock()
-S = Session()
+
+# ------------------------------------------------------------------ sessions
+# Every visitor gets their own plant (a cookie), so one person's clicks, resets or
+# test messages never change what another visitor or a judge is looking at.
+MAX_SESSIONS = 24
+IDLE_SECONDS = 45 * 60
+_sessions: "OrderedDict[str, tuple[Session, threading.Lock, float]]" = OrderedDict()
+_reg_lock = threading.Lock()
+_writes: dict[str, deque] = {}
+WRITE_LIMIT, WRITE_WINDOW = 40, 10.0     # at most 40 changes per 10 s per visitor
+
+
+def _session(request: Request, response: Response | None = None) -> tuple[Session, threading.Lock, str]:
+    sid = request.cookies.get("sid") or ""
+    now = time.time()
+    with _reg_lock:
+        for k in [k for k, (_, _, t) in _sessions.items() if now - t > IDLE_SECONDS]:
+            del _sessions[k]
+            _writes.pop(k, None)
+        if sid not in _sessions:
+            sid = secrets.token_urlsafe(16)
+            while len(_sessions) >= MAX_SESSIONS:
+                old, _ = _sessions.popitem(last=False)
+                _writes.pop(old, None)
+            _sessions[sid] = (Session(), threading.Lock(), now)
+        sess, lock, _ = _sessions[sid]
+        _sessions[sid] = (sess, lock, now)
+        _sessions.move_to_end(sid)
+    if response is not None:
+        response.set_cookie("sid", sid, max_age=IDLE_SECONDS, httponly=True, samesite="lax")
+    return sess, lock, sid
+
+
+def _throttle(sid: str):
+    q = _writes.setdefault(sid, deque())
+    now = time.time()
+    while q and now - q[0] > WRITE_WINDOW:
+        q.popleft()
+    if len(q) >= WRITE_LIMIT:
+        raise HTTPException(429, "too many changes; slow down")
+    q.append(now)
+
+
+async def _body(req: Request, kind=dict):
+    raw = await req.body()
+    if not raw:
+        return kind()
+    if len(raw) > 2_000_000:
+        raise HTTPException(413, "body too large")
+    try:
+        b = json.loads(raw)
+    except ValueError:
+        raise HTTPException(400, "body is not valid JSON")
+    if kind is dict and not isinstance(b, dict):
+        raise HTTPException(400, "body must be a JSON object")
+    return b
+
+
+def _num(v, name, lo, hi, cast=float):
+    try:
+        x = cast(v)
+    except (TypeError, ValueError, OverflowError):
+        raise HTTPException(400, f"{name} must be a number")
+    if (isinstance(x, float) and not math.isfinite(x)) or not (lo <= x <= hi):
+        raise HTTPException(400, f"{name} must be between {lo} and {hi}")
+    return x
 
 
 def _role(r: str | None) -> str:
@@ -313,21 +384,38 @@ def _role(r: str | None) -> str:
     return r
 
 
+def _approver(x_role: str | None, what: str) -> str:
+    role = _role(x_role)
+    if role not in APPROVER_ROLES:
+        raise HTTPException(403, f"a {role} cannot {what}")
+    return role
+
+
+async def _run(req: Request, response: Response, fn, write: bool = True):
+    sess, lock, sid = _session(req, response)
+    if write:
+        _throttle(sid)
+
+    def work():
+        with lock:
+            return fn(sess)
+    return await run_in_threadpool(work)
+
+
 @app.get("/")
 def index():
     return FileResponse(WEB / "index.html")
 
 
 @app.get("/api/state")
-def state(role: str = "planner"):
-    with _lock:
-        return JSONResponse(S.view(_role(role)))
+async def state(req: Request, response: Response, role: str = "planner"):
+    r = _role(role)
+    return await _run(req, response, lambda s: s.view(r), write=False)
 
 
 @app.get("/api/evidence")
 def evidence():
     """Headline numbers from the last evaluation run (results/results.json)."""
-    import json
     p = WEB.parent / "results" / "results.json"
     if not p.exists():
         raise HTTPException(404, "no evaluation results in this build")
@@ -373,112 +461,107 @@ def evidence():
 
 
 @app.post("/api/advance")
-async def advance(req: Request):
-    body = await req.json() if (await req.body()) else {}
-    days = float(body.get("days", 0.25))
-    if not 0 < days <= 10:
-        raise HTTPException(400, "days must be in (0, 10]")
-    with _lock:
-        S.advance(days)
-        return {"now": S.clock}
+async def advance(req: Request, response: Response):
+    b = await _body(req)
+    days = _num(b.get("days", 0.25), "days", 0.001, 10)
+
+    def fn(s):
+        s.advance(days)
+        return {"now": s.clock}
+    return await _run(req, response, fn)
 
 
 @app.post("/api/reset")
-async def reset(req: Request):
-    global S
-    body = await req.json() if (await req.body()) else {}
-    with _lock:
-        S = Session(int(body.get("seed", 7)))
-        return {"now": S.clock, "seed": S.seed}
+async def reset(req: Request, response: Response):
+    b = await _body(req)
+    seed = _num(b.get("seed", 7), "seed", 0, 10_000, int)
+    sess, lock, sid = _session(req, response)
+    _throttle(sid)
+    fresh = await run_in_threadpool(lambda: Session(seed))
+    with _reg_lock:
+        _sessions[sid] = (fresh, lock, time.time())
+    return {"now": fresh.clock, "seed": fresh.seed}
 
 
 @app.post("/api/proposals/{pid}/{action}")
-async def decide(pid: str, action: str, req: Request, x_role: str | None = Header(default=None)):
-    role = _role(x_role)
-    if role not in APPROVER_ROLES:
-        raise HTTPException(403, f"a {role} cannot approve or reject purchase orders")
+async def decide(pid: str, action: str, req: Request, response: Response, x_role: str | None = Header(default=None)):
+    role = _approver(x_role, "approve or reject purchase orders")
     if action not in ("approve", "reject"):
         raise HTTPException(400, "action must be approve or reject")
-    body = await req.json() if (await req.body()) else {}
-    with _lock:
-        return S.decide(pid, action == "approve", role, str(body.get("note", ""))[:200])
+    b = await _body(req)
+    note = str(b.get("note", ""))[:200]
+    return await _run(req, response, lambda s: s.decide(pid, action == "approve", role, note))
 
 
 @app.post("/api/questions/{qid}/{action}")
-async def question(qid: str, action: str, x_role: str | None = Header(default=None)):
-    role = _role(x_role)
-    if role not in APPROVER_ROLES:
-        raise HTTPException(403, f"a {role} cannot send questions to suppliers")
+async def question(qid: str, action: str, req: Request, response: Response, x_role: str | None = Header(default=None)):
+    role = _approver(x_role, "send questions to suppliers")
     if action not in ("send", "dismiss"):
         raise HTTPException(400, "action must be send or dismiss")
-    with _lock:
-        return S.decide_question(qid, action == "send", role)
+    return await _run(req, response, lambda s: s.decide_question(qid, action == "send", role))
 
 
 @app.post("/api/pos/{po}/date")
-async def po_date(po: str, req: Request, x_role: str | None = Header(default=None)):
+async def po_date(po: str, req: Request, response: Response, x_role: str | None = Header(default=None)):
     """A planner sets the date by hand (e.g. after phoning the supplier)."""
-    role = _role(x_role)
-    if role not in APPROVER_ROLES:
-        raise HTTPException(403, f"a {role} cannot change PO dates")
-    body = await req.json() if (await req.body()) else {}
-    try:
-        day = int(body["day"])
-    except (KeyError, TypeError, ValueError):
+    role = _approver(x_role, "change PO dates")
+    b = await _body(req)
+    if "day" not in b:
         raise HTTPException(400, "body must be an object with an integer 'day'")
-    with _lock:
-        return S.set_date(po, day, role)
+    day = _num(b["day"], "day", 0, 100_000, int)
+    return await _run(req, response, lambda s: s.set_date(po, day, role))
 
 
 @app.post("/api/messages")
-async def message(req: Request):
+async def message(req: Request, response: Response):
     """Type a supplier message yourself (demo). Body: {"po": "PO0012", "text": "..."}"""
-    body = await req.json() if (await req.body()) else {}
-    po, text = str(body.get("po", "")), str(body.get("text", "")).strip()
+    b = await _body(req)
+    po, text = str(b.get("po", ""))[:40], str(b.get("text", "")).strip()
     if not text or len(text) > 500:
         raise HTTPException(400, "text must be 1-500 characters")
-    with _lock:
-        return S.post_message(po, text)
+    return await _run(req, response, lambda s: s.post_message(po, text))
 
 
 @app.post("/api/read")
-async def read(req: Request):
+async def read(req: Request, response: Response):
     """Read a message without changing anything (live preview while typing)."""
-    body = await req.json() if (await req.body()) else {}
-    text = str(body.get("text", ""))[:500]
-    with _lock:
-        p = S._snap["_state"].pos.get(str(body.get("po", "")))
-        due = p["orig_expected"] if p else math.floor(S.clock) + 3
-        r = ambiguity.interpret(text, S.clock, due, p["id"] if p else "this order")
+    b = await _body(req)
+    text = str(b.get("text", ""))[:500]
+    po = str(b.get("po", ""))[:40]
+
+    def fn(s):
+        p = s._snap["_state"].pos.get(po)
+        due = p["orig_expected"] if p else math.floor(s.clock) + 3
+        r = ambiguity.interpret(text, s.clock, due, p["id"] if p else "this order")
         for k in ("lo", "hi", "plan_day", "day"):
             if r.get(k) is not None:
                 r[k + "_label"] = ambiguity.fmt(r[k])
-        r["due"] = due
-        r["due_label"] = ambiguity.fmt(due)
-        r["today_label"] = ambiguity.fmt(math.floor(S.clock))
+        r["due"], r["due_label"] = due, ambiguity.fmt(due)
+        r["today_label"] = ambiguity.fmt(math.floor(s.clock))
         return r
+    return await _run(req, response, fn, write=False)
 
 
 @app.post("/api/inject/{kind}")
-def inject(kind: str):
-    with _lock:
-        return S.inject(kind)
+async def inject(kind: str, req: Request, response: Response):
+    return await _run(req, response, lambda s: s.inject(kind))
 
 
 @app.get("/api/orders/{oid}/explain")
-def explain(oid: str):
-    with _lock:
-        return agent.explain_order(S._snap, oid, S.world.cat)
+async def explain(oid: str, req: Request, response: Response):
+    return await _run(req, response, lambda s: agent.explain_order(s._snap, oid, s.world.cat), write=False)
 
 
 @app.post("/api/events")
-async def ingest(req: Request):
-    """Ingest external events (list of JSON objects). Idempotent: re-sending
-    the same batch changes nothing. Malformed events are quarantined."""
-    batch = await req.json()
+async def ingest(req: Request, response: Response):
+    """Ingest external events (a JSON object or a list of up to 5,000) into your session.
+    Idempotent: re-sending the same batch changes nothing. Malformed events are quarantined."""
+    batch = await _body(req, kind=object)
     if not isinstance(batch, list):
         batch = [batch]
-    with _lock:
-        res = [S.world.store.ingest(ev, S.clock) for ev in batch[:5000]]
-        S.refresh()
+
+    def fn(s):
+        res = [s.world.store.ingest(ev, s.clock) for ev in batch[:5000]]
+        s.refresh()
         return {k: res.count(k) for k in ("accepted", "duplicate", "quarantined", "conflict")}
+    return await _run(req, response, fn)

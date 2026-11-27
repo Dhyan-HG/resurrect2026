@@ -504,6 +504,7 @@ function decisions(s) {
         <button class="btn" data-rj="${esc(p.id)}" ${canDecide ? "" : "disabled"}>Not now</button>
         <button class="btn quiet" data-em="${esc(p.id)}">Supplier email</button>
       </div>
+      ${(p.stale_feeds || []).length ? `<p class="note-role" style="color:var(--late)">The ${p.stale_feeds.map(f => ({erp: "orders", wms: "warehouse", supplier: "supplier"}[f] || f)).join(" and ")} feed is silent, so this proposal may rest on stale figures. Check before approving.</p>` : ""}
       ${canDecide ? "" : `<p class="note-role">Managers see every decision, but only planners and buyers can approve a purchase.</p>`}
     </article>`;
   }).join("");

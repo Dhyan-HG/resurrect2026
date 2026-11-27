@@ -112,10 +112,15 @@ class World:
                                        "end": round(self.outage[2], 3)})
 
     # ------------------------------------------------------------ feed
-    def _emit(self, etype: str, ts: float, source: str, **fields) -> dict:
+    def _emit(self, etype: str, ts: float, source: str, prompt: bool = False, **fields) -> dict:
+        """Put an event on the feed. prompt=True (demo actions) delivers it at once, with no feed faults."""
         self._eid += 1
         ev = {"event_id": f"E{self.seed}-{self._eid:06d}", "type": etype, "ts": round(ts, 4),
               "source": source, **fields}
+        if prompt:
+            self._push(ts + 0.001, ev)
+            self.truth.clean_events.append((ts + 0.001, ev))
+            return ev
         arrival = ts + self.frng.uniform(0.001, 0.02)
         if self.frng.random() < self.faults.shuffle_rate:
             arrival += self.frng.uniform(0.0, 0.5)
@@ -202,8 +207,8 @@ class World:
         return pid
 
     # ------------------------------------------------------------ supplier messages
-    def send_text(self, pid: str, ts: float, text: str, label: dict, kind: str) -> dict:
-        ev = self._emit("supplier_message", ts, "supplier", po_id=pid, text=text)
+    def send_text(self, pid: str, ts: float, text: str, label: dict, kind: str, prompt: bool = False) -> dict:
+        ev = self._emit("supplier_message", ts, "supplier", prompt=prompt, po_id=pid, text=text)
         self.truth.messages.append({"po": pid, "ts": ts, "event_id": ev["event_id"], "text": text,
                                     "label": label, "kind": kind, "due": self.pos[pid]["expected"]})
         return ev

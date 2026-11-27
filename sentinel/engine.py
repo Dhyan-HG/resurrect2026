@@ -144,6 +144,9 @@ def rebuild(store: EventStore, now: float, text_policy: str = "worst") -> BookSt
             p = pos.get(ev["po_id"])
             if not p:
                 anom.append({"ts": ts, "what": f"receipt for unknown PO {ev['po_id']}"})
+            elif p["material"] != ev["material"]:
+                anom.append({"ts": ts, "what": f"receipt of {ev['material']} booked against {p['id']}, "
+                                               f"which is for {p['material']}; PO left open"})
             else:
                 p["received"] += ev["qty"]
                 if p["received"] >= p["qty"] and p["status"] == "open":
@@ -402,6 +405,10 @@ def alerts(state: BookState, proj: dict, store: EventStore, cat: Catalog) -> lis
                 f"Demand spike on {p.name} ({pid}): {len(recent)} orders / {rq} units in 24 h "
                 f"vs {base_qty:.1f} units/day normally.", product=pid, orders=len(recent),
                 qty=rq, baseline=round(base_qty, 1))
+
+    for an in state.anomalies:
+        if now - an["ts"] <= 1:
+            add(f"anomaly:{an['ts']:.3f}", "data_quality", "medium", f"Inconsistent data: {an['what']}.", **an)
 
     recent_q = [q for q in store.quarantine if q.get("arrival") is not None and now - q["arrival"] <= 1]
     if recent_q:

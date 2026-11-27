@@ -43,8 +43,8 @@ SCENES = [
         (3, "To build them, the factory needs parts, like switches. Some are in the store room. The rest are coming from a supplier.", None),
         (4, "Now the supplier becomes late. The switches that should come on day nineteen will now come on day twenty-six.",
             "The supplier becomes late. Switches due on day 19 will now come on day 26."),
-        (5, "So the mixer grinders ship on day twenty-eight. Seven days late. And six orders were waiting for the same switches.",
-            "So they ship on day 28: 7 days late. And 6 orders were waiting for the same switches."),
+        (5, "So the mixer grinders ship on day twenty-eight. Seven days late. And seven orders were waiting for the same switches.",
+            "So they ship on day 28: 7 days late. And 7 orders were waiting for the same switches."),
         (6, "In most factories, nobody notices until day twenty-one, when the order fails to go out. By then, it's too late.",
             "In most factories, nobody notices until day 21. By then, it's too late."),
         (7, "If someone had noticed a week earlier, they could have rush-ordered the switches, and every order would ship on time. Noticing early is everything.", None),
@@ -81,7 +81,7 @@ SCENES = [
     ]),
     ("screen", {"head": "Day 14: a supplier slips a week", "img": "late", "hl": [4.5, 9, 46, 16]}, [
         (0, "On day fourteen, we simulate a problem. A supplier pushes a delivery back by a week.", "Day 14: we simulate a problem. A supplier pushes a delivery back a week."),
-        (1, "Sentinel reacts straight away. The headline says six orders will miss their customer date, and it tells us why: they're all waiting for the same switches.", None),
+        (1, "Sentinel reacts straight away. The headline says seven orders will miss their customer date, and it tells us why: they're all waiting for the same switches.", None),
     ]),
     ("screen", {"head": "The order runway", "img": "late", "hl": [4.2, 28, 53.5, 35], "always": True}, [
         (0, "This is the order runway. Each bar runs from today to the day the order will really ship.", None),
@@ -91,14 +91,21 @@ SCENES = [
         (0, "Click any order, and Sentinel shows exactly where each part is coming from, and which one is holding it up.", None),
     ]),
     ("screen", {"head": "The fix, tested before it's shown", "img": "decision"}, [
-        (0, "Here's the helper's suggestion: rush-order ninety switches. It costs three thousand six hundred and fifty rupees, and late orders go from six to zero.",
-            "The suggestion: rush-order 90 switches. Cost ₹3,650. Late orders: 6 → 0."),
+        (0, "Here's the helper's suggestion: rush-order ninety-five switches. It costs about three thousand eight hundred and fifty rupees, and late orders go from seven to zero.",
+            "The suggestion: rush-order 95 switches. Cost about ₹3,850. Late orders: 7 → 0."),
     ]),
     ("screen", {"head": "Only planners and buyers can buy", "img": "manager"}, [
         (0, "A manager can see this, but cannot approve it. The button is locked. Only planners and buyers can buy.", None),
     ]),
     ("screen", {"head": "A person approves", "img": "approved", "hl": [4.5, 9, 54, 16]}, [
         (0, "The planner clicks approve. A new purchase order is created, and late orders drop to zero.", None),
+    ]),
+    ("screen", {"head": "Vague supplier messages (Topic 6)", "img": "vague"}, [
+        (0, "Suppliers rarely send a clean date. Here one writes: postponed to next Wednesday. Is that this coming Wednesday, or the one after? A normal system picks one date and hopes.",
+            "\u201cPostponed to next Wednesday\u201d: this coming one, or the one after? A normal system picks one and hopes."),
+        (0, "Sentinel shows every day the message could mean, plans for the latest one, so nothing is late by surprise, and drafts one question for the supplier. It is sent only when a planner approves.",
+            "Sentinel shows what it could mean, plans for the latest day, and drafts one question, sent only after approval."),
+        (0, "This is how we link Topic six, ambiguity, into our inventory app.", "This links Topic 6, ambiguity, into our inventory app."),
     ]),
     ("screen", {"head": "It warns when data stops", "img": "outage", "hl": [4.5, 9, 40, 16]}, [
         (0, "Sentinel also warns when a data feed goes quiet, instead of quietly showing old numbers.", None),
@@ -107,46 +114,47 @@ SCENES = [
         (0, "And it works nicely on a phone, with four simple tabs at the bottom.", None),
     ]),
     ("bignum", [
-        ("6,609 orders", "30 pretend factories · 60 days each"),
-        ("0 mistakes", "in 172,800 stock figures, checked against a separate calculator"),
-        ("496 of 496", "late orders warned about at least 3 days ahead · usually about 8 days"),
-        ("0 of 496", "caught by the normal stock check factories use today"),
-        ("0 made-up numbers", "in 5,400 notes written by the AI helper"),
-        ("92.6% → 96.3%", "orders delivered on time · better in 28 of 30 factories"),
-        ("63% fewer", "days late in total · and no extra money spent"),
+        ("6,455 orders", "30 pretend factories · 60 days each · the same orders in every test"),
+        ("0 mistakes", "in 129,600 stock figures, checked against a separate calculator"),
+        ("73% right", "of warnings given a week ahead · a lazy rule is right only 20%"),
+        ("93.4% → 96.7%", "orders delivered on time · better in 26 of 30 factories"),
+        ("+0.75% spend", "simple rules that do as well spend 1.5% to 9% more"),
+        ("135 of 150", "vague supplier messages read right · written blind by a separate AI"),
     ], [
-        (0, "Now the most important part: the proof. We tested Sentinel on thirty pretend factories, sixty days each. That's six thousand six hundred and nine orders.",
-            "The proof: 30 pretend factories, 60 days each. 6,609 orders."),
-        (1, "First, are the numbers right? We checked one lakh seventy-two thousand eight hundred stock figures against a separate calculator. Zero mistakes.",
-            "Are the numbers right? 172,800 stock figures checked. 0 mistakes."),
-        (2, "Second, does it catch late orders early? Four hundred and ninety-six orders really were late. Sentinel warned about every single one, at least three days ahead, and usually about eight days ahead.",
-            "496 orders were really late. Sentinel warned about every one, at least 3 days ahead, usually about 8."),
-        (3, "The normal stock check that factories use today caught zero of them.", "The normal stock check caught 0 of them."),
-        (4, "Third, can we trust the AI? In five thousand four hundred notes, it made up zero numbers. Every number is checked against the data.",
-            "Can we trust the AI? 5,400 notes. 0 made-up numbers."),
-        (5, "And finally, does the factory do better? Orders delivered on time went up from ninety-two point six percent to ninety-six point three percent. Better in twenty-eight of thirty factories.",
-            "On-time delivery: 92.6% → 96.3%. Better in 28 of 30 factories."),
-        (6, "Total days late dropped by sixty-three percent, and the factory did not spend any more money.", "Days late: 63% fewer. No extra money spent."),
+        (0, "Now the most important part: the proof. We tested Sentinel on thirty pretend factories, sixty days each. That's six thousand four hundred and fifty-five orders, and every test uses exactly the same orders.",
+            "The proof: 30 pretend factories, 60 days each, 6,455 orders. The same orders in every test."),
+        (1, "First, are the numbers right? We checked one lakh twenty-nine thousand six hundred stock figures against a separate calculator. Zero mistakes.",
+            "Are the numbers right? 129,600 stock figures checked. 0 mistakes."),
+        (2, "Second, does it warn early? A week before the customer date, seventy-three percent of its warnings are right. A lazy rule that warns about every order not yet started is right only twenty percent of the time.",
+            "A week ahead, 73% of its warnings are right. A lazy rule: only 20%."),
+        (3, "Third, does the factory do better? Orders delivered on time went up from ninety-three point four percent to ninety-six point seven percent. Better in twenty-six of thirty factories.",
+            "On-time delivery: 93.4% → 96.7%. Better in 26 of 30 factories."),
+        (4, "It does spend a little more, about three quarters of a percent, because rush orders cost extra. Simple rules that reach the same on-time level spend between one and a half and nine percent more.",
+            "It spends 0.75% more. Simple rules that do as well spend 1.5% to 9% more."),
+        (5, "And for Topic six: on one hundred and fifty supplier messages written by a separate AI that never saw our code, Sentinel read one hundred and thirty-five correctly on its first try.",
+            "Topic 6: 135 of 150 blind test messages read right, first try."),
     ]),
     ("bullets", {"head": "Being honest about the limits", "items": [
         "It's a pretend factory. No real planner has used it yet.",
-        "About 1 in 4 warnings is a false alarm."]}, [
+        "About 1 in 4 warnings is a false alarm.",
+        "Until a supplier answers, its planned date is often later than the real one."]}, [
         (0, "We are also honest about the limits. Judges respect that.", None),
         (1, "It's a pretend factory, and no real planner has used it yet.", None),
-        (2, "And about one in four warnings turns out to be a false alarm. We chose that on purpose, because missing a real late order is much worse.", None),
+        (2, "About one in four warnings turns out to be a false alarm. We chose that on purpose, because missing a real late order is much worse.", None),
+        (3, "And for vague messages, until the supplier answers, Sentinel plans a little too late rather than too early. That is on purpose too.", None),
     ]),
     ("bullets", {"head": "What we need from you", "items": [
         "Open chatu.in on your phone and laptop. Play with it.",
         "Practise the 3-minute demo",
-        "Learn the key numbers: 92.6% → 96.3% · every late order caught early · 0 mistakes",
+        "Learn the key numbers: 93.4% → 96.7% · +0.75% spend · 73% of week-ahead warnings right",
         "Before presenting: Simulate → Start over",
         "Read the team guide PDF for every detail"]}, [
         (0, "So, what do we need from you?", None),
         (1, "Open chatu dot in on your phone and laptop, and play with it.", "Open chatu.in on your phone and laptop, and play with it."),
         (2, "Practise the three-minute demo.", "Practise the 3-minute demo."),
-        (3, "Learn the key numbers. Ninety-two point six to ninety-six point three percent on time. Every late order caught early. Zero mistakes.",
-            "Learn the key numbers: 92.6% → 96.3% on time. Every late order caught early. 0 mistakes."),
-        (4, "Before presenting, always press start over, because everyone shares the same pretend factory.", None),
+        (3, "Learn the key numbers. Ninety-three point four to ninety-six point seven percent on time, for three quarters of a percent more spend, and seventy-three percent of warnings right a week ahead.",
+            "Learn the key numbers: 93.4% → 96.7% on time, +0.75% spend, 73% of week-ahead warnings right."),
+        (4, "Before presenting, press start over, so the demo begins from day four.", None),
         (5, "And read the team guide PDF for all the details.", None),
     ]),
     ("title", {"title": "Sentinel", "sub": "Spots late orders a week early · explains why · suggests a fix · a person decides", "url": "chatu.in"}, [
@@ -255,7 +263,7 @@ def slide(kind, data, state, cap):
             x, y, w, h = data["hl"]
             hl = f"<div class='hl' style='left:{x}%;top:{y}%;width:{w}%;height:{h}%'></div>"
         src = (HERE / "screens" / f"{data['img']}.png").as_uri()
-        mode = "crop" if data["img"] in ("runway", "decision", "manager") else "full"
+        mode = "crop" if data["img"] in ("runway", "decision", "manager", "vague") else "full"
         return page(f"<div class='main'><h1>{e(data['head'])}</h1><div class='shot'><div class='frame {mode}'><div class='wrap'>"
                     f"<img src='{src}'>{hl}</div></div></div></div>", cap)
     if kind == "phones":
@@ -263,7 +271,7 @@ def slide(kind, data, state, cap):
         return page(f"<div class='main'><h1>{e(data['head'])}</h1><div class='shot'><div class='phones'>{imgs}</div></div></div>", cap)
     if kind == "bignum":
         n, l = data[state]
-        n_html = e(n).replace("→ 96.3%", "→ <em>96.3%</em>")
+        n_html = e(n).replace("→ 96.7%", "→ <em>96.7%</em>")
         dots = "".join(f"<span class='{'on' if i == state else ''}'></span>" for i in range(len(data)))
         return page(f"<div class='main'><h1>The proof</h1><div class='big'><div class='n'>{n_html}</div>"
                     f"<div class='l'>{e(l)}</div></div><div class='dots'>{dots}</div></div>", cap)

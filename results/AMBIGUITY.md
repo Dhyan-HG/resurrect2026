@@ -1,6 +1,6 @@
 # E6 – Supplier messages in plain language
 
-Reproduce: `python -m evaluation.run_ambiguity --seeds 30` (5.1 s). Definitions of clear / ambiguous / no date: [docs/AMBIGUITY.md](../docs/AMBIGUITY.md).
+Reproduce: `python -m evaluation.run_ambiguity --seeds 30` (5.2 s). Definitions of clear / ambiguous / no date: [docs/AMBIGUITY.md](../docs/AMBIGUITY.md).
 
 **Success means:** ambiguous messages are caught (nobody plans on a guess), clear ones are not questioned, the range Sentinel plans for contains the real date, and fewer orders ship late than when the same messages are read by a plain date parser. **The trade-off is stated, not hidden:** planning for the latest reading means Sentinel is rarely too early but often too late until the supplier answers.
 
@@ -14,10 +14,11 @@ Reproduce: `python -m evaluation.run_ambiguity --seeds 30` (5.1 s). Definitions 
 | blind 1 – now | separate AI agent, saw only the definitions | 120 (52 / 55 / 13) | **119/120** | 1.00 / 0.98 | 0 | 51/52 |
 | blind 2 – first run | a second separate AI agent | 120 (51 / 54 / 15) | **110/120** | 0.91 / 0.96 | 5 | 49/51 |
 | blind 2 – now | a second separate AI agent | 120 (51 / 54 / 15) | **120/120** | 1.00 / 1.00 | 0 | 51/51 |
+| blind 3 – first run | a third separate AI agent; set committed before it was scored | 150 (60 / 70 / 20) | **135/150** | 0.88 / 0.97 | 8 | 58/60 |
 
 The **first run** on a blind set is the honest accuracy figure. Rules were fixed after blind sets 1 and 2 and after the auditor's set, so their later rows are no longer blind. Blind set 3 was written after those fixes and committed to git before it was scored (commit recorded in `results/ambiguity_blind3_first_run.json`). Note: after review the numeric-date rule changed (dd/mm first, see docs/AMBIGUITY.md); one item in blind 1 and one in the audit set were labelled under the old rule and now count as failures.
 
-**What each way of reading would plan for**, against the date the supplier meant (messages with a known date; first run where there is one):
+**What each way of reading would plan for**, against the date the supplier meant (messages with a known date; current reader, so blind sets 1-2 are no longer blind here):
 
 | Set | Reader | Too early | Exact | Too late | Mean error (days) |
 |---|---|---|---|---|---|
@@ -33,6 +34,9 @@ The **first run** on a blind set is the honest accuracy figure. Rules were fixed
 | blind 2 | Sentinel (latest reading) | 0 | 68 | 32 | 0.68 |
 | blind 2 | Plain parser (earliest reading) | 41 | 59 | 0 | 0.73 |
 | blind 2 | Middle of the range | 6 | 80 | 14 | 0.32 |
+| blind 3 | Sentinel (latest reading) | 3 | 81 | 37 | 0.94 |
+| blind 3 | Plain parser (earliest reading) | 42 | 78 | 1 | 0.60 |
+| blind 3 | Middle of the range | 7 | 93 | 21 | 0.50 |
 
 On clear messages all three agree. On ambiguous ones the plain parser is too early about as often as Sentinel is too late, and the middle of the range has the smallest average error. Sentinel accepts the larger error on purpose: being too early makes an order miss its date by surprise, being too late only makes the planner act sooner than needed, and the question to the supplier then removes the error.
 
@@ -72,6 +76,26 @@ On clear messages all three agree. On ambiguous ones the plain parser is too ear
 - Hi sir, GST invoice will be corrected and resent tomorrow. -> clear
 - Dear Sir, Please release the pending payment of Rs 2,45,000 by 5 Dec. Our bank details are unchanged. Regards -> clear
 - Sir pls send C-form for Q2 by 20/12. Thx -> ambiguous
+
+</details>
+
+<details><summary>blind 3: the 15 first-run failures</summary>
+
+- material reach day aftr tmrw pls note -> clear
+- Jan 5 dispatch & reach Jan 6 -> ambiguous
+- Earlier we said Monday, now it will be Wednesday -> ambiguous
+- machine down since 6th; we will ship and deliver on 11 Jan -> ambiguous
+- Not tomorrow - day after tomorrow for sure -> ambiguous
+- Sir kal delivery hoga, tension mat lo -> none
+- 25 Nov - sorry, 26 Nov -> ambiguous
+- Hello, The order will be ready and delivered next Tuesday. Regards -> none
+- Hello, We will hand over the consignment to the courier on Thursday. Kind regards -> clear
+- pls send updated drawings by tmrw -> ambiguous
+- Hello, Please find attached our revised price list effective 1 January 2027. Thanks, Sales -> clear
+- Can we do the vendor audit on 3rd Dec? -> clear
+- Dear Sir, The TDS certificate for Q2 will be sent on Monday. Regards -> ambiguous
+- Dear Purchase Team, Please confirm the PO amendment for the revised rate of Rs 45/kg by 08-01-2027. Regards -> clear
+- ledger statement till 30/11 sent on mail -> ambiguous
 
 </details>
 

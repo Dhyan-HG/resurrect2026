@@ -41,8 +41,8 @@ Full report: [results/AMBIGUITY.md](results/AMBIGUITY.md).
 
 | Question | Result |
 |---|---|
-| Does it read messages it has never seen? | BLIND3_LINE |
-| What does planning for the latest day cost? | Until the supplier answers, Sentinel is rarely **too early** but often **too late** (on the second blind set: 0 too early and 32 too late of 100 dated messages, vs 41 too early for a plain parser that takes the earliest reading; a middle-of-range reader has the smallest average error). Being late in the plan only makes the planner act sooner; being early makes an order miss by surprise. |
+| Does it read messages it has never seen? | First run on **150 messages written blind** by a separate AI agent that saw only the definitions, committed to git before scoring (commit `ec5e9c3`): **135 fully right (90%)**; 58 of 60 ambiguous ones caught, 8 clear ones questioned needlessly; all 15 failures listed. Earlier blind sets scored 101/120 and 110/120 on their first runs; rules were fixed after them, so they no longer count as blind. |
+| What does planning for the latest day cost? | Until the supplier answers, Sentinel is rarely **too early** but often **too late** (blind set 3: 3 too early and 37 too late of 121 dated messages, vs 42 too early for a plain parser that takes the earliest reading; average error 0.94 days vs 0.60, and 0.50 for a middle-of-range reader). Being late in the plan only makes the planner act sooner; being early makes an order miss by surprise. |
 | Does it change outcomes? | 30 plants, every delay notice written as text: on-time **96.1% (earliest-reading parser) → 96.7%** (+0.6 pts, p = 0.050) and +0.5 vs a middle-of-range parser (p = 0.08, not significant); the same as when suppliers send exact dates (96.7%). With the question answered, the planned arrival is within **0.18 days** on average, the most accurate of all approaches. Asking adds accuracy, not extra on-time orders. |
 
 ```bash

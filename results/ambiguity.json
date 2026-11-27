@@ -318,6 +318,151 @@
     "Dear Sir, Please release the pending payment of Rs 2,45,000 by 5 Dec. Our bank details are unchanged. Regards -> clear",
     "Sir pls send C-form for Q2 by 20/12. Thx -> ambiguous"
    ]
+  },
+  "blind_3": {
+   "who": "a third separate AI agent; set committed before it was scored",
+   "now": {
+    "n": 150,
+    "n_ambiguous": 60,
+    "n_clear": 70,
+    "n_none": 20,
+    "detection": {
+     "tp": 58,
+     "fp": 8,
+     "fn": 2,
+     "precision": 0.8787878787878788,
+     "recall": 0.9666666666666667,
+     "f1": 0.9206349206349207
+    },
+    "asked_when_clear": 8,
+    "clear_correct": 63,
+    "none_correct": 14,
+    "ambiguous_range_covers_meant": 58,
+    "ambiguous_range_exact": 57,
+    "planned_too_early": {
+     "sentinel": 3,
+     "naive": 42,
+     "n": 121
+    },
+    "plans": {
+     "sentinel": {
+      "too_early": 3,
+      "too_late": 37,
+      "exact": 81,
+      "mean_abs_err": 0.9421487603305785
+     },
+     "earliest": {
+      "too_early": 42,
+      "too_late": 1,
+      "exact": 78,
+      "mean_abs_err": 0.5950413223140496
+     },
+     "middle": {
+      "too_early": 7,
+      "too_late": 21,
+      "exact": 93,
+      "mean_abs_err": 0.49586776859504134
+     }
+    },
+    "n_dated": 121,
+    "exact_on_clear": {
+     "sentinel": 63,
+     "naive": 65
+    },
+    "naive_right_on_ambiguous": 13,
+    "fully_correct": 135
+   },
+   "failures_now": [
+    "material reach day aftr tmrw pls note -> clear",
+    "Jan 5 dispatch & reach Jan 6 -> ambiguous",
+    "Earlier we said Monday, now it will be Wednesday -> ambiguous",
+    "machine down since 6th; we will ship and deliver on 11 Jan -> ambiguous",
+    "Not tomorrow - day after tomorrow for sure -> ambiguous",
+    "Sir kal delivery hoga, tension mat lo -> none",
+    "25 Nov - sorry, 26 Nov -> ambiguous",
+    "Hello, The order will be ready and delivered next Tuesday. Regards -> none",
+    "Hello, We will hand over the consignment to the courier on Thursday. Kind regards -> clear",
+    "pls send updated drawings by tmrw -> ambiguous",
+    "Hello, Please find attached our revised price list effective 1 January 2027. Thanks, Sales -> clear",
+    "Can we do the vendor audit on 3rd Dec? -> clear",
+    "Dear Sir, The TDS certificate for Q2 will be sent on Monday. Regards -> ambiguous",
+    "Dear Purchase Team, Please confirm the PO amendment for the revised rate of Rs 45/kg by 08-01-2027. Regards -> clear",
+    "ledger statement till 30/11 sent on mail -> ambiguous"
+   ],
+   "first_run": {
+    "n": 150,
+    "n_ambiguous": 60,
+    "n_clear": 70,
+    "n_none": 20,
+    "detection": {
+     "tp": 58,
+     "fp": 8,
+     "fn": 2,
+     "precision": 0.8787878787878788,
+     "recall": 0.9666666666666667,
+     "f1": 0.9206349206349207
+    },
+    "asked_when_clear": 8,
+    "clear_correct": 63,
+    "none_correct": 14,
+    "ambiguous_range_covers_meant": 58,
+    "ambiguous_range_exact": 57,
+    "planned_too_early": {
+     "sentinel": 3,
+     "naive": 42,
+     "n": 121
+    },
+    "plans": {
+     "sentinel": {
+      "too_early": 3,
+      "too_late": 37,
+      "exact": 81,
+      "mean_abs_err": 0.9421487603305785
+     },
+     "earliest": {
+      "too_early": 42,
+      "too_late": 1,
+      "exact": 78,
+      "mean_abs_err": 0.5950413223140496
+     },
+     "middle": {
+      "too_early": 7,
+      "too_late": 21,
+      "exact": 93,
+      "mean_abs_err": 0.49586776859504134
+     }
+    },
+    "n_dated": 121,
+    "exact_on_clear": {
+     "sentinel": 63,
+     "naive": 65
+    },
+    "naive_right_on_ambiguous": 13,
+    "fully_correct": 135,
+    "frozen": {
+     "set_commit": "ec5e9c397187335ff52bf0cf81b0440287a2157a",
+     "reader_commit": "ec5e9c397187335ff52bf0cf81b0440287a2157a",
+     "reader_dirty": false,
+     "scored_at": "2026-11-27 18:15:43"
+    }
+   },
+   "first_run_failures": [
+    "material reach day aftr tmrw pls note -> clear",
+    "Jan 5 dispatch & reach Jan 6 -> ambiguous",
+    "Earlier we said Monday, now it will be Wednesday -> ambiguous",
+    "machine down since 6th; we will ship and deliver on 11 Jan -> ambiguous",
+    "Not tomorrow - day after tomorrow for sure -> ambiguous",
+    "Sir kal delivery hoga, tension mat lo -> none",
+    "25 Nov - sorry, 26 Nov -> ambiguous",
+    "Hello, The order will be ready and delivered next Tuesday. Regards -> none",
+    "Hello, We will hand over the consignment to the courier on Thursday. Kind regards -> clear",
+    "pls send updated drawings by tmrw -> ambiguous",
+    "Hello, Please find attached our revised price list effective 1 January 2027. Thanks, Sales -> clear",
+    "Can we do the vendor audit on 3rd Dec? -> clear",
+    "Dear Sir, The TDS certificate for Q2 will be sent on Monday. Regards -> ambiguous",
+    "Dear Purchase Team, Please confirm the PO amendment for the revised rate of Rs 45/kg by 08-01-2027. Regards -> clear",
+    "ledger statement till 30/11 sent on mail -> ambiguous"
+   ]
   }
  },
  "stream": {
@@ -3744,9 +3889,9 @@
    "answer_hours": 7.360499999999972
   }
  ],
- "runtime_s": 5.1,
+ "runtime_s": 5.2,
  "headline": {
   "big": "96.1% \u2192 96.7%",
-  "text": "orders on time when suppliers write their dates vaguely (\u201cnext week\u201d, \u201c2-3 days late\u201d): a plain date parser vs Sentinel, which plans for the latest reading and asks the supplier after a planner approves (p = 0.050; with exact dates it is 96.7%). The price: until the supplier answers, Sentinel's planned date is often later than the real one. On 120 test messages written blind by a separate AI agent, the first run got 110 fully right."
+  "text": "orders on time when suppliers write their dates vaguely (\u201cnext week\u201d, \u201c2-3 days late\u201d): a plain date parser vs Sentinel, which plans for the latest reading and asks the supplier after a planner approves (p = 0.050; with exact dates it is 96.7%). The price: until the supplier answers, Sentinel's planned date is often later than the real one. On 150 test messages written blind by a separate AI agent, the first run got 135 fully right."
  }
 }

@@ -190,79 +190,100 @@ ol li,ul li{margin:4px 0}
 
 <h2 class="pb">7. How we proved it works (all the numbers)</h2>
 <div class="box soft">
-<p style="margin:0 0 6px"><b>How the test worked.</b> We ran <b>30 different pretend factories</b>, each for <b>60 days</b>. Together they had <b>6,609 customer orders</b>. The pretend factory secretly knows how every order really ends, like an answer key. Sentinel only sees the messages, never the answer key. Then we compared Sentinel's answers with the answer key.</p>
-<p style="margin:0">We compared against <b>the normal way</b> factories work today (a standard reorder rule: "when stock gets low, order more"). Under the normal way, <b>496 of the 6,609 orders (7.5%) were late</b>.</p>
+<p style="margin:0 0 6px"><b>How the test worked.</b> We ran <b>30 different pretend factories</b>, each for <b>60 days</b>. Together they had <b>6,455 customer orders</b>. The pretend factory secretly knows how every order really ends, like an answer key. Sentinel only sees the messages, never the answer key.</p>
+<p style="margin:0">We compared against <b>the normal way</b> factories work today (a standard reorder rule: "when stock gets low, order more"). Under the normal way, <b>420 of the 6,455 orders (6.5%) were late</b>. Every comparison uses <b>exactly the same customer orders</b> in each factory, so the only difference is the method.</p>
 </div>
-<p>Anyone can repeat every number below with one command. That matters to the judges: <i>"report results with enough rigor that a third party could reproduce them."</i></p>
+<p>Anyone can repeat every number below with one command. An independent reviewer did, and got exactly the same numbers.</p>
+<div class="box warn"><p style="margin:0"><b>Important, after the review (27 Nov):</b> two independent reviewers checked everything. Some of our earlier "100%" numbers were true mostly because of how we built the pretend factory, and one comparison was not fully fair. We fixed it and now show which numbers are real <b>evidence</b> and which are only <b>sanity checks</b>. The numbers below are the corrected ones. Please don't use the old ones (92.6% → 96.3%, "100% caught", "no extra spend").</p></div>
 
-<h3>A. Does it get the numbers right?</h3>
-<table>
-<tr><th>What we checked</th><th>Result</th><th>What it means</th></tr>
-<tr><td>Stock numbers compared with a separate calculator we wrote independently</td><td class="n">0 mistakes in 172,800 checks</td><td>Every stock figure was exactly right, every day, in every factory.</td></tr>
-<tr><td>Messy messages: 1,829 repeated and 1,232 broken messages were mixed in</td><td class="n">1,800 of 1,800 days identical</td><td>The answers with messy data were exactly the same as with clean data.</td></tr>
-<tr><td>Feeding all messages again in a random order</td><td class="n">90 of 90 identical</td><td>Run it again, get the same answer. Always.</td></tr>
-</table>
-
-<h3>B. Does it catch late orders early?</h3>
-<table>
-<tr><th>What we checked</th><th>Result</th><th>What it means</th></tr>
-<tr><td>Of the 496 orders that really were late, how many did Sentinel warn about 3 days before?</td><td class="n green">496 of 496 (100%)</td><td>It caught every single one.</td></tr>
-<tr><td>Same, 5 days before</td><td class="n">376 of 496 (76%)</td><td>Most were caught even earlier.</td></tr>
-<tr><td>How early was the first warning?</td><td class="n green">8 days (middle value)</td><td>Usually more than a week of time to fix it.</td></tr>
-<tr><td>False alarms 3 days before</td><td class="n">164 (precision 0.75)</td><td>About 3 out of 4 warnings were real. 1 in 4 was a false alarm.</td></tr>
-<tr><td>The normal method (a simple stock check)</td><td class="n red">0 of 496 caught</td><td>The normal screen looked fine while orders were going late, because it checks totals, not timing.</td></tr>
-</table>
-
-<h3>C. Does it catch other problems?</h3>
-<table>
-<tr><th>Problem</th><th>Result</th><th>Notes</th></tr>
-<tr><td>Warehouse or order system goes silent</td><td class="n">30 of 30 caught</td><td>Within about 17 hours. It waits 18 hours of silence before warning, so it doesn't panic over a short gap. 2 false alarms.</td></tr>
-<tr><td>Sudden rush of orders (demand spike)</td><td class="n">60 of 60 caught</td><td>On the same day. 24 false alarms (about 7 in 10 warnings were real).</td></tr>
-<tr><td>Stock quietly going missing</td><td class="n">89 of 89 found</td><td>Usually 3 days later, when the next stock count happened. It can't know earlier, because nobody counted.</td></tr>
-<tr><td>Supplier deliveries that came late</td><td class="n">1,780 of 1,780</td><td>Warned before the goods arrived, usually about 5 days ahead.</td></tr>
-</table>
-
-<h3>D. Can we trust the AI helper?</h3>
-<table>
-<tr><th>What we checked</th><th>Result</th><th>What it means</th></tr>
-<tr><td>Briefings written by the helper</td><td class="n green">5,400 of 5,400 passed</td><td>Every number in every note was found in the real data. 0 made-up numbers out of 76,838.</td></tr>
-<tr><td>Stock claims in the notes</td><td class="n">21,668 of 21,668 correct</td><td>Checked against the separate calculator.</td></tr>
-<tr><td>Customer dates mentioned in the notes</td><td class="n">5,314 of 5,314 correct</td><td>Checked against the answer key.</td></tr>
-</table>
-
-<h3>E. Does the factory actually do better? (the most important result)</h3>
-<p>Same 30 factories, same problems, run twice: once the normal way, once with Sentinel's suggestions approved.</p>
+<h3>A. Does the factory actually do better? (the most important result)</h3>
 <table>
 <tr><th>Average per factory (60 days)</th><th>Normal way</th><th>With Sentinel</th><th>Change</th></tr>
-<tr><td>Orders delivered on time</td><td>92.6%</td><td class="green">96.3%</td><td class="n green">+3.8 points</td></tr>
-<tr><td>Late orders</td><td>16.5</td><td class="green">8.0</td><td class="n green">about half</td></tr>
-<tr><td>Total days late (all orders added up)</td><td>41.8</td><td class="green">15.4</td><td class="n green">63% less</td></tr>
-<tr><td>Days a material was out of stock when needed</td><td>19.2</td><td class="green">8.2</td><td class="n green">57% less</td></tr>
-<tr><td>Money spent on purchases</td><td>₹7,87,512</td><td>₹7,85,027</td><td class="n">no real change</td></tr>
+<tr><td>Orders delivered on time</td><td>93.4%</td><td class="green">96.7%</td><td class="n green">+3.2 points</td></tr>
+<tr><td>Late orders</td><td>14.0</td><td class="green">7.1</td><td class="n green">about half</td></tr>
+<tr><td>Total days late (all orders added up)</td><td>34.3</td><td class="green">13.6</td><td class="n green">60% less</td></tr>
+<tr><td>Days a material was out of stock when needed</td><td>17.1</td><td class="green">8.4</td><td class="n green">51% less</td></tr>
+<tr><td>Money spent on purchases</td><td>₹7,60,288</td><td>₹7,66,004</td><td class="n">+0.75% (a little more)</td></tr>
 </table>
 <ul>
-<li>Sentinel did better in <b>28 of the 30</b> factories.</li>
-<li>The chance that this improvement happened by pure luck is <b>less than 1 in 1,000</b> (in science this is written "p &lt; 0.001").</li>
-<li>Even if the planner approves <b>only half</b> of the suggestions, on-time delivery still goes up, to <b>95.2%</b>.</li>
-<li>It does <b>not</b> spend more money. It buys the right thing at the right time instead of buying extra.</li>
+<li>Better in <b>26 of the 30</b> factories. The chance this is luck is less than 1 in 1,000 ("p &lt; 0.001").</li>
+<li>It <b>does</b> spend a little more (+0.75%), because rush orders cost extra. Say this openly.</li>
+<li>If the planner approves only <b>half</b> of the suggestions, on-time still goes up, to 95.7%.</li>
+</ul>
+<p><b>Is that better than simple rules?</b> We also tested two simple rules a factory could use without Sentinel:</p>
+<table>
+<tr><th>Method</th><th>On time</th><th>Spend compared to Sentinel</th><th>Stock held compared to Sentinel</th></tr>
+<tr><td>"Rush-reorder every late delivery"</td><td>96.5%</td><td class="red">9% more</td><td class="red">23% more</td></tr>
+<tr><td>"Keep 4 days of extra safety stock"</td><td>96.1%</td><td class="red">1.5% more</td><td class="red">4.5% more</td></tr>
+<tr><td><b>Sentinel</b></td><td class="green">96.7%</td><td>–</td><td>–</td></tr>
+</table>
+<p><b>The honest message:</b> simple rules can reach almost the same on-time level, but only by spending more and holding more stock. Sentinel gets there by buying <b>only what is needed, only when it is needed</b>.</p>
+
+<h3>B. Does it warn early enough to act?</h3>
+<p>Production takes 2 days, so 3 days before the date almost any warning is "late anyway". That's why we look further ahead:</p>
+<table>
+<tr><th>Warning given</th><th>Late orders caught</th><th>Warnings that were right</th></tr>
+<tr><td>3 days before</td><td>97%</td><td>73%</td></tr>
+<tr><td>5 days before</td><td>73%</td><td>69%</td></tr>
+<tr><td><b>7 days (a week) before</b></td><td class="green">65%</td><td class="green">73%</td></tr>
+<tr><td>10 days before</td><td>36%</td><td>73%</td></tr>
+</table>
+<ul>
+<li>The middle warning time for a late order: <b>8 days</b>.</li>
+<li>A lazy rule, "warn about every order not yet started", is right only <b>20%</b> of the time a week ahead. Sentinel is right 73%.</li>
+<li>About <b>1 in 4 warnings is a false alarm.</b> That's the price of assuming a late supplier will stay late. Without that assumption the warnings are almost always right, but fewer late orders are caught early.</li>
 </ul>
 
-<h3>F. Which part made the difference?</h3>
-<p>We switched parts of Sentinel off to see what matters. Scientists call this an "ablation".</p>
-<ul>
-<li><b>Without learning which suppliers are late:</b> on-time only goes to 94.8% instead of 96.3%. Learning supplier habits matters.</li>
-<li><b>Without rush orders:</b> no improvement at all (92.6%). The gain comes from spotting slow deliveries early and rushing them.</li>
-</ul>
+<h3>C. Does it get the numbers right?</h3>
+<table>
+<tr><th>What we checked</th><th>Result</th><th>What it means</th></tr>
+<tr><td>Stock numbers compared with a separate calculator</td><td class="n">0 mistakes in 129,600 checks</td><td>Every stock figure was right, every day, in every factory.</td></tr>
+<tr><td>Messy messages: 1,797 repeated and 1,239 broken messages mixed in</td><td class="n">1,800 of 1,800 days identical</td><td>The answers with messy data were exactly the same as with clean data.</td></tr>
+<tr><td>Feeding all messages again in a random order</td><td class="n">90 of 90 identical</td><td>Run it again, get the same answer.</td></tr>
+<tr><td>A factory that doesn't follow our sharing rule</td><td class="n">almost the same</td><td>Even when the real factory builds oldest-order-first, the warnings stay nearly as good.</td></tr>
+</table>
+
+<h3>D. Does it catch other problems? (mostly sanity checks)</h3>
+<table>
+<tr><th>Problem</th><th>Result</th><th>Notes</th></tr>
+<tr><td>Warehouse or order system goes silent</td><td class="n">29 of 30</td><td>About 20 hours after it went quiet (it waits 18 hours of silence). One very short outage was missed.</td></tr>
+<tr><td>Sudden rush of orders</td><td class="n">60 of 60</td><td>On the same day; 19 false alarms.</td></tr>
+<tr><td>Stock quietly going missing</td><td class="n">77 of 86</td><td>About 9 days later, when a routine stock count happened. It can't know before someone counts.</td></tr>
+</table>
+
+<h3>E. Can we trust the AI helper's words?</h3>
+<p>We planted mistakes in the helper's notes on purpose and checked how many the safety check stops:</p>
+<table>
+<tr><th>Planted mistake</th><th>Stopped</th></tr>
+<tr><td>"Nothing is late" when orders are late</td><td class="n green">100%</td></tr>
+<tr><td>An order number that doesn't exist</td><td class="n green">100%</td></tr>
+<tr><td>A number changed (e.g. 14 → 15)</td><td class="n">91%</td></tr>
+<tr><td>Two numbers swapped</td><td class="n red">29%</td></tr>
+</table>
+<p>So the check is strong but not perfect: swapped numbers mostly get through. Say so if asked.</p>
+
+<h3>F. Supplier messages: our link to Topic 6 (Ambiguity)</h3>
+<p>Suppliers write things like "delayed to next week" or "2-3 days late". Sentinel works out every day the message could mean, plans for the <b>latest</b> day, and drafts one question for the supplier, sent only when a planner approves.</p>
+<table>
+<tr><th>What we checked</th><th>Result</th></tr>
+<tr><td>Test messages written blind by a separate AI that never saw our code</td><td class="n">135 of 150 fully right (90%), first try</td></tr>
+<tr><td>Planned a date too early (the dangerous mistake)</td><td class="n green">3 of 121, vs 42 of 121 for a normal date reader</td></tr>
+<tr><td>Planned a date too late (the safe mistake), until the supplier answers</td><td class="n">37 of 121 messages</td></tr>
+<tr><td>Orders on time when suppliers write vaguely</td><td class="n">96.1% (normal date reader) → 96.7% (Sentinel)</td></tr>
+<tr><td>After the supplier answers the question</td><td class="n green">planned date off by only 0.18 days on average</td></tr>
+</table>
+<p>The on-time gain here is small (+0.6 points) and only just significant. The real value is a correct date for the planner.</p>
 
 <h2>8. What it does NOT prove (be honest about this)</h2>
 <div class="box warn">
-<p style="margin:0 0 6px">Judges respect teams that know their limits. Say these openly:</p>
 <ul style="margin:0">
-<li><b>It's a pretend factory.</b> We wrote the simulator, so results in a real factory depend on how close our pretend world is to reality.</li>
-<li><b>No real planner has used it yet.</b> The "person who approves" was simulated (approve all, or approve about half at random).</li>
-<li><b>1 in 4 "late" warnings is a false alarm.</b> That's the price of assuming late suppliers will stay late.</li>
-<li><b>It needs history.</b> For a brand-new supplier it doesn't yet know how late they usually are, so it assumes 1 day.</li>
-<li><b>If a factory can't rush-order,</b> it would still get the early warnings, but not the on-time improvement.</li>
+<li><b>It's a pretend factory.</b> We wrote the simulator, so real-factory results depend on how close it is to reality.</li>
+<li><b>No real planner has used it yet.</b> The "person who approves" was simulated.</li>
+<li><b>1 in 4 warnings is a false alarm.</b></li>
+<li><b>All of the improvement comes from rush orders.</b> A factory that can't rush-order gets the warnings but not the on-time gain.</li>
+<li><b>It costs a little more</b> (+0.75% purchases), though much less than simple rules that reach the same on-time level.</li>
+<li><b>Some "100%" results are sanity checks</b>, true because of how the pretend factory works (for example "every late delivery was flagged", since an overdue delivery is late by definition).</li>
+<li><b>Topic 6 is English-only and rule-based</b>, and the blind test messages were written by AI, not real suppliers.</li>
 </ul>
 </div>
 
@@ -271,40 +292,38 @@ ol li,ul li{margin:4px 0}
 <li><b>Happier customers:</b> more orders arrive on the promised day.</li>
 <li><b>Time to act:</b> about a week of warning instead of finding out on the day.</li>
 <li><b>Less panic:</b> one clear decision instead of digging through spreadsheets.</li>
-<li><b>Trust:</b> every number can be traced back to the data, and the AI cannot make things up.</li>
-<li><b>Safety:</b> nothing is bought without a person approving it.</li>
-<li><b>Works with messy data:</b> repeated or broken messages from old factory systems don't confuse it, and it warns when a system goes silent.</li>
-<li><b>Saves money:</b> fewer stock-outs without buying extra stock.</li>
+<li><b>Trust:</b> numbers trace back to the data, and the AI's words are checked.</li>
+<li><b>Safety:</b> nothing is bought and no supplier is contacted without a person approving it.</li>
+<li><b>Works with messy data</b> and messy supplier messages.</li>
+<li><b>Spends carefully:</b> the same on-time level as brute-force rules for less money and less stock.</li>
 </ul>
 <p><b>Who could use it?</b> Any company that makes products from parts and promises delivery dates: appliances, electronics, furniture, auto parts, garments, medicines.</p>
 
 <h2>10. What is needed from us</h2>
 <h3>To run the demo: nothing</h3>
-<p>It's already online at chatu.in, running 24/7 on our own server. No passwords, no paid AI service, no extra cost.</p>
+<p>It's online at chatu.in, on our own server. Each visitor now gets <b>their own pretend factory</b>, so nobody can disturb a judge's screen.</p>
 <h3>To win the hackathon</h3>
 <ol>
-<li><b>Check the rules.</b> Some hackathons only allow code written during the event. If so, this is our practice run and we rebuild it there (faster now, because we know exactly what to build).</li>
-<li><b>Everyone opens chatu.in on their phone and laptop</b> and plays with it. Tell Roshan if anything looks wrong.</li>
-<li><b>Practise the 3-minute demo</b> (section 12) until it's smooth.</li>
-<li><b>Learn the key numbers:</b> 92.6% → 96.3% on time; 100% of late orders caught 3 days ahead; 8 days median warning; 0 mistakes in 172,800 checks; 0 made-up numbers.</li>
+<li><b>Check the rules</b> (some events only allow code written during the event).</li>
+<li><b>Everyone opens chatu.in</b> on phone and laptop and tells Roshan if anything looks wrong.</li>
+<li><b>Practise the 3-minute demo</b> (section 12).</li>
+<li><b>Learn the key numbers:</b> 93.4% → 96.7% on time; +0.75% spend; simple rules spend 1.5-9% more for the same; a week ahead 73% of warnings are right; 0 mistakes in 129,600 checks.</li>
 <li><b>Prepare for questions</b> (section 13).</li>
-<li><b>Press Reset before presenting.</b> Everyone who opens the link shares the same pretend factory, so someone else may have changed it.</li>
-<li>Make slides if the event asks for them.</li>
 </ol>
 <h3>For a real factory to use it (future)</h3>
 <ul>
-<li>Their real product recipes (which parts go into each product), supplier lead times and stock counts.</li>
-<li>Connect their order and warehouse software so it sends messages to Sentinel. The "inbox" for this already exists.</li>
-<li>Proper logins for each person (today, the Planner/Buyer/Manager switch is only for the demo).</li>
+<li>Their real product recipes, supplier lead times and stock counts.</li>
+<li>Connect their order and warehouse software to Sentinel's message inbox (it already exists).</li>
+<li>Proper logins for each person (today the Planner/Buyer/Manager switch is only for the demo).</li>
 </ul>
 
 <h2>11. Who does what in the team</h2>
-<p>We don't know the final team size yet. Here is a split for <b>4 members</b>. With fewer people, combine roles.</p>
+<p>A split for <b>4 members</b>. With fewer people, combine roles.</p>
 <table>
 <tr><th>Member</th><th>Role</th><th>Must know well</th></tr>
 <tr><td>1</td><td><b>Presenter and demo driver</b></td><td>The story (section 2), the demo (section 12), the headline numbers</td></tr>
 <tr><td>2</td><td><b>Evidence and numbers owner</b></td><td>Sections 7 and 8; answers "how do you know it works?"</td></tr>
-<tr><td>3</td><td><b>How-it-works explainer</b></td><td>The five parts (section 4), the sharing rule, why messy data doesn't matter</td></tr>
+<tr><td>3</td><td><b>How-it-works explainer</b></td><td>The five parts (section 4), the sharing rule, supplier messages (7F)</td></tr>
 <tr><td>4</td><td><b>Real-world and business</b></td><td>Section 9; who would use it, what a real factory needs, cost</td></tr>
 </table>
 
@@ -312,36 +331,35 @@ ol li,ul li{margin:4px 0}
 <table>
 <tr><th>Time</th><th>Do this</th><th>Say this</th></tr>
 <tr><td>0:00</td><td>Open chatu.in, press Simulate → Start over</td><td>"Factories usually find out an order is late on the day it fails. Sentinel predicts every order's ship date, all the time."</td></tr>
-<tr><td>0:20</td><td>Press +1 day until day 14</td><td>"Every number comes from the factory's messages. Repeated or broken messages are ignored, so they never change a figure."</td></tr>
+<tr><td>0:20</td><td>Press +1 day until day 14</td><td>"Every number comes from the factory's messages. Repeated or broken messages are ignored."</td></tr>
 <tr><td>0:40</td><td>Simulate → A supplier slips a week</td><td>"A supplier just pushed a delivery back a week."</td></tr>
-<tr><td>0:50</td><td>Point at the red headline and bars, click a red row</td><td>"Six orders will now miss their date, two weeks before it happens. And here's exactly why: they're all waiting for switches on PO0055."</td></tr>
-<tr><td>1:20</td><td>Point at the decision card</td><td>"Sentinel already tested a fix: rush-order 90 switches. Late orders go from 6 to 0, for ₹3,650."</td></tr>
-<tr><td>1:45</td><td>Switch to Manager, show the greyed-out button</td><td>"Managers see it, but only planners and buyers can buy."</td></tr>
-<tr><td>1:55</td><td>Switch to Planner, press Approve purchase</td><td>"The planner approves. Late orders drop to zero. Nothing was sent until a human said yes."</td></tr>
-<tr><td>2:10</td><td>Simulate → Warehouse feed goes down, then +1 day</td><td>"If a data feed dies, Sentinel says so, instead of quietly showing old numbers."</td></tr>
-<tr><td>2:30</td><td>Open Evidence</td><td>"30 pretend factories, 6,609 orders: on-time from 92.6% to 96.3%, every late order caught 3 days ahead, zero calculation mistakes."</td></tr>
-<tr><td>2:50</td><td></td><td>"Our limits: it's a simulated factory and no real planner has used it yet. We wrote both down."</td></tr>
+<tr><td>0:50</td><td>Point at the red headline, click a red row</td><td>"Seven orders will now miss their date, two weeks before it happens. They're all waiting for switches on PO0042."</td></tr>
+<tr><td>1:15</td><td>Point at the decision card</td><td>"Sentinel already tested a fix: rush-order 95 switches. Late orders go from 7 to 0."</td></tr>
+<tr><td>1:35</td><td>Switch to Manager, then back to Planner and press Approve</td><td>"Managers see it but can't buy. The planner approves. Nothing happened until a human said yes."</td></tr>
+<tr><td>2:00</td><td>Simulate → A supplier writes something vague, press Send question, then +1 day</td><td>"Suppliers write 'next week' or '2-3 days late'. Sentinel plans for the latest day and asks one question. The supplier answered; the plan has the exact date. That's Topic 6 inside our app."</td></tr>
+<tr><td>2:25</td><td>Open Evidence</td><td>"30 pretend factories, same orders in every test: on-time 93.4% to 96.7%, for 0.75% more spend. Simple rules spend 1.5 to 9% more for the same result."</td></tr>
+<tr><td>2:45</td><td></td><td>"Our limits: it's a simulated factory and no real planner has used it yet. We wrote every failure down."</td></tr>
 </table>
 
 <h2>13. Questions judges may ask, with answers</h2>
-<p><b>Q: Isn't this just a dashboard?</b><br>A: No. A dashboard shows totals. Sentinel predicts the ship day of every order, explains why it's late, tests a fix before suggesting it, and waits for a person to approve. The normal stock check caught 0 of 496 late orders; Sentinel caught all 496.</p>
-<p><b>Q: How do you know your numbers are right?</b><br>A: We wrote a second, separate calculator and compared them: 0 mistakes in 172,800 checks. With repeated, broken and out-of-order messages mixed in, the answers stayed exactly the same.</p>
-<p><b>Q: What if the AI makes things up?</b><br>A: Every number the helper writes is checked against the data before it's shown. In 5,400 notes, 0 numbers were made up. If the AI ever writes a number that isn't in the data, its text is thrown away and a safe version is shown instead.</p>
-<p><b>Q: Why use a pretend factory?</b><br>A: Because it gives us an answer key. In a real factory you never know for sure what "would have happened". In the simulator we know the truth for every order, so we can measure exactly. It's also our biggest limitation, and we say so.</p>
-<p><b>Q: Does it just buy more stock to look good?</b><br>A: No. Spending showed no real change (₹7,87,512 vs ₹7,85,027), and the stock held was about the same. It buys smarter, not more.</p>
-<p><b>Q: What about false alarms?</b><br>A: About 1 in 4 "late" warnings turns out fine. We chose this on purpose: missing a real late order is much worse than checking a false alarm. The planner can also see "at risk" separately from "late".</p>
-<p><b>Q: Is it luck?</b><br>A: It was better in 28 of 30 factories, and the chance of that being luck is less than 1 in 1,000.</p>
-<p><b>Q: How would a real factory start using it?</b><br>A: Load their product recipes and supplier list, connect their order and warehouse systems to Sentinel's message inbox, and add logins. The inbox already handles messy data.</p>
+<p><b>Q: If I warn about every order not yet started, I also catch 100% three days ahead.</b><br>A: True, so we show a week ahead too. There, that lazy rule is right 20% of the time; Sentinel is right 73%.</p>
+<p><b>Q: Is the gain just rush orders?</b><br>A: Yes, all of it. The point is <i>which</i> rush orders: a rule that rushes every late delivery gets the same on-time level but spends 9% more and holds 23% more stock.</p>
+<p><b>Q: Does it spend more?</b><br>A: Yes, a little: +0.75%. We say that openly.</p>
+<p><b>Q: How do you know your numbers are right?</b><br>A: A second, separate calculator: 0 mistakes in 129,600 checks. Messy messages and replays give exactly the same answers. An independent reviewer reran everything and got the same numbers.</p>
+<p><b>Q: What if the AI makes things up?</b><br>A: A safety check stops 100% of false counts and fake order numbers and 91% of changed numbers, but only 29% of swapped numbers. If the AI's text fails the check, a safe template is shown instead.</p>
+<p><b>Q: Who wrote your test messages for Topic 6?</b><br>A: Separate AI agents that only saw our rules page, never the code. We keep the first score on each set; the third set was saved in git before we scored it, so the order can be checked.</p>
+<p><b>Q: Planning for the latest day means you're often too late?</b><br>A: Yes, until the supplier answers, on purpose. Too late in the plan means acting a bit early; too early means an order fails by surprise. After the answer, the plan is off by only 0.18 days.</p>
+<p><b>Q: Can I approve a purchase from a command line?</b><br>A: In the demo, yes, but only inside your own pretend factory. A real company would use proper logins.</p>
 
 <h2>14. Where everything is</h2>
 <table>
 <tr><th>What</th><th>Where</th></tr>
 <tr><td>Live website</td><td>https://chatu.in</td></tr>
-<tr><td>Code</td><td>GitHub: roshanvijay37/resurrect2026 (private for now; ask Roshan for access)</td></tr>
-<tr><td>Full results report</td><td>results/RESULTS.md in the code</td></tr>
+<tr><td>Code</td><td>GitHub: github.com/roshanvijay37/resurrect2026 (public for now)</td></tr>
+<tr><td>Full results report</td><td>results/RESULTS.md and results/AMBIGUITY.md in the code</td></tr>
 <tr><td>Demo script</td><td>DEMO.md in the code</td></tr>
-<tr><td>Re-run every number</td><td>One command: <code>python -m evaluation.run_eval --seeds 30</code> (takes about a minute)</td></tr>
-<tr><td>Automatic tests</td><td>14 tests, all passing</td></tr>
+<tr><td>Re-run every number</td><td>One command: <code>python -m evaluation.run_eval --seeds 30</code> (takes a few seconds)</td></tr>
+<tr><td>Automatic tests</td><td>25 tests, all passing</td></tr>
 </table>
 <p class="small">Technical summary for the curious: Python (FastAPI) server, a plain HTML/JavaScript website, running in a Docker container on our own Linux server behind HTTPS. AI writing (Claude) is optional and off by default; all suggestions and numbers come from rules we can check.</p>
 
